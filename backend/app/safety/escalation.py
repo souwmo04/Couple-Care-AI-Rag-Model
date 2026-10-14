@@ -194,12 +194,38 @@ ADDENDA: dict[SafetyLevel, str] = {
 }
 
 
+# Used when only the semantic (embedding) classifier flagged a risk. Its precision is lower than
+# the rules', so the response is proportionate: take it seriously and check in gently, without
+# switching to an urgent template. A false alarm then costs one careful question.
+SEMANTIC_ADDENDA: dict[RiskCategory, str] = {
+    C.SELF_HARM: (
+        "SAFETY CONTEXT: The message may express hopelessness or thoughts of self-harm, said indirectly. "
+        "Respond warmly first. Gently and directly ask whether they are thinking about harming themselves or "
+        "ending their life. Say that if they are in danger or might act on such thoughts, they should contact "
+        "their local emergency number or a crisis line, or someone near them, now. Do not give relationship "
+        "advice before acknowledging this. Do not invent phone numbers."
+    ),
+}
+SEMANTIC_DEFAULT_ADDENDUM = (
+    "SAFETY CONTEXT: The message may indirectly describe harm, fear, control, threats or being followed. "
+    "Do not assume it is ordinary conflict and do not label the relationship. Take it seriously, gently ask "
+    "whether they feel safe, and avoid advice to confront the partner or attend joint counselling until "
+    "safety is clear."
+)
+
+
 def decide(assessment: Assessment, language: str) -> SafetyDecision:
     lang = language if language in {"en", "bn", "banglish"} else "en"
     categories = [c for c, _ in PRIORITY if c in assessment.categories]
     if not categories:
         return SafetyDecision(SafetyLevel.NONE, None, [], False, None, None, None)
-    primary = categories[0]
+    confirmed = [c for c in categories if not assessment.semantic_only(c)]
+    if not confirmed:
+        primary = categories[0]
+        addendum = SEMANTIC_ADDENDA.get(primary, SEMANTIC_DEFAULT_ADDENDUM)
+        banner = BANNERS[SafetyLevel.CAUTION if primary != C.SELF_HARM else SafetyLevel.URGENT].get(lang)
+        return SafetyDecision(SafetyLevel.CAUTION, primary, categories, False, None, banner, addendum)
+    primary = confirmed[0]
     level = dict(PRIORITY)[primary]
     template = TEMPLATES.get(primary.value, {}).get(lang)
     skip = level in {SafetyLevel.URGENT, SafetyLevel.DECLINED}

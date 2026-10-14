@@ -14,7 +14,7 @@ from app.retrieval.hybrid import Calibration
 from app.retrieval.index_store import load_bundle
 from app.retrieval.reranker import Reranker
 from app.retrieval.retriever import Retriever
-from app.safety.classifier import SafetyEnsemble
+from app.safety.classifier import CueClassifier, RuleClassifier, SafetyEnsemble, SemanticClassifier
 from app.safety.escalation import allowed_numbers, load_directory
 from app.storage.sessions import ConversationStore, MemoryConversationStore, SQLiteConversationStore
 from app.storage.settings_store import SettingsStore
@@ -56,7 +56,7 @@ class Container:
                 bm25_saturation=settings.bm25_saturation,
             ),
         )
-        self.safety = SafetyEnsemble()
+        self.safety = SafetyEnsemble([RuleClassifier(), CueClassifier(), SemanticClassifier(self.embedder)])
         self.support_directory = load_directory(settings.support_directory_path)
         self.allowed_numbers = allowed_numbers(self.support_directory)
         self._llm = llm

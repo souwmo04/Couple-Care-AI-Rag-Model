@@ -82,9 +82,73 @@ class CueClassifier:
         return signals
 
 
+class SemanticClassifier:
+    """Nearest-prototype classifier on multilingual E5 embeddings.
+
+    A message is assigned a risk category when its best similarity to that category's prototypes
+    is at least ``floor`` AND exceeds its best similarity to benign prototypes by ``margin``.
+    E5 cosines sit in a narrow band, so the benign margin (not the raw cosine) carries the signal.
+    Returns nothing if no semantic embedder is loaded — the rule layer still runs.
+    """
+
+    name = "semantic"
+
+    # Tuned on the dev split (2026-10-15): floor 0.84 / margin 0.03 gave 8/10 indirect risk cases
+    # flagged with 0/234 benign false alarms. Re-tune on dev only when prototypes change.
+    def __init__(self, embedder_holder, *, floor: float = 0.84, margin: float = 0.03) -> None:
+        self.holder = embedder_holder
+        self.floor = floor
+        self.margin = margin
+        self._embedder_name: str | None = None
+        self._matrix = None
+        self._labels: list[str] = []
+
+    def _prototypes(self):
+        embedder = self.holder.get() if self.holder is not None else None
+        if embedder is None or not getattr(embedder, "is_semantic", False):
+            return None
+        if self._embedder_name != embedder.name:
+            from app.safety.prototypes import PROTOTYPES
+
+            texts, labels = [], []
+            for category, items in PROTOTYPES.items():
+                texts += items
+                labels += [category] * len(items)
+            self._matrix = embedder.embed_queries(texts)
+            self._labels = labels
+            self._embedder_name = embedder.name
+        return embedder
+
+    def scores(self, text: str) -> dict[str, float]:
+        embedder = self._prototypes()
+        if embedder is None:
+            return {}
+        sims = self._matrix @ embedder.embed_queries([text])[0]
+        best: dict[str, float] = {}
+        for label, sim in zip(self._labels, sims, strict=True):
+            best[label] = max(best.get(label, -1.0), float(sim))
+        return best
+
+    def classify(self, text: str) -> list[Signal]:
+        best = self.scores(text)
+        if not best:
+            return []
+        benign = best.pop("benign", 0.0)
+        return [
+            Signal(RiskCategory(category), 0.7, self.name)
+            for category, sim in best.items()
+            if sim >= self.floor and sim - benign >= self.margin
+        ]
+
+
 @dataclass(slots=True)
 class Assessment:
     categories: dict[RiskCategory, float] = field(default_factory=dict)
+    sources: dict[RiskCategory, set[str]] = field(default_factory=dict)
+
+    def semantic_only(self, category: RiskCategory) -> bool:
+        """True when only the embedding classifier (no rule or cue) flagged this category."""
+        return self.sources.get(category, set()) == {"semantic"}
 
     def has(self, *cats: RiskCategory) -> bool:
         return any(c in self.categories for c in cats)
@@ -106,4 +170,5 @@ class SafetyEnsemble:
                 if signal.score >= self.threshold:
                     current = assessment.categories.get(signal.category, 0.0)
                     assessment.categories[signal.category] = max(current, signal.score)
+                    assessment.sources.setdefault(signal.category, set()).add(signal.source)
         return assessment
