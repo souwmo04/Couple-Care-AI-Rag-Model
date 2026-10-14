@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-  Start the local llama.cpp model server on 127.0.0.1:8080.
+  Start the local llama.cpp model server on 127.0.0.1:18080 with a fresh random API key.
 
 .EXAMPLE
   scripts\start-model.ps1                 # full GPU offload, 4k context
@@ -11,7 +11,7 @@
 param(
     [int]$GpuLayers = 99,
     [int]$Context = 4096,
-    [int]$Port = 8080,
+    [int]$Port = 18080,
     [switch]$Cpu
 )
 $ErrorActionPreference = 'Stop'
@@ -24,17 +24,34 @@ $cfg = Get-Content $configPath -Raw | ConvertFrom-Json
 if (-not (Test-Path $cfg.server)) { throw "llama-server not found at $($cfg.server)" }
 if (-not (Test-Path $cfg.model)) { throw "Model file not found at $($cfg.model)" }
 
+# Windows (Hyper-V/WSL) reserves TCP port ranges; binding inside one fails with a confusing error.
+$reserved = netsh interface ipv4 show excludedportrange protocol=tcp | Select-String '^\s*(\d+)\s+(\d+)' | ForEach-Object {
+    [pscustomobject]@{ Start = [int]$_.Matches[0].Groups[1].Value; End = [int]$_.Matches[0].Groups[2].Value }
+}
+$hit = $reserved | Where-Object { $Port -ge $_.Start -and $Port -le $_.End } | Select-Object -First 1
+if ($hit) {
+    throw "Port $Port is reserved by Windows ($($hit.Start)-$($hit.End)). Use -Port with another value and set COUPLECARE_LLM_BASE_URL to match."
+}
+
+# A new random API key on every start. Only the CoupleCare backend reads it (models\server.key),
+# so web pages open in the browser cannot use the local model server.
+$keyFile = Join-Path $Root 'models\server.key'
+$bytes = New-Object byte[] 32
+[System.Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($bytes)
+[System.IO.File]::WriteAllText($keyFile, (($bytes | ForEach-Object { $_.ToString('x2') }) -join ''))
+
 $logs = Join-Path $Root 'logs'
 New-Item -ItemType Directory -Force -Path $logs | Out-Null
 $ngl = if ($Cpu) { 0 } else { $GpuLayers }
 $serverArgs = @(
-    '-m', $cfg.model,
+    '-m', ('"{0}"' -f $cfg.model),  # quoted: Start-Process does not quote paths with spaces
     '--host', '127.0.0.1', '--port', "$Port",
     '-c', "$Context",
     '-ngl', "$ngl",
     '--jinja',
     '--parallel', '1',
-    '--no-webui'
+    '--no-webui',
+    '--api-key-file', ('"{0}"' -f $keyFile)
 )
 Write-Host "Starting llama-server (GPU layers: $ngl, context: $Context) on http://127.0.0.1:$Port ..."
 $proc = Start-Process -FilePath $cfg.server -ArgumentList $serverArgs -PassThru -WindowStyle Hidden `
@@ -53,9 +70,12 @@ while ((Get-Date) -lt $deadline) {
     try {
         $r = Invoke-WebRequest -Uri "http://127.0.0.1:$Port/health" -UseBasicParsing -TimeoutSec 2
         if ($r.StatusCode -eq 200) {
-            $offload = Select-String -Path (Join-Path $logs 'model-server.err.log') -Pattern 'offloaded \d+/\d+ layers to GPU' | Select-Object -Last 1
             Write-Host "Model server ready (PID $($proc.Id))." -ForegroundColor Green
-            if ($offload) { Write-Host "  $($offload.Line.Trim())" } else { Write-Host '  GPU offload not reported in the log - check logs\model-server.err.log' }
+            # Verify GPU use from the driver, not from log wording (which varies between llama.cpp builds).
+            $onGpu = (& nvidia-smi --query-compute-apps=pid --format=csv,noheader 2>$null) -match "^\s*$($proc.Id)\s*$"
+            $vram = (& nvidia-smi --query-gpu=memory.used,memory.total --format=csv,noheader 2>$null)
+            if ($onGpu) { Write-Host "  Running on the GPU (VRAM in use: $vram)" }
+            elseif ($ngl -gt 0) { Write-Warning 'llama-server is not listed as a GPU process; it may be running on the CPU. Check the NVIDIA driver and the CUDA build.' }
             return
         }
     } catch { }
