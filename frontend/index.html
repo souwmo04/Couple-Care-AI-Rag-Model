@@ -4,9 +4,31 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>frontend</title>
+    <meta name="description" content="CoupleCare AI — a private, bilingual relationship-support assistant that runs locally." />
+    <meta name="referrer" content="no-referrer" />
+    <meta name="theme-color" content="#fbf7f0" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0f1424" media="(prefers-color-scheme: dark)" />
+    <title>CoupleCare AI — Understand Each Other Better</title>
+    <script>
+      // Apply the saved theme before first paint to avoid a light/dark flash. Storage may be unavailable.
+      (function () {
+        var prefs = {}
+        try {
+          var guest = localStorage.getItem('couplecare.guest') === '1'
+          var raw = (guest ? sessionStorage : localStorage).getItem('couplecare.prefs')
+          prefs = raw ? JSON.parse(raw) : {}
+        } catch (e) {}
+        var theme = prefs.theme === 'light' || prefs.theme === 'dark' ? prefs.theme : 'system'
+        var dark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+        document.documentElement.classList.toggle('dark', dark)
+        document.documentElement.dataset.theme = dark ? 'dark' : 'light'
+        if (typeof prefs.fontScale === 'number') document.documentElement.style.setProperty('--font-scale', String(prefs.fontScale))
+        if (prefs.uiLanguage === 'bn') document.documentElement.lang = 'bn'
+      })()
+    </script>
   </head>
   <body>
+    <noscript>CoupleCare AI needs JavaScript to run.</noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
