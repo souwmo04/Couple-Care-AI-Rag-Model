@@ -183,3 +183,19 @@ prompt `system_v1+lang_v2` · safety = rules + cues + semantic classifier · 8k 
   (e.g. "Amader jhogra hoise" answered with an unrelated phone-use script). Addressed in `clarify_v2`
   (next entry). Clarification is detected as "a question in the last 300 characters", which also misses
   invitations such as "Just let me know what's on your mind" — a human check is needed.
+
+---
+
+## 2026-10-15 · Clarification fix (clarify_v2), config D re-run on the same 80 dev cases
+
+**Run:** `20261014T222931Z-dev` · prompt `system_v1+lang_v2+clarify_v2` · otherwise identical to the previous entry.
+
+| Config D | Clarification (n=8) | Over-clarification (n=41) | Ungrounded on out-of-scope (n=6) | Risk detection (n=29) | Inappropriate escalation (n=51) | p50 / p95 |
+|---|---|---|---|---|---|---|
+| before (lang_v2) | 2/8 | 0.32 | 3/6 | 0.93 | 0.00 | 14.5 s / 30.0 s |
+| **after (clarify_v2)** | **8/8** | 0.32 | 4/6 | 0.93 | 0.00 | 13.1 s / 31.0 s |
+
+Vague first messages now get a short, warm reply ending in one clarifying question, with no retrieved
+passages. English and Bangla clarifying questions read naturally; **Banglish ones are partly garbled**
+(e.g. "Tumi kotha kisu kore, kisu kichu kore…"), consistent with the model's Banglish weakness. Tuned on
+dev; the held-out test split has not been used for generation.
