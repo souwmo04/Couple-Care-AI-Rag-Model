@@ -92,6 +92,10 @@ class Settings(BaseSettings):
     embedding_device: Literal["cpu", "cuda"] = "cpu"
     embedding_backend: Literal["sentence-transformers", "hashing"] = "sentence-transformers"
     reranker_model: str | None = None
+    # Relevance calibration for the embedding model (see docs/retrieval-calibration.md).
+    dense_score_floor: float = 0.75
+    dense_score_ceiling: float = 0.90
+    bm25_saturation: float = 6.0
 
     # Paths — always resolved inside the repository.
     data_dir: Path = REPO_ROOT / "data"
@@ -163,7 +167,7 @@ class RuntimeSettings(BaseModel):
     retrieval_top_k: int = Field(default=4, ge=1, le=8)
     dense_top_k: int = Field(default=20, ge=1, le=50)
     bm25_top_k: int = Field(default=20, ge=1, le=50)
-    relevance_threshold: float = Field(default=0.3, ge=0.0, le=1.0)
+    relevance_threshold: float = Field(default=0.35, ge=0.0, le=1.0)
     rerank_enabled: bool = False
     query_expansion_enabled: bool = True
     history_turns: int = Field(default=6, ge=0, le=12)

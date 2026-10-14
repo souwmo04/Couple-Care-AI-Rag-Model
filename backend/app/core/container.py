@@ -10,6 +10,7 @@ from datetime import UTC, datetime
 from app.config import Settings
 from app.generation.llm_client import ChatModel, OpenAICompatibleClient
 from app.retrieval.embeddings import EmbedderHolder
+from app.retrieval.hybrid import Calibration
 from app.retrieval.index_store import load_bundle
 from app.retrieval.reranker import Reranker
 from app.retrieval.retriever import Retriever
@@ -39,7 +40,9 @@ class Container:
         self.embedder = embedder or EmbedderHolder(settings.embedding_backend, settings.embedding_model,
                                                    settings.embedding_device)
         self.reranker = Reranker(settings.reranker_model)
-        self.retriever = Retriever(self.embedder, self.reranker)
+        self.retriever = Retriever(self.embedder, self.reranker, Calibration(
+            dense_floor=settings.dense_score_floor, dense_ceiling=settings.dense_score_ceiling,
+            bm25_saturation=settings.bm25_saturation))
         self.safety = SafetyEnsemble()
         self.support_directory = load_directory(settings.support_directory_path)
         self.allowed_numbers = allowed_numbers(self.support_directory)

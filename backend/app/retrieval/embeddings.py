@@ -83,7 +83,8 @@ class E5Embedder:
         self.name = model_name
         self.batch_size = batch_size
         self._model = SentenceTransformer(model_name, device=device)
-        dim = self._model.get_sentence_embedding_dimension()
+        getter = getattr(self._model, "get_embedding_dimension", None) or self._model.get_sentence_embedding_dimension
+        dim = getter()
         if dim is None:  # pragma: no cover - defensive
             raise RuntimeError(f"Could not determine embedding dimension for {model_name}")
         self.dimension = int(dim)
