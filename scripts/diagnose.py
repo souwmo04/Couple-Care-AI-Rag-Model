@@ -130,7 +130,9 @@ def main() -> int:
         r = httpx.get(f"{settings.llm_base_url}/health", timeout=3)
         if r.status_code == 200:
             try:
-                models = httpx.get(f"{settings.llm_base_url}/v1/models", timeout=3).json()
+                key = settings.llm_api_key_file.read_text().strip() if settings.llm_api_key_file.exists() else ""
+                headers = {"Authorization": f"Bearer {key}"} if key else {}
+                models = httpx.get(f"{settings.llm_base_url}/v1/models", timeout=3, headers=headers).json()
                 name = models["data"][0]["id"]
             except Exception:  # noqa: BLE001
                 name = "unknown model"

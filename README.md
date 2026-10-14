@@ -63,7 +63,7 @@ The bundled knowledge base contains **synthetic example documents** written for 
 ```powershell
 scripts\start-all.ps1                   # model server + backend + frontend
 # or individually:
-scripts\start-model.ps1                 # 127.0.0.1:8080  (-GpuLayers 20 / -Context 2048 / -Cpu)
+scripts\start-model.ps1                 # 127.0.0.1:18080  (-GpuLayers 20 / -Context 2048 / -Cpu)
 scripts\start-backend.ps1               # 127.0.0.1:8000  (API docs: /api/docs)
 scripts\start-frontend.ps1              # 127.0.0.1:5173
 scripts\stop.ps1                        # stop everything

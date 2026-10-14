@@ -40,19 +40,21 @@ def gpu_mem_mb() -> int | None:
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--url", default="http://127.0.0.1:8080")
+    ap.add_argument("--url", default="http://127.0.0.1:18080")
     ap.add_argument("--runs", type=int, default=3)
     ap.add_argument("--max-tokens", type=int, default=300)
     args = ap.parse_args()
 
-    model = httpx.get(f"{args.url}/v1/models", timeout=5).json()["data"][0]["id"]
+    key_file = ROOT / "models" / "server.key"
+    headers = {"Authorization": f"Bearer {key_file.read_text().strip()}"} if key_file.exists() else {}
+    model = httpx.get(f"{args.url}/v1/models", timeout=5, headers=headers).json()["data"][0]["id"]
     results: dict = {"model": model, "measured_at": datetime.now(UTC).isoformat(), "max_tokens": args.max_tokens,
                      "gpu_mem_used_mb_idle": gpu_mem_mb(), "languages": {}}  # fmt: skip
     for lang, prompt in PROMPTS.items():
         rows = []
         for _ in range(args.runs):
             t0 = time.perf_counter()
-            r = httpx.post(f"{args.url}/v1/chat/completions", timeout=300, json={
+            r = httpx.post(f"{args.url}/v1/chat/completions", timeout=300, headers=headers, json={
                 "messages": [{"role": "user", "content": prompt}], "max_tokens": args.max_tokens, "temperature": 0.6})  # fmt: skip
             wall = time.perf_counter() - t0
             body = r.json()

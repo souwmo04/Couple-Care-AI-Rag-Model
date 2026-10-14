@@ -11,7 +11,7 @@
 │                                  ├─ retriever (E5/FAISS + BM25 → RRF)  │
 │                                  ├─ citation validation, output checks│
 │                                  ├─ conversation store (memory|SQLite) │
-│                                  └─ HTTP ──► llama-server (127.0.0.1:8080, GGUF on GPU)
+│                                  └─ HTTP ──► llama-server (127.0.0.1:18080, GGUF on GPU)
 │                                                                        │
 │  data/raw ─ manifest ─► ingestion ─► artifacts/indexes/<version>/      │
 └────────────────────────────────────────────────────────────────────────┘

@@ -1,7 +1,7 @@
 """Integration tests against a real local llama.cpp server.
 
 Skipped by default. Run with:  pytest -m integration
-They require scripts\\start-model.ps1 to be running on 127.0.0.1:8080.
+They require scripts\\start-model.ps1 to be running on 127.0.0.1:18080.
 """
 
 from __future__ import annotations
