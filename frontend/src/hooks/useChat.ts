@@ -68,10 +68,13 @@ export function useChat(initialConversationId: string | null, onConversationCrea
   const [loading, setLoading] = useState(false)
   const [loadError, setLoadError] = useState<ApiError | null>(null)
   const abortRef = useRef<AbortController | null>(null)
+  const currentIdRef = useRef<string | null>(null)
+  const messagesLoadedRef = useRef(false)
   const isGenerating = messages.some((m) => m.status === 'streaming')
 
   const load = useCallback(async (id: string | null) => {
     abortRef.current?.abort()
+    currentIdRef.current = id
     setConversationId(id)
     setLoadError(null)
     if (!id) {
@@ -90,6 +93,10 @@ export function useChat(initialConversationId: string | null, onConversationCrea
   }, [])
 
   useEffect(() => {
+    // The route changes to /chat/:id right after a new conversation is created; that conversation
+    // is already on screen, so only load when the id actually differs.
+    if (initialConversationId !== null && initialConversationId === currentIdRef.current && messagesLoadedRef.current) return
+    messagesLoadedRef.current = true
     void load(initialConversationId)
   }, [initialConversationId, load])
 
@@ -152,6 +159,7 @@ export function useChat(initialConversationId: string | null, onConversationCrea
       } finally {
         abortRef.current = null
         if (createdId && createdId !== conversationId) {
+          currentIdRef.current = createdId
           setConversationId(createdId)
           onConversationCreated?.(createdId)
         }
@@ -194,6 +202,7 @@ export function useChat(initialConversationId: string | null, onConversationCrea
 
   const reset = useCallback(() => {
     abortRef.current?.abort()
+    currentIdRef.current = null
     setConversationId(null)
     setMessages([])
     setLoadError(null)
