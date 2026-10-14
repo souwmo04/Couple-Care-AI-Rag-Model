@@ -9,6 +9,12 @@ model and retrieval-augmented generation (RAG) with source citations and an inde
 
 ![CoupleCare AI landing page (light theme)](docs/screenshots/landing-light.jpg)
 
+| Grounded answer with citations (English) | Bangla answer with sources | Knowledge base (dark theme) |
+|---|---|---|
+| ![Chat in English](docs/screenshots/chat-english.jpg) | ![Chat in Bangla](docs/screenshots/chat-bangla.jpg) | ![Knowledge page](docs/screenshots/knowledge-dark.jpg) |
+
+_Screenshots of the real app running locally with Qwen3-4B on an RTX 4060; the knowledge base shown is the bundled synthetic development corpus._
+
 ## Status (2026-10-15)
 
 | Area | State |
