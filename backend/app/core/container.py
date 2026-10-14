@@ -56,7 +56,15 @@ class Container:
                 bm25_saturation=settings.bm25_saturation,
             ),
         )
-        self.safety = SafetyEnsemble([RuleClassifier(), CueClassifier(), SemanticClassifier(self.embedder)])
+        # Share the retrieval embedder when it is the validated safety model; otherwise load the
+        # safety model separately so changing retrieval never silently changes safety behaviour.
+        same_model = embedder is not None or settings.safety_embedding_model == settings.embedding_model
+        self.safety_embedder = (
+            self.embedder
+            if same_model
+            else EmbedderHolder(settings.embedding_backend, settings.safety_embedding_model, settings.embedding_device)
+        )
+        self.safety = SafetyEnsemble([RuleClassifier(), CueClassifier(), SemanticClassifier(self.safety_embedder)])
         self.support_directory = load_directory(settings.support_directory_path)
         self.allowed_numbers = allowed_numbers(self.support_directory)
         self._llm = llm
@@ -69,6 +77,8 @@ class Container:
         self.reload_index()
         if load_embedder and embedder is None:
             self.embedder.load_in_background()
+            if self.safety_embedder is not self.embedder:
+                self.safety_embedder.load_in_background()
 
     # -- model -----------------------------------------------------------------------
     def llm(self) -> ChatModel:

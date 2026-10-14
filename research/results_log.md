@@ -134,3 +134,28 @@ larger, native-speaker-written safety sets are required before any claim.
 Detection is the heuristic in `core/language.py` (after the lexicon update, 100% case-level accuracy on the
 scenario set); it measures *which language* sentences are in, not fluency or correctness. lang_v2 is now the
 default. Fluency still needs native-speaker review. Tuned and measured on dev only.
+
+---
+
+## 2026-10-15 · Embedding model ablation: multilingual-e5-small vs -base (dev, v0.2)
+
+**Command:** `python scripts/embedding_ablation.py` · run `embedding-ablation-20261014T210058Z` · 272 dev cases
+(258 with relevant documents) · same manifest, chunking (900/150) and calibration · CPU.
+
+| Embedder | Mode | Recall@5 | Recall@10 | MRR | nDCG@10 | MRR en / bn / banglish | Query p50 |
+|---|---|---|---|---|---|---|---|
+| e5-small (384-d) | dense | 0.413 | 0.656 | 0.482 | 0.445 | 0.706 / 0.365 / 0.313 | 18 ms |
+| e5-small | hybrid | 0.419 | 0.701 | 0.480 | 0.455 | 0.668 / 0.378 / 0.341 | 17 ms |
+| e5-base (768-d) | dense | **0.504** | 0.747 | **0.536** | **0.519** | 0.679 / **0.512** / 0.381 | 32 ms |
+| e5-base | hybrid | 0.451 | **0.763** | 0.510 | 0.495 | 0.668 / 0.437 / 0.381 | 33 ms |
+
+**Findings:** e5-base substantially improves Bangla ranking (MRR 0.365 → 0.512 dense) and Banglish somewhat
+(0.313 → 0.381); English is unchanged. With e5-base, adding BM25 improves Recall@10 but lowers MRR for Bangla,
+so fusion weighting should be revisited for the larger model. Calibration check (same 15 on/off-topic queries
+as `docs/retrieval-calibration.md`): e5-base top-1 cosine on-topic 0.805–0.864, off-topic 0.740–0.807, so the
+existing floor/ceiling (0.75/0.90) remain appropriate.
+
+**Decision:** e5-small stays the default for now (lower RAM; the semantic safety classifier was tuned and
+held-out-tested with it). e5-base is a measured, opt-in retrieval upgrade (`COUPLECARE_EMBEDDING_MODEL`);
+the safety classifier always uses `COUPLECARE_SAFETY_EMBEDDING_MODEL` (e5-small) so its validated behaviour
+does not change. Rebuild the index after switching.

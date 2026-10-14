@@ -97,6 +97,9 @@ class Settings(BaseSettings):
 
     # Retrieval
     embedding_model: str = "intfloat/multilingual-e5-small"
+    # The semantic safety classifier's thresholds were tuned and held-out-tested with this model, so it
+    # stays fixed even if the retrieval embedder is changed (e.g. to multilingual-e5-base).
+    safety_embedding_model: str = "intfloat/multilingual-e5-small"
     embedding_device: Literal["cpu", "cuda"] = "cpu"
     embedding_backend: Literal["sentence-transformers", "hashing"] = "sentence-transformers"
     reranker_model: str | None = None
