@@ -12,18 +12,29 @@ from pathlib import Path
 
 from app.generation.llm_client import ChatMessage
 
-PROMPT_VERSION = "system_v1"
+SYSTEM_PROMPT_FILE = "system_v1"
+# lang_v2 (2026-10-15): stricter Banglish rules after the local model drifted into English,
+# misread Romanized words, and added emojis/slang (see docs/model-selection.md).
+LANGUAGE_INSTRUCTIONS_VERSION = "lang_v2"
+PROMPT_VERSION = f"{SYSTEM_PROMPT_FILE}+{LANGUAGE_INSTRUCTIONS_VERSION}"
 TEMPLATE_DIR = Path(__file__).parent / "prompt_templates"
 
+_NO_EMOJI = "Do not use emojis or slang terms of address (such as 'bro')."
+
 LANGUAGE_INSTRUCTIONS = {
-    "en": "Respond in clear, natural English.",
+    "en": f"Respond in clear, natural English. {_NO_EMOJI}",
     "bn": (
         "Respond in natural, standard Bangla (বাংলা) using Bengali script. Use warm, respectful language "
-        "(আপনি form). Keep common English terms only where Bangla speakers normally use them."
+        f"(আপনি form). Keep common English terms only where Bangla speakers normally use them. {_NO_EMOJI}"
     ),
     "banglish": (
-        "Respond in Banglish: Bangla written in Roman (English) letters, the way people text, mixing in common "
-        "English words naturally (e.g. 'Apni ja feel korchen ta khub swabhabik'). Do not switch to Bengali script."
+        "Respond ENTIRELY in Banglish: Bangla sentences written in Roman (English) letters, the way Bangladeshi "
+        "people text. Every sentence must be Bangla grammar written in Roman letters — do not switch to full "
+        "English sentences. Ordinary English loanwords (partner, phone, relationship, feel, boundary) are fine "
+        "inside Bangla sentences. Do not use Bengali script. Use respectful 'apni' unless the user writes with "
+        f"'tumi'. Read the user's Banglish carefully: 'diner' means 'of the day', 'kotha' means 'talk'. {_NO_EMOJI}\n"
+        "Style example: 'Apni ja feel korchen ta khub swabhabik. Ekta shanto muhurte bolte paren: "
+        '"Ami jokhon amar diner kotha boli, tumi phone dekhle amar mone hoy amar kotha important na."\''
     ),
 }
 
@@ -36,7 +47,7 @@ STAGE_CONTEXT = {
 
 
 @lru_cache(maxsize=4)
-def load_system_prompt(version: str = PROMPT_VERSION) -> str:
+def load_system_prompt(version: str = SYSTEM_PROMPT_FILE) -> str:
     path = TEMPLATE_DIR / f"{version}.md"
     return path.read_text(encoding="utf-8").strip()
 
