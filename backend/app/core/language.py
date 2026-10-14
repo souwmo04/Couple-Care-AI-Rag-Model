@@ -1,0 +1,163 @@
+"""Language detection, normalization and lightweight query expansion.
+
+Detection is deliberately simple and transparent:
+
+* Bangla script is identified by the Unicode Bengali block (U+0980–U+09FF).
+* Banglish (Romanized Bangla) is identified by a curated lexicon of high-frequency
+  Romanized Bangla function words and relationship vocabulary.
+* Code-switching is reported as ``mixed`` when both scripts, or English and a
+  substantial share of Banglish tokens, appear together.
+
+This is a heuristic, not a trained classifier. Its accuracy on real user text must be
+measured with the evaluation set before being reported anywhere.
+"""
+
+from __future__ import annotations
+
+import re
+import unicodedata
+from dataclasses import dataclass, field
+
+from app.core.schemas import DetectedLanguage
+
+BENGALI_RE = re.compile(r"[ঀ-৿]")
+LATIN_RE = re.compile(r"[A-Za-z]")
+TOKEN_RE = re.compile(r"[ঀ-৿]+|[A-Za-z]+(?:'[A-Za-z]+)?|\d+")
+# Control characters except tab/newline. ZWJ/ZWNJ (U+200D/U+200C) are preserved because
+# they change how Bangla conjuncts render.
+CONTROL_RE = re.compile(r"[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F​⁠﻿]")
+
+# High-frequency Romanized Bangla words. Words that are also common English words
+# (e.g. "a", "o", "to", "na" is kept because it is rare in English) are excluded.
+BANGLISH_LEXICON: frozenset[str] = frozenset(
+    """
+    ami amar amake amra amader tumi tomar tomake tora apni apnar apnake se shey tar take tara
+    oder ora ke ki keno kno kemne kivabe kibhabe kothay kokhon kobe koto kotodin
+    na nai nei hoy hoye hobe hocche hochche hoise hoyeche hoyse chilo chhilo thake thaki theke
+    kori kore korbo korchi korche korlam korsi korse koro korte korar bolo bole boli bollo bolche
+    bolse bolchi jani jane janina bujhi bujhe bujhina bujhte dekhi dekhe shuni shune
+    bhalo valo kharap kharaap onek khub besi beshi ektu kom shob sob kichu keu kauke
+    jodi tahole tobe kintu abar ar aar shathe sathe songe jonno jonne moto mone mon
+    bhalobasha bhalobashi valobasha valobashi bhalobase valobase prem premik premika
+    bou jamai shami swami stri biye biya biyer shoshur shashuri sasur sasuri bari basha
+    jhogra jhgra jhogrha ragi rag raag rege kanna kandi kande kosto koshto dukkho dukho
+    sondeh shondeh sandeh hingsha hingse obhiman ovimaan obhimaan obhiman bisshash biswas
+    bishshas thokano mittha mitthe miththa shotti shotto sotti
+    """.split()
+)
+
+# Small, curated Banglish/Bangla → English expansion dictionary used for lexical
+# retrieval when query expansion is enabled. It never replaces the user's words; it only
+# adds terms. Every entry is a direct translation, not an interpretation.
+EXPANSION_DICTIONARY: dict[str, list[str]] = {
+    # Banglish
+    "bhalobasha": ["love", "ভালোবাসা"], "valobasha": ["love", "ভালোবাসা"],
+    "bhalobashi": ["love"], "valobashi": ["love"], "prem": ["love", "romance"],
+    "jhogra": ["argument", "fight", "conflict", "ঝগড়া"], "jhgra": ["argument", "fight", "conflict"],
+    "sondeh": ["suspicion", "doubt", "trust"], "shondeh": ["suspicion", "doubt", "trust", "সন্দেহ"],
+    "sandeh": ["suspicion", "doubt", "trust"],
+    "hingsha": ["jealousy", "হিংসা"], "hingse": ["jealousy"],
+    "bisshash": ["trust", "বিশ্বাস"], "biswas": ["trust"], "bishshas": ["trust"],
+    "obhiman": ["hurt", "resentment", "অভিমান"], "obhimaan": ["hurt", "resentment"], "ovimaan": ["hurt"],
+    "rag": ["anger"], "raag": ["anger"], "ragi": ["anger"],
+    "kosto": ["pain", "hurt", "sadness"], "koshto": ["pain", "hurt", "sadness"],
+    "dukkho": ["sadness", "grief"], "kanna": ["crying"],
+    "biye": ["marriage", "wedding", "বিয়ে"], "biya": ["marriage"], "biyer": ["marriage"],
+    "bou": ["wife", "spouse"], "shami": ["husband", "spouse"], "swami": ["husband", "spouse"],
+    "shoshur": ["in-laws", "father-in-law"], "shashuri": ["in-laws", "mother-in-law"],
+    "sasur": ["in-laws"], "sasuri": ["in-laws", "mother-in-law"],
+    "mittha": ["lie", "dishonesty"], "mitthe": ["lie", "dishonesty"], "thokano": ["deceive", "cheating"],
+    "shune": ["listen"], "shuni": ["listen"], "shone": ["listen"], "shonena": ["does not listen"],
+    "kotha": ["talk", "communication"], "bole": ["says", "talk"], "bolena": ["does not talk"],
+    "dur": ["distance"], "doorotto": ["distance"],
+    "somman": ["respect"], "shomman": ["respect"],
+    "shima": ["boundary", "limit"], "seema": ["boundary"],
+    # Bangla script
+    "ভালোবাসা": ["love"], "ঝগড়া": ["argument", "fight", "conflict"], "সন্দেহ": ["suspicion", "trust"],
+    "হিংসা": ["jealousy"], "বিশ্বাস": ["trust"], "অভিমান": ["hurt", "resentment"], "রাগ": ["anger"],
+    "কষ্ট": ["pain", "hurt"], "বিয়ে": ["marriage"], "স্বামী": ["husband"], "স্ত্রী": ["wife"],
+    "বউ": ["wife"], "শ্বশুর": ["in-laws"], "শাশুড়ি": ["in-laws", "mother-in-law"], "মিথ্যা": ["lie"],
+    "কথা": ["talk", "communication"], "শোনে": ["listen"], "সম্মান": ["respect"], "দূরত্ব": ["distance"],
+    "সীমা": ["boundary"], "সম্পর্ক": ["relationship"],
+}
+
+
+@dataclass(slots=True)
+class LanguageAnalysis:
+    detected: DetectedLanguage
+    bangla_ratio: float
+    banglish_ratio: float
+    token_count: int
+    is_code_switched: bool
+    tokens: list[str] = field(default_factory=list)
+
+
+def normalize_text(text: str) -> str:
+    """Normalize Unicode (NFC) and whitespace without changing meaning.
+
+    NFC (not NFKC) is used so Bangla characters and punctuation such as the dari (।)
+    are preserved exactly; NFKC could alter compatibility characters.
+    """
+    text = unicodedata.normalize("NFC", text)
+    text = CONTROL_RE.sub("", text)
+    text = text.replace("\r\n", "\n").replace("\r", "\n")
+    text = re.sub(r"[ \t ]+", " ", text)
+    text = re.sub(r"\n{3,}", "\n\n", text)
+    return text.strip()
+
+
+def tokenize(text: str) -> list[str]:
+    return [t.lower() for t in TOKEN_RE.findall(text)]
+
+
+def analyze_language(text: str) -> LanguageAnalysis:
+    tokens = tokenize(text)
+    if not tokens:
+        return LanguageAnalysis(DetectedLanguage.UNKNOWN, 0.0, 0.0, 0, False, tokens)
+
+    bangla = sum(1 for t in tokens if BENGALI_RE.match(t))
+    latin_tokens = [t for t in tokens if LATIN_RE.match(t)]
+    banglish = sum(1 for t in latin_tokens if t in BANGLISH_LEXICON)
+    total = len(tokens)
+    bangla_ratio = bangla / total
+    banglish_ratio = banglish / max(len(latin_tokens), 1)
+
+    if bangla_ratio >= 0.85:
+        detected = DetectedLanguage.BN
+    elif bangla and latin_tokens:
+        detected = DetectedLanguage.MIXED
+    elif latin_tokens and (banglish_ratio >= 0.3 or (banglish >= 2 and banglish_ratio >= 0.2)):
+        detected = DetectedLanguage.BANGLISH
+    elif latin_tokens:
+        detected = DetectedLanguage.EN
+    else:
+        detected = DetectedLanguage.UNKNOWN
+
+    code_switched = detected == DetectedLanguage.MIXED or (
+        detected == DetectedLanguage.BANGLISH and banglish_ratio < 0.7
+    )
+    return LanguageAnalysis(detected, round(bangla_ratio, 3), round(banglish_ratio, 3), total, code_switched, tokens)
+
+
+def expand_query_terms(tokens: list[str]) -> list[str]:
+    """Return additional lexical terms for BM25. Never removes the user's own words."""
+    extra: list[str] = []
+    seen = set(tokens)
+    for token in tokens:
+        for term in EXPANSION_DICTIONARY.get(token, []):
+            for part in tokenize(term):
+                if part not in seen:
+                    seen.add(part)
+                    extra.append(part)
+    return extra
+
+
+def response_language_for(requested: str, detected: DetectedLanguage) -> str:
+    """Pick the response language. An explicit user choice always wins."""
+    if requested in {"en", "bn", "banglish"}:
+        return requested
+    if detected == DetectedLanguage.BN:
+        return "bn"
+    if detected in {DetectedLanguage.BANGLISH, DetectedLanguage.MIXED}:
+        return "banglish"
+    return "en"
