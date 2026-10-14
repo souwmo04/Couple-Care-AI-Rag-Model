@@ -155,20 +155,22 @@ export function HowItWorksSection() {
   return (
     <Container id="how-it-works">
       <SectionHeading eyebrow={t.how.eyebrow} title={t.how.title} lead={t.how.lead} />
-      <ol className="relative mt-16 grid gap-10 md:grid-cols-4 md:gap-6">
+      <div className="relative mt-16">
         <div aria-hidden className="absolute left-0 right-0 top-6 hidden h-px bg-gradient-to-r from-transparent via-border-strong to-transparent md:block" />
-        {t.how.steps.map((step, i) => (
-          <Reveal key={step.title} delay={i * 0.1} className="relative">
-            <li className="list-none">
-              <span className="relative flex size-12 items-center justify-center rounded-full border border-border-strong bg-background font-display text-lg italic text-lavender">
-                {i + 1}
-              </span>
-              <h3 className="mt-6 font-display text-xl">{step.title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{step.body}</p>
+        <ol className="relative grid gap-10 md:grid-cols-4 md:gap-6">
+          {t.how.steps.map((step, i) => (
+            <li key={step.title}>
+              <Reveal delay={i * 0.1}>
+                <span className="relative flex size-12 items-center justify-center rounded-full border border-border-strong bg-background font-display text-lg italic text-lavender">
+                  {i + 1}
+                </span>
+                <h3 className="mt-6 font-display text-xl">{step.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{step.body}</p>
+              </Reveal>
             </li>
-          </Reveal>
-        ))}
-      </ol>
+          ))}
+        </ol>
+      </div>
     </Container>
   )
 }
