@@ -40,7 +40,7 @@ DEFAULT_MODELS = [
         id="qwen3-4b-instruct-2507",
         display_name="Qwen3 4B Instruct 2507 (GGUF, Q4_K_M)",
         family="qwen3",
-        revision="see docs/model-selection.md",
+        revision="unsloth/Qwen3-4B-Instruct-2507-GGUF@a06e946b (base Qwen/Qwen3-4B-Instruct-2507@cdbee75f)",
         license="Apache-2.0",
         context_length=4096,
     ),
