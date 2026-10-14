@@ -11,10 +11,13 @@ import { cn } from '@/lib/utils'
 export function SiteHeader() {
   const t = useCopy()
   const location = useLocation()
-  const [open, setOpen] = useState(false)
+  // The mobile menu is "open at" a location, so navigating anywhere closes it without an effect.
+  const here = location.pathname + location.hash
+  const [openAt, setOpenAt] = useState<string | null>(null)
+  const open = openAt === here
+  const setOpen = (fn: (v: boolean) => boolean) => setOpenAt(fn(open) ? here : null)
   const [scrolled, setScrolled] = useState(false)
 
-  useEffect(() => setOpen(false), [location.pathname, location.hash])
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8)
     onScroll()

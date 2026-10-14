@@ -2,6 +2,7 @@ import { Link } from 'react-router'
 import { LogoMark } from '@/components/layout/Brand'
 import { useCopy } from '@/i18n'
 
+const YEAR = new Date().getFullYear()
 const REPO = 'https://github.com/souwmo04/Couple-Care-AI-Rag-Model'
 
 export function SiteFooter() {
@@ -72,7 +73,7 @@ export function SiteFooter() {
       </div>
       <div className="border-t border-border">
         <p className="mx-auto max-w-7xl px-4 py-5 text-xs text-muted-foreground sm:px-6 lg:px-8">
-          {t.footer.version} {__APP_VERSION__} · © {new Date().getFullYear()} CoupleCare AI contributors
+          {t.footer.version} {__APP_VERSION__} · © {YEAR} CoupleCare AI contributors
         </p>
       </div>
     </footer>

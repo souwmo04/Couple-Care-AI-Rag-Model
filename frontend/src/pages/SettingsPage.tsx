@@ -1,6 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { CircleCheck, CircleX, Monitor, Moon, PlugZap, RefreshCw, Sun, Trash2 } from 'lucide-react'
-import { useEffect, useState, type ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -23,7 +23,8 @@ function Section({ id, title, children }: { id: string; title: string; children:
   )
 }
 
-/** A slider that only sends the value to the server when the user lets go. */
+/** A slider that only sends the value to the server when the user lets go.
+ *  Callers pass key={value} so a new server value resets the local state. */
 function ServerSlider({
   name,
   label,
@@ -44,7 +45,6 @@ function ServerSlider({
   onCommit: (v: number) => void
 }) {
   const [local, setLocal] = useState(value)
-  useEffect(() => setLocal(value), [value])
   return (
     <Field label={label} hint={hint} htmlFor={`slider-${name}`}>
       <div className="flex w-56 items-center gap-3">
@@ -308,9 +308,9 @@ export default function SettingsPage() {
                     {settings.data.embedding_model} · {settings.data.embedding_device.toUpperCase()}
                   </span>
                 </Field>
-                <ServerSlider name="retrieval_top_k" label={t.settings.retrievalDepth} value={values.retrieval_top_k} limits={limits.retrieval_top_k} step={1} onCommit={(v) => save({ retrieval_top_k: v })} />
-                <ServerSlider name="temperature" label={t.settings.temperature} value={values.temperature} limits={limits.temperature} step={0.05} format={(v) => v.toFixed(2)} onCommit={(v) => save({ temperature: Number(v.toFixed(2)) })} />
-                <ServerSlider name="max_output_tokens" label={t.settings.maxLength} value={values.max_output_tokens} limits={limits.max_output_tokens} step={32} onCommit={(v) => save({ max_output_tokens: v })} />
+                <ServerSlider key={values.retrieval_top_k} name="retrieval_top_k" label={t.settings.retrievalDepth} value={values.retrieval_top_k} limits={limits.retrieval_top_k} step={1} onCommit={(v) => save({ retrieval_top_k: v })} />
+                <ServerSlider key={values.temperature} name="temperature" label={t.settings.temperature} value={values.temperature} limits={limits.temperature} step={0.05} format={(v) => v.toFixed(2)} onCommit={(v) => save({ temperature: Number(v.toFixed(2)) })} />
+                <ServerSlider key={values.max_output_tokens} name="max_output_tokens" label={t.settings.maxLength} value={values.max_output_tokens} limits={limits.max_output_tokens} step={32} onCommit={(v) => save({ max_output_tokens: v })} />
                 <details className="group py-2">
                   <summary className="cursor-pointer list-none py-3 text-sm font-medium text-foreground marker:hidden">
                     <span className="inline-flex items-center gap-2">
@@ -319,7 +319,7 @@ export default function SettingsPage() {
                     </span>
                   </summary>
                   <div className="divide-y divide-border">
-                    <ServerSlider name="relevance_threshold" label={t.settings.threshold} value={values.relevance_threshold} limits={limits.relevance_threshold} step={0.05} format={(v) => v.toFixed(2)} onCommit={(v) => save({ relevance_threshold: Number(v.toFixed(2)) })} />
+                    <ServerSlider key={values.relevance_threshold} name="relevance_threshold" label={t.settings.threshold} value={values.relevance_threshold} limits={limits.relevance_threshold} step={0.05} format={(v) => v.toFixed(2)} onCommit={(v) => save({ relevance_threshold: Number(v.toFixed(2)) })} />
                     <Field label={t.settings.rerank} hint={settings.data.reranker_configured ? undefined : t.settings.rerankUnavailable}>
                       <Switch label={t.settings.rerank} checked={values.rerank_enabled} disabled={!settings.data.reranker_configured} onCheckedChange={(v) => save({ rerank_enabled: v })} />
                     </Field>
