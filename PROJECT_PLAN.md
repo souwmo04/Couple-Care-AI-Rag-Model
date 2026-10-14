@@ -107,18 +107,18 @@ honest disclosure that local ≠ device-level security.
 
 ## 9. Build stages (checklist)
 
-- [ ] **Stage 1** — Repo skeleton, dependency selection, `.gitignore`, `.env.example`, licence
-- [ ] **Stage 2** — Design tokens, landing page, chat UI shell
-- [ ] **Stage 3** — FastAPI app, config, health/model status, model adapter
-- [ ] **Stage 4** — Document ingestion + local retrieval (E5 + FAISS + BM25 + RRF)
-- [ ] **Stage 5** — Retrieval → local generation orchestration
-- [ ] **Stage 6** — Citation mapping & response validation
-- [ ] **Stage 7** — Safety layer & privacy controls
-- [ ] **Stage 8** — Frontend wired to the real API
-- [ ] **Stage 9** — Conversation management & knowledge-base management
-- [ ] **Stage 10** — Tests & evaluation scripts
-- [ ] **Stage 11** — Run, inspect UI, fix, refine design
-- [ ] **Stage 12** — Documentation & honest status report
+- [x] **Stage 1** — Repo skeleton, dependency selection, `.gitignore`, `.env.example`, licence
+- [x] **Stage 2** — Design tokens, landing page, chat UI shell
+- [x] **Stage 3** — FastAPI app, config, health/model status, model adapter
+- [x] **Stage 4** — Document ingestion + local retrieval (E5 + FAISS + BM25 + RRF)
+- [x] **Stage 5** — Retrieval → local generation orchestration *(verified against a mocked model server only)*
+- [x] **Stage 6** — Citation mapping & response validation
+- [x] **Stage 7** — Safety layer & privacy controls
+- [x] **Stage 8** — Frontend wired to the real API
+- [x] **Stage 9** — Conversation management & knowledge-base management
+- [x] **Stage 10** — Tests & evaluation scripts *(retrieval + safety measured; generation suite needs the model)*
+- [ ] **Stage 11** — Run, inspect UI, fix, refine design *(UI inspected end-to-end with the model offline; real-model run pending)*
+- [ ] **Stage 12** — Documentation & honest status report *(docs written; final report after the real-model run)*
 
 Each stage ends with: integration check → relevant tests → fixes → commit(s) → push.
 
