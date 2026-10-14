@@ -2,8 +2,9 @@
 
 ## Principles
 
-1. The safety layer is **independent of the language model**: deterministic patterns plus a
-   cue-combination classifier run on every message before retrieval or generation.
+1. The safety layer is **independent of the language model**: deterministic patterns, a
+   cue-combination classifier and a semantic (embedding) classifier run on every message before
+   retrieval or generation.
 2. The model is **never the sole judge** of risk, and classifier details are never shown to users.
 3. Ordinary conflict is **not** abuse. Patterns avoid generic conflict vocabulary; "hard benign"
    cases ("he has never hit me", "আমাকে মারে না") are tested in all three languages.
@@ -30,6 +31,20 @@ Pre-written templates exist in English, Bangla and Banglish and are labelled in 
 A risk disclosed earlier in a conversation keeps at least the `support`/`caution` constraints on
 later turns.
 
+### Semantic classifier (indirect phrasing)
+
+Keyword rules missed every indirect description of danger in evaluation (0/10 dev, 0/5 held-out
+test), e.g. "everyone would be better off if I just disappeared". A nearest-prototype classifier on
+the multilingual E5 embeddings (`safety/classifier.py`, prototypes in `safety/prototypes.py`) compares
+each message with example descriptions of each risk and of ordinary difficulties in English, Bangla and
+Banglish. It flags a category when similarity ≥ 0.84 **and** exceeds the best benign similarity by
+≥ 0.03 (tuned on dev). Held-out test: 4/5 indirect cases flagged, 1/94 benign messages flagged.
+
+Because its precision is lower than the rules', a **semantic-only** detection produces a `caution`
+response — taken seriously, with a gentle direct check on safety (and, for possible self-harm, a
+prompt to contact emergency or crisis support) — never an urgent pre-written template. A detection
+confirmed by the rules follows the table above. The classifier is inactive if no semantic embedder is loaded.
+
 ## Output checks (all generated text)
 
 Removed sentence-by-sentence (and before streaming display): unverified phone numbers,
@@ -38,9 +53,10 @@ covert monitoring, and — when violence was disclosed — confrontation or join
 
 ## Known limitations
 
-- Pattern coverage is finite; indirect, euphemistic or dialectal descriptions can be missed.
-- Current evaluation of the safety layer is **not independent** of its rules (see
-  `research/results_log.md`). Independent test sets are required before any performance claim.
+- Pattern coverage is finite; the semantic classifier recovers many indirect descriptions but not all,
+  and it occasionally flags ordinary messages (handled with a gentle check-in).
+- All safety evaluation data is fictional and single-author; the indirect held-out set has only 5 cases.
+  Independent, larger, native-speaker-written test sets are required before any performance claim.
 - The support directory covers BD, IN, GB and US only and must be re-verified before each release.
 
 ## Changing safety behaviour

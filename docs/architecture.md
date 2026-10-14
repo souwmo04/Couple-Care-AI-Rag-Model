@@ -29,7 +29,7 @@
 | `core/orchestrator.py` | One chat turn: normalise → safety → retrieve → budget → generate → validate → store |
 | `core/language.py` | EN/BN/Banglish detection, NFC normalisation, query expansion |
 | `core/prompts.py` + `prompt_templates/` | Versioned, editable system prompt |
-| `safety/` | `rules.py` (patterns), `classifier.py` (ensemble), `escalation.py` (policy, templates, verified directory), `output_check.py` |
+| `safety/` | `rules.py` (patterns), `classifier.py` (rule, cue and semantic-prototype ensemble), `prototypes.py`, `escalation.py` (policy, templates, verified directory), `output_check.py` |
 | `retrieval/` | embeddings, FAISS store, BM25, RRF + calibration, reranker, versioned index bundles, citations |
 | `ingestion/` | allowlisted loaders, chunking, manifest-driven pipeline |
 | `generation/llm_client.py` | OpenAI-compatible adapter for llama.cpp with offline/timeout/OOM mapping |
@@ -40,7 +40,7 @@
 
 1. **Validate** (Pydantic, 4 000-char limit, 64 KB body, client id header).
 2. **Normalise** (NFC; control characters removed; ZWJ/ZWNJ kept) and **detect language**.
-3. **Safety pre-check** on the raw text. Urgent/declined cases return a pre-written template
+3. **Safety pre-check** on the raw text (rules, cues and E5 semantic prototypes). Urgent/declined cases return a pre-written template
    (`generated: false`) and **skip retrieval and generation**. A risk disclosed earlier in the
    conversation keeps safety constraints on later turns.
 4. **Retrieve**: E5 query embedding → FAISS top-k; BM25 (+ curated Banglish expansion) top-k;
