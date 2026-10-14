@@ -1,0 +1,55 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Node / frontend
+node_modules/
+frontend/dist/
+frontend/coverage/
+*.tsbuildinfo
+.vite/
+
+# Secrets & local config
+.env
+.env.*
+!.env.example
+
+# Local databases & user data
+*.sqlite
+*.sqlite3
+*.db
+data/user/
+
+# Model weights & caches
+models/
+*.gguf
+*.safetensors
+*.bin
+.cache/
+hf_cache/
+
+# Generated indexes & artifacts
+artifacts/indexes/*
+!artifacts/indexes/.gitkeep
+artifacts/evaluation_results/*
+!artifacts/evaluation_results/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
+logs/
+*.log
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
