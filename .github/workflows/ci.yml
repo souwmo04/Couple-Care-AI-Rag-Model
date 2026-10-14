@@ -24,7 +24,18 @@ jobs:
       - name: Lint
         run: ruff check backend scripts && ruff format --check backend scripts
       - name: Test (no model download; integration tests skipped)
-        run: pytest
+        run: |
+          pytest --junitxml=pytest-report.xml || {
+            # Surface each failure as a workflow annotation so it is visible without downloading logs.
+            python - <<'EOF'
+          import xml.etree.ElementTree as ET
+          for case in ET.parse("pytest-report.xml").iter("testcase"):
+              for bad in list(case.findall("failure")) + list(case.findall("error")):
+                  msg = (bad.get("message") or "").replace("\n", " ")[:300]
+                  print(f"::error title={case.get('classname')}.{case.get('name')}::{msg}")
+          EOF
+            exit 1
+          }
 
   frontend:
     runs-on: ubuntu-latest

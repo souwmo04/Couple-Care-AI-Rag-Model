@@ -28,6 +28,10 @@ def resolve_inside(root: Path, relative: str) -> Path:
     """Resolve ``relative`` under ``root`` and refuse anything that escapes it."""
     if not relative or "\x00" in relative:
         raise ExtractionError("Empty or invalid path")
+    # Manifest paths are portable POSIX-style relative paths. Backslashes and drive letters are
+    # rejected on every OS: on Linux "..\\x" or "C:\\x" would otherwise be treated as plain names.
+    if "\\" in relative or ":" in relative:
+        raise ExtractionError("Use forward slashes and relative paths in the source manifest")
     candidate = Path(relative)
     if candidate.is_absolute() or candidate.drive:
         raise ExtractionError("Absolute paths are not allowed in the source manifest")
