@@ -13,6 +13,7 @@ Two layers of configuration exist on purpose:
 from __future__ import annotations
 
 import ipaddress
+import os
 from functools import lru_cache
 from pathlib import Path
 from typing import Literal
@@ -22,6 +23,11 @@ from pydantic import BaseModel, Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+
+# Keep downloaded models (Hugging Face / sentence-transformers) inside the project folder rather
+# than the user profile on the system drive. Set before any Hugging Face library is imported;
+# an explicit HF_HOME from the environment still wins.
+os.environ.setdefault("HF_HOME", str(REPO_ROOT / ".cache" / "huggingface"))
 
 
 class ModelProfile(BaseModel):

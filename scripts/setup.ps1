@@ -29,6 +29,14 @@ if (-not (Test-Path .venv)) {
     python -m venv .venv
 }
 $Py = Join-Path $Root '.venv\Scripts\python.exe'
+
+# Keep every download cache inside the project folder, not on the system drive.
+$cache = Join-Path $Root '.cache'
+New-Item -ItemType Directory -Force -Path (Join-Path $cache 'pip'), (Join-Path $cache 'npm'), (Join-Path $cache 'huggingface') | Out-Null
+$env:PIP_CACHE_DIR = Join-Path $cache 'pip'
+$env:HF_HOME = Join-Path $cache 'huggingface'
+"[global]`ncache-dir = $env:PIP_CACHE_DIR`n" | Set-Content -Encoding ascii (Join-Path $Root '.venv\pip.ini')
+
 & $Py -m pip install --upgrade pip
 Write-Host 'Installing CPU-only PyTorch (keeps the GPU free for the language model)...'
 & $Py -m pip install torch==2.14.1 --index-url https://download.pytorch.org/whl/cpu
