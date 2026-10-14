@@ -206,3 +206,22 @@ def response_language_for(requested: str, detected: DetectedLanguage) -> str:
     if detected in {DetectedLanguage.BANGLISH, DetectedLanguage.MIXED}:
         return "banglish"
     return "en"
+
+
+def estimate_tokens(text: str) -> int:
+    """Conservative token estimate for budgeting.
+
+    Measured with the Qwen3 tokenizer via llama-server /tokenize (2026-10-14): Bengali script costs
+    about 1.04 tokens per character (spaces included), English about 0.19. We use 1.25 per Bengali
+    character and 1/3.3 for everything else to stay on the safe side.
+    """
+    bengali = len(BENGALI_RE.findall(text))
+    other = len(text) - bengali
+    return int(bengali * 1.25 + other / 3.3) + 1
+
+
+def output_token_allowance(language: str, base: int) -> int:
+    """Bangla script needs ~5x more tokens than English for the same content, so a fixed token cap
+    truncates Bangla replies. Scale the allowance by response language."""
+    factor = {"bn": 2.5, "banglish": 1.3}.get(language, 1.0)
+    return min(int(base * factor), 2048)

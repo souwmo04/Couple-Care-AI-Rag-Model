@@ -21,7 +21,13 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 
 from app.core.container import Container
-from app.core.language import analyze_language, normalize_text, response_language_for
+from app.core.language import (
+    analyze_language,
+    estimate_tokens,
+    normalize_text,
+    output_token_allowance,
+    response_language_for,
+)
 from app.core.prompts import build_messages
 from app.core.schemas import (
     ChatRequest,
@@ -43,7 +49,6 @@ from app.storage.sessions import Conversation, new_id
 log = logging.getLogger("couplecare.orchestrator")
 
 HISTORY_CHAR_LIMIT = 1200
-CHARS_PER_TOKEN = 2.5  # conservative for Bangla script, which tokenizes less efficiently than English
 PROMPT_OVERHEAD_TOKENS = 900
 
 
@@ -111,7 +116,8 @@ class Orchestrator:
             )
             # Embedding + FAISS search are CPU-bound; keep them off the event loop.
             retrieval = await asyncio.to_thread(self.c.retriever.search, query, params)
-            context_items = self._fit_budget(retrieval.relevant, runtime.max_output_tokens)
+            output_tokens = output_token_allowance(response_language, runtime.max_output_tokens)
+            context_items = self._fit_budget(retrieval.relevant, output_tokens, conversation)
 
         short = analysis.token_count < 6 and not request.conversation_id
         hint = short or decision.level == SafetyLevel.CAUTION
@@ -137,20 +143,28 @@ class Orchestrator:
         previous = [m.content for m in conversation.messages if m.role == "user"]
         return f"{previous[-1]}\n{message}" if previous else message
 
-    def _fit_budget(self, items: list[RetrievedItem], max_output_tokens: int) -> list[RetrievedItem]:
+    def _fit_budget(
+        self, items: list[RetrievedItem], output_tokens: int, conversation: Conversation
+    ) -> list[RetrievedItem]:
+        """Keep passages (in rank order) that fit the model's context window.
+
+        Token costs are estimated per script (Bangla ≈ 1 token per character), so Bangla passages
+        and history are not under-counted.
+        """
         runtime = self.c.settings_store.get()
         profile = self.c.settings.get_model(runtime.model_id)
         context_tokens = profile.context_length if profile else 4096
-        history_tokens = runtime.history_turns * HISTORY_CHAR_LIMIT / CHARS_PER_TOKEN / 2
-        budget_chars = (context_tokens - max_output_tokens - PROMPT_OVERHEAD_TOKENS - history_tokens) * CHARS_PER_TOKEN
+        history = self._history(conversation, drop_trailing_user=False)
+        history_tokens = sum(estimate_tokens(content) + 8 for _, content in history)
+        budget = context_tokens - output_tokens - PROMPT_OVERHEAD_TOKENS - history_tokens
         chosen: list[RetrievedItem] = []
-        used = 0.0
+        used = 0
         for item in items:
-            size = len(item.passage.text) + 120
-            if used + size > budget_chars:
+            cost = estimate_tokens(item.passage.text) + 40  # label, title and section line
+            if used + cost > budget:
                 break
             chosen.append(item)
-            used += size
+            used += cost
         return chosen
 
     def _history(self, conversation: Conversation, drop_trailing_user: bool) -> list[tuple[str, str]]:
@@ -189,10 +203,12 @@ class Orchestrator:
             resources = []
         return SafetyStatus(level=d.level, message=d.banner, resources=resources)
 
-    def _generation_params(self) -> GenerationParams:
+    def _generation_params(self, plan: TurnPlan) -> GenerationParams:
         runtime = self.c.settings_store.get()
-        temperature = runtime.temperature
-        return GenerationParams(temperature=temperature, max_tokens=runtime.max_output_tokens)
+        return GenerationParams(
+            temperature=runtime.temperature,
+            max_tokens=output_token_allowance(plan.response_language, runtime.max_output_tokens),
+        )
 
     def _messages(self, plan: TurnPlan):
         # Re-read the conversation after the user turn was recorded (SQLite returns snapshots).
@@ -216,6 +232,7 @@ class Orchestrator:
         answer = raw_answer
         flags: list[str] = []
         if generated:
+            answer = trim_incomplete_sentence(answer)
             citation = validate_citations(answer, len(plan.context_items))
             answer = citation.text
             if citation.removed_markers:
@@ -282,7 +299,7 @@ class Orchestrator:
         self._record_user_message(plan)
         if plan.decision.skip_generation:
             return self._finalize(plan, plan.decision.template or "", generated=False)
-        answer = await self.c.llm().complete(self._messages(plan), self._generation_params())
+        answer = await self.c.llm().complete(self._messages(plan), self._generation_params(plan))
         return self._finalize(plan, answer, generated=True)
 
     async def stream(self, request: ChatRequest, owner: str) -> AsyncIterator[dict]:
@@ -310,7 +327,7 @@ class Orchestrator:
         buffer = ""
         raw = ""
         try:
-            async for token in self.c.llm().stream(self._messages(plan), self._generation_params()):
+            async for token in self.c.llm().stream(self._messages(plan), self._generation_params(plan)):
                 raw += token
                 buffer += token
                 ready, buffer = _split_complete(buffer)
@@ -356,6 +373,24 @@ def _split_complete(buffer: str) -> tuple[str, str]:
     if last is None:
         return "", buffer
     return buffer[:last], buffer[last:]
+
+
+_TERMINAL_RE = re.compile(r"[.!?।?](?:[\s\]\)\"'”’*_]|\[S\d+\])*$")
+_LAST_TERMINAL_RE = re.compile(r"[.!?।?](?:\s*\[S\d+\])*[\"'”’*_)]*(?=\s|$)")
+
+
+def trim_incomplete_sentence(text: str) -> str:
+    """Drop a trailing fragment cut off by the output-token limit ("… দুজনের মনে হয").
+
+    Text that already ends a sentence, or that has no complete sentence at all, is returned as-is.
+    """
+    stripped = text.rstrip()
+    if not stripped or _TERMINAL_RE.search(stripped):
+        return stripped
+    matches = list(_LAST_TERMINAL_RE.finditer(stripped))
+    if not matches:
+        return stripped
+    return stripped[: matches[-1].end()].rstrip()
 
 
 def _ends_with_question(text: str) -> bool:

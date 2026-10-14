@@ -70,3 +70,22 @@ def test_bangla_query_expansion() -> None:
 )
 def test_response_language_respects_explicit_choice(requested: str, detected: L, expected: str) -> None:
     assert response_language_for(requested, detected) == expected
+
+
+def test_token_estimate_reflects_bangla_cost() -> None:
+    from app.core.language import estimate_tokens
+
+    bn = "প্রতি সপ্তাহে ঘরের কাজ নিয়ে ঝগড়া হওয়া একটা সাধারণ সমস্যা।"
+    en = "Fighting about chores every week is a common problem."
+    # Measured: Bangla ~1.04 tokens/char, English ~0.19 tokens/char; the estimate must not under-count.
+    assert estimate_tokens(bn) >= len(bn)
+    assert estimate_tokens(en) >= len(en) * 0.19
+    assert estimate_tokens(bn) > 3 * estimate_tokens(en)
+
+
+def test_output_allowance_scales_for_bangla() -> None:
+    from app.core.language import output_token_allowance
+
+    assert output_token_allowance("en", 700) == 700
+    assert output_token_allowance("bn", 700) == 1750
+    assert output_token_allowance("bn", 1536) == 2048  # capped

@@ -179,3 +179,19 @@ def test_feedback_is_recorded(client) -> None:
 def test_fake_model_never_used_for_template_flag() -> None:
     # Guard: FakeChatModel defaults are distinct from safety templates.
     assert "emergency" not in FakeChatModel().answer.lower()
+
+
+def test_truncated_answer_is_trimmed_to_last_sentence() -> None:
+    from app.core.orchestrator import trim_incomplete_sentence
+
+    assert trim_incomplete_sentence("প্রথম বাক্য। দ্বিতীয় বাক্য [S1]। তৃতীয় বাক্য অসম") == "প্রথম বাক্য। দ্বিতীয় বাক্য [S1]।"
+    assert trim_incomplete_sentence("Done. Also this [S2].") == "Done. Also this [S2]."
+    assert trim_incomplete_sentence("Try a break.\n\n- **Name it**") == "Try a break."
+    assert trim_incomplete_sentence("no punctuation at all") == "no punctuation at all"
+    assert trim_incomplete_sentence('He said "stop."') == 'He said "stop."'
+
+
+def test_bangla_reply_gets_larger_output_allowance(client, fake_llm) -> None:
+    client.post("/api/chat", json={"message": "ঝগড়া খুব উত্তপ্ত হয়ে যায়, আমরা কী করব?"})
+    client.post("/api/chat", json={"message": LISTENING_Q})
+    assert fake_llm.params[-2].max_tokens > fake_llm.params[-1].max_tokens

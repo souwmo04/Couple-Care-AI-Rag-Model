@@ -3,14 +3,14 @@
   Start the local llama.cpp model server on 127.0.0.1:18080 with a fresh random API key.
 
 .EXAMPLE
-  scripts\start-model.ps1                 # full GPU offload, 4k context
+  scripts\start-model.ps1                 # full GPU offload, 8k context
   scripts\start-model.ps1 -GpuLayers 20   # partial offload if VRAM is tight
   scripts\start-model.ps1 -Cpu            # CPU only (slow, but works without a GPU)
 #>
 [CmdletBinding()]
 param(
     [int]$GpuLayers = 99,
-    [int]$Context = 4096,
+    [int]$Context = 8192,
     [int]$Port = 18080,
     [switch]$Cpu
 )

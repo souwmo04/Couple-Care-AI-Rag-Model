@@ -42,7 +42,7 @@ DEFAULT_MODELS = [
         family="qwen3",
         revision="unsloth/Qwen3-4B-Instruct-2507-GGUF@a06e946b (base Qwen/Qwen3-4B-Instruct-2507@cdbee75f)",
         license="Apache-2.0",
-        context_length=4096,
+        context_length=8192,
     ),
 ]
 
