@@ -19,7 +19,9 @@ pytestmark = pytest.mark.integration
 @pytest.fixture(scope="module")
 def client() -> OpenAICompatibleClient:
     s = Settings(_env_file=None)
-    c = OpenAICompatibleClient(s.llm_base_url, s.default_model_id, timeout=180, connect_timeout=3)
+    c = OpenAICompatibleClient(
+        s.llm_base_url, s.default_model_id, timeout=180, connect_timeout=3, api_key_file=s.llm_api_key_file
+    )
     if not asyncio.run(c.server_info()).reachable:
         pytest.skip("local model server is not running")
     return c
