@@ -89,3 +89,28 @@ def test_output_allowance_scales_for_bangla() -> None:
     assert output_token_allowance("en", 700) == 700
     assert output_token_allowance("bn", 700) == 1750
     assert output_token_allowance("bn", 1536) == 2048  # capped
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Ekta shanto muhurte bolte paren je amar kotha shuna dorkar.",
+        "Apni ja feel korchen ta khub swabhabik.",
+        "Tomar dik theke byapar ta kemon lagche, bolba?",
+        "Ami chai amra aro kachakachi thaki.",
+    ],
+)
+def test_common_banglish_sentences_are_detected(text: str) -> None:
+    assert analyze_language(text).detected in {L.BANGLISH, L.MIXED}
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "This keeps it gentle and gives your partner space to respond.",
+        "My partner forgets our anniversary every year and I feel hurt.",
+        "At my age, I worry that we are drifting apart.",
+    ],
+)
+def test_english_sentences_are_not_banglish(text: str) -> None:
+    assert analyze_language(text).detected == L.EN

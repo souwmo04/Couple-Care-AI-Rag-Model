@@ -34,4 +34,5 @@ ignore = ["S101", "S311", "B008", "SIM905"]  # B008: FastAPI Depends() defaults
 "scripts/build_eval_dataset.py" = ["E501"]  # scenario templates
 "scripts/run_evaluation.py" = ["E501", "S603", "S607"]  # git/nvidia-smi calls
 "scripts/benchmark_model.py" = ["E501", "S603", "S607"]
+"scripts/language_fidelity.py" = ["E501"]
 "backend/app/evaluation/**" = ["E501"]

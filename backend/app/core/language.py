@@ -43,6 +43,13 @@ BANGLISH_LEXICON: frozenset[str] = frozenset(
     jhogra jhgra jhogrha ragi rag raag rege kanna kandi kande kosto koshto dukkho dukho
     sondeh shondeh sandeh hingsha hingse obhiman ovimaan obhimaan obhiman bisshash biswas
     bishshas thokano mittha mitthe miththa shotti shotto sotti
+    ekta ekti ekjon duijon bolte bolun bolben paren pari parbo parben parchi je jeno kotha kothar dorkar
+    shanto muhurte muhurto somoy shomoy mone hoyto uchit hote pare pore ekhon tokhon jokhon kokhono
+    ei oi sei eta ota seta segulo egulo ache achen achi chilam chilen thakben thakle korun korben korle
+    kore korcho korchen bujhte bujhben bujhi chai chan chacche lagche lagbe lage dekha dekhe dekhen
+    shuna shunte shunun diye niye sathe theke porjonto kintu tai karon keu kichui ekdom sudhu shudhu
+    apni apnar apnake tomar tumi tomake amra amader nijer nije bhalobase kemne kivabe
+    oke bhoy dekhabo jate ashe ajke kon kinbo
     """.split()
 )
 
