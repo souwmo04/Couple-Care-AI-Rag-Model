@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "documents": [
+    {"id": "test-listening", "path": "corpus/listening.md", "title": "Listening to each other", "organization": "Test fixtures", "license": "CC0-1.0", "permission": "project-authored", "language": "en", "topic": "communication", "synthetic": true},
+    {"id": "test-jealousy", "path": "corpus/jealousy.md", "title": "Jealousy and trust", "organization": "Test fixtures", "license": "CC0-1.0", "permission": "project-authored", "language": "en", "topic": "trust_jealousy", "synthetic": true, "url": "https://example.org/jealousy"},
+    {"id": "test-inlaws", "path": "corpus/inlaws.txt", "title": "In-laws and housework", "organization": "Test fixtures", "license": "CC0-1.0", "permission": "project-authored", "language": "en", "topic": "marriage_family", "synthetic": true},
+    {"id": "test-jhogra-bn", "path": "corpus/jhogra_bn.md", "title": "ঝগড়া সামলানো", "organization": "Test fixtures", "license": "CC0-1.0", "permission": "project-authored", "language": "bn", "topic": "conflict_resolution", "synthetic": true},
+    {"id": "test-durotto-banglish", "path": "corpus/banglish_dur.md", "title": "Durotto kombano", "organization": "Test fixtures", "license": "CC0-1.0", "permission": "project-authored", "language": "banglish", "topic": "emotional_distance", "synthetic": true}
+  ]
+}
