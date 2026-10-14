@@ -33,12 +33,24 @@ $assets = if ($Backend -eq 'cuda') {
 } else {
     @("llama-$LlamaCppTag-bin-win-cpu-x64.zip")
 }
+$release = Invoke-RestMethod -Uri "https://api.github.com/repos/ggml-org/llama.cpp/releases/tags/$LlamaCppTag"
 foreach ($asset in $assets) {
+    $meta = $release.assets | Where-Object { $_.name -eq $asset }
+    if (-not $meta) { throw "$asset is not part of llama.cpp release $LlamaCppTag." }
     $url = "https://github.com/ggml-org/llama.cpp/releases/download/$LlamaCppTag/$asset"
     $zip = Join-Path $Models $asset
-    if (-not (Test-Path $zip)) {
-        Write-Host "Downloading $asset ..."
-        Invoke-WebRequest -Uri $url -OutFile $zip
+    if (-not (Test-Path $zip) -or (Get-Item $zip).Length -ne $meta.size) {
+        Write-Host ("Downloading {0} ({1} MB) ..." -f $asset, [math]::Round($meta.size / 1MB))
+        Invoke-WebRequest -Uri $url -OutFile "$zip.part"
+        Move-Item "$zip.part" $zip -Force
+    }
+    if ($meta.digest -like 'sha256:*') {
+        $got = (Get-FileHash -Algorithm SHA256 -Path $zip).Hash.ToLower()
+        if ("sha256:$got" -ne $meta.digest) {
+            Remove-Item $zip -Force
+            throw "Checksum mismatch for $asset; the file was deleted. Re-run the script."
+        }
+        Write-Host "  checksum OK"
     }
     Write-Host "Extracting $asset ..."
     Expand-Archive -Path $zip -DestinationPath $LlamaDir -Force
