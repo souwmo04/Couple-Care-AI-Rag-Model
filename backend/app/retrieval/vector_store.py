@@ -29,6 +29,17 @@ class VectorStore:
         scores, ids = self._index.search(query, min(top_k, self.size))
         return [(int(i), float(s)) for i, s in zip(ids[0], scores[0], strict=True) if i >= 0]
 
+    def score_ids(self, query: np.ndarray, ids: list[int]) -> dict[int, float]:
+        """Exact inner product between ``query`` and the stored vectors ``ids``."""
+        if not ids:
+            return {}
+        query = query.reshape(-1).astype(np.float32)
+        out: dict[int, float] = {}
+        for i in ids:
+            if 0 <= i < self.size:
+                out[i] = float(np.dot(self._index.reconstruct(int(i)), query))
+        return out
+
     def save(self, path: Path) -> None:
         faiss.write_index(self._index, str(path))
 

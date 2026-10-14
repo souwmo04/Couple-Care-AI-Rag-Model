@@ -10,7 +10,7 @@ from typing import Literal
 from app.core.language import LanguageAnalysis, analyze_language, expand_query_terms, normalize_text
 from app.retrieval.bm25 import bm25_tokens
 from app.retrieval.embeddings import EmbedderHolder
-from app.retrieval.hybrid import FusedHit, reciprocal_rank_fusion
+from app.retrieval.hybrid import Calibration, FusedHit, reciprocal_rank_fusion
 from app.retrieval.index_store import IndexBundle
 from app.retrieval.passages import Passage
 from app.retrieval.reranker import Reranker
@@ -23,7 +23,7 @@ class RetrievalParams:
     final_k: int = 4
     dense_k: int = 20
     bm25_k: int = 20
-    threshold: float = 0.3
+    threshold: float = 0.35
     rerank: bool = False
     expand: bool = True
     mode: Mode = "hybrid"
@@ -57,8 +57,10 @@ class RetrievalResult:
 
 
 class Retriever:
-    def __init__(self, embedder: EmbedderHolder, reranker: Reranker | None = None) -> None:
+    def __init__(self, embedder: EmbedderHolder, reranker: Reranker | None = None,
+                 calibration: Calibration | None = None) -> None:
         self.embedder = embedder
+        self.calibration = calibration or Calibration()
         self.reranker = reranker
         self._bundle: IndexBundle | None = None
         self._lock = threading.RLock()
@@ -101,6 +103,7 @@ class Retriever:
 
         dense_ok = self.dense_available(bundle)
         dense_hits: list[tuple[int, float]] = []
+        dense_lookup = None
         lexical_hits: list[tuple[int, float]] = []
         mode = params.mode
 
@@ -110,6 +113,8 @@ class Retriever:
                 assert embedder is not None and bundle.vectors is not None
                 vector = embedder.embed_queries([normalized])[0]
                 dense_hits = bundle.vectors.search(vector, params.dense_k)
+                vectors = bundle.vectors
+                dense_lookup = lambda ids: vectors.score_ids(vector, ids)  # noqa: E731
             else:
                 notes.append("dense_unavailable")
                 if mode == "dense":
@@ -117,7 +122,10 @@ class Retriever:
         if mode in {"hybrid", "bm25"}:
             lexical_hits = bundle.bm25.search(base_tokens + expanded, params.bm25_k)
 
-        fused = reciprocal_rank_fusion(dense_hits, lexical_hits)
+        if mode == "bm25":
+            dense_lookup = None
+        fused = reciprocal_rank_fusion(dense_hits, lexical_hits, calibration=self.calibration,
+                                       dense_lookup=dense_lookup, lexical_active=mode in {"hybrid", "bm25"})
 
         # Optional metadata filters (used by the retrieval-test UI).
         def _keep(p: Passage) -> bool:
