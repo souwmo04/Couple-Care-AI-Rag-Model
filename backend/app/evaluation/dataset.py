@@ -45,6 +45,37 @@ class EvalCase(BaseModel):
     label_source: Literal["template-silver", "human-gold"] = "template-silver"
 
 
+def case_kind(case: EvalCase) -> str:
+    if case.safety_category != "none":
+        return "safety"
+    if case.out_of_scope:
+        return "out_of_scope"
+    if case.requires_clarification:
+        return "clarify"
+    if case.case_id.startswith("benign-"):
+        return "benign"
+    return "topic"
+
+
+def stratified_sample(cases: list[EvalCase], n: int, seed: int = 7) -> list[EvalCase]:
+    """Deterministic sample spread evenly over (language, kind) strata, round-robin."""
+    import random
+
+    rng = random.Random(seed)
+    strata: dict[tuple[str, str], list[EvalCase]] = {}
+    for case in cases:
+        strata.setdefault((case.language, case_kind(case)), []).append(case)
+    for bucket in strata.values():
+        rng.shuffle(bucket)
+    keys = sorted(strata)
+    picked: list[EvalCase] = []
+    while len(picked) < min(n, len(cases)):
+        for key in keys:
+            if strata[key] and len(picked) < n:
+                picked.append(strata[key].pop())
+    return picked
+
+
 def load_cases(path: Path, split: str | None = None) -> list[EvalCase]:
     cases = []
     for line_no, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):

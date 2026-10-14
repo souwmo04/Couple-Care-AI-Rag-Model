@@ -120,3 +120,14 @@ def test_safety_evaluation_counts() -> None:
     res = evaluate_safety(cases)
     assert res["overall"]["risk_detection_recall"] == 1.0
     assert res["overall"]["inappropriate_escalation"] == 0.0
+
+
+def test_stratified_sample_covers_languages_and_kinds() -> None:
+    from app.evaluation.dataset import case_kind, stratified_sample
+
+    cases = load_cases(REPO_DATASET, "dev")
+    sample = stratified_sample(cases, 60)
+    assert len(sample) == 60 and len({c.case_id for c in sample}) == 60
+    assert {c.language for c in sample} == {"en", "bn", "banglish"}
+    assert {"topic", "safety", "clarify", "out_of_scope"} <= {case_kind(c) for c in sample}
+    assert [c.case_id for c in stratified_sample(cases, 60)] == [c.case_id for c in sample]

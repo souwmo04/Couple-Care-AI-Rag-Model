@@ -37,7 +37,7 @@ if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
 from app.config import Settings, get_settings  # noqa: E402
-from app.evaluation.dataset import load_cases  # noqa: E402
+from app.evaluation.dataset import load_cases, stratified_sample  # noqa: E402
 from app.evaluation.runner import (  # noqa: E402
     CONFIGS,
     RetrievalVariant,
@@ -168,7 +168,7 @@ async def generation_suite(
         raise SystemExit("The local model server is not reachable; the generation suite cannot run. "
                          "Start it with scripts\\start-model.ps1 (no canned answers are ever substituted).")  # fmt: skip
     runtime = container.settings_store.get()
-    selected = cases[:limit] if limit else cases
+    selected = stratified_sample(cases, limit) if limit else cases
     by_id = {c.case_id: c for c in selected}
     out, rows = {}, []
     outputs_path = run_dir / "generation_outputs.jsonl"
@@ -208,7 +208,9 @@ def main() -> int:
         "--suites", default="retrieval,safety", help="Comma list: retrieval, safety, ablation, generation"
     )
     parser.add_argument("--configs", default="A,B,C,D")
-    parser.add_argument("--limit", type=int, default=None, help="Limit generation cases (for quick runs).")
+    parser.add_argument(
+        "--limit", type=int, default=None, help="Stratified sample of N generation cases (by language and case type)."
+    )
     args = parser.parse_args()
 
     if args.split == "test" and not args.final:
