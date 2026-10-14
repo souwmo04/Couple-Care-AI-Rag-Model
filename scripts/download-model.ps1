@@ -41,8 +41,15 @@ foreach ($asset in $assets) {
     $zip = Join-Path $Models $asset
     if (-not (Test-Path $zip) -or (Get-Item $zip).Length -ne $meta.size) {
         Write-Host ("Downloading {0} ({1} MB) ..." -f $asset, [math]::Round($meta.size / 1MB))
-        Invoke-WebRequest -Uri $url -OutFile "$zip.part"
-        Move-Item "$zip.part" $zip -Force
+        $venvPy = Join-Path $Root '.venv\Scripts\python.exe'
+        if ((Test-Path $venvPy) -and $meta.digest -like 'sha256:*') {
+            # Parallel range requests: some networks throttle each GitHub connection to ~100 KB/s.
+            & $venvPy (Join-Path $PSScriptRoot 'parallel_download.py') $url $zip --sha256 $meta.digest.Substring(7) --connections 24
+            if ($LASTEXITCODE) { throw "Download of $asset failed." }
+        } else {
+            Invoke-WebRequest -Uri $url -OutFile "$zip.part"
+            Move-Item "$zip.part" $zip -Force
+        }
     }
     if ($meta.digest -like 'sha256:*') {
         $got = (Get-FileHash -Algorithm SHA256 -Path $zip).Hash.ToLower()
@@ -69,8 +76,15 @@ $expected = $entry.lfs.sha256
 if (-not (Test-Path $target)) {
     $sizeGb = [math]::Round($entry.size / 1GB, 2)
     Write-Host "Downloading $file ($sizeGb GB) from $Repo@$($Revision.Substring(0,8)) ..."
-    Invoke-WebRequest -Uri "https://huggingface.co/$Repo/resolve/$Revision/$file" -OutFile "$target.part"
-    Move-Item "$target.part" $target -Force
+    $venvPy = Join-Path $Root '.venv\Scripts\python.exe'
+    $modelUrl = "https://huggingface.co/$Repo/resolve/$Revision/$file"
+    if (Test-Path $venvPy) {
+        & $venvPy (Join-Path $PSScriptRoot 'parallel_download.py') $modelUrl $target --sha256 $expected --connections 8
+        if ($LASTEXITCODE) { throw "Download of $file failed." }
+    } else {
+        Invoke-WebRequest -Uri $modelUrl -OutFile "$target.part"
+        Move-Item "$target.part" $target -Force
+    }
 }
 Write-Host 'Verifying SHA-256 ...'
 $actual = (Get-FileHash -Algorithm SHA256 -Path $target).Hash.ToLower()
