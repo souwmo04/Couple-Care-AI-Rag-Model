@@ -30,3 +30,4 @@ ignore = ["S101", "S311", "B008", "SIM905"]  # B008: FastAPI Depends() defaults
 "backend/app/safety/**" = ["E501"]
 "backend/app/core/language.py" = ["E501"]
 "backend/app/storage/sessions.py" = ["E501"]  # long SQL strings
+"scripts/diagnose.py" = ["E501"]  # report strings
