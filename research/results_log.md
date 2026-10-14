@@ -118,3 +118,19 @@ recovers most of them on held-out data at a small false-alarm cost; semantic-onl
 routed to a gentle "caution" check-in rather than an urgent template. The indirect test set has only **5 cases**,
 and all cases are single-author fictional text — the estimate is indicative, not reliable. Independent,
 larger, native-speaker-written safety sets are required before any claim.
+
+---
+
+## 2026-10-15 · Banglish reply language fidelity: prompt lang_v1 vs lang_v2 (dev)
+
+**Command:** `python scripts/language_fidelity.py --language banglish --n 20` · run `language-fidelity-banglish-20261014T205644Z.json`
+· production pipeline (config D), same 20 Banglish dev topic cases for both versions.
+
+| Language instructions | Mean share of sentences detected as Banglish | Replies fully in Banglish | Bengali-script leakage | Emojis |
+|---|---|---|---|---|
+| lang_v1 (original) | 0.846 | 9/20 | 0 chars | 2 |
+| **lang_v2** (stricter rules + style example) | **0.981** | **16/20** | 0 chars | **0** |
+
+Detection is the heuristic in `core/language.py` (after the lexicon update, 100% case-level accuracy on the
+scenario set); it measures *which language* sentences are in, not fluency or correctness. lang_v2 is now the
+default. Fluency still needs native-speaker review. Tuned and measured on dev only.
