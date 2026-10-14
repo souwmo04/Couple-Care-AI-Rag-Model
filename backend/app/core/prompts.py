@@ -16,7 +16,9 @@ SYSTEM_PROMPT_FILE = "system_v1"
 # lang_v2 (2026-10-15): stricter Banglish rules after the local model drifted into English,
 # misread Romanized words, and added emojis/slang (see docs/model-selection.md).
 LANGUAGE_INSTRUCTIONS_VERSION = "lang_v2"
-PROMPT_VERSION = f"{SYSTEM_PROMPT_FILE}+{LANGUAGE_INSTRUCTIONS_VERSION}"
+# clarify_v2 (2026-10-15): vague openers get no retrieved passages and must end with one question.
+CLARIFICATION_VERSION = "clarify_v2"
+PROMPT_VERSION = f"{SYSTEM_PROMPT_FILE}+{LANGUAGE_INSTRUCTIONS_VERSION}+{CLARIFICATION_VERSION}"
 TEMPLATE_DIR = Path(__file__).parent / "prompt_templates"
 
 _NO_EMOJI = "Do not use emojis or slang terms of address (such as 'bro')."
@@ -86,8 +88,9 @@ def build_messages(
             "sources, and be appropriately cautious."
         )
     hint = (
-        "\n\nThe message is short or missing key details. If it would change your advice, ask one focused clarifying "
-        "question (you may still offer a brief, general first thought)."
+        "\n\nThe message is short or missing key details. Do not give detailed advice yet. Respond with one or "
+        "two warm sentences, then ask ONE focused clarifying question about what happened or what the person "
+        "needs. End your reply with that question."
         if needs_clarification_hint
         else ""
     )

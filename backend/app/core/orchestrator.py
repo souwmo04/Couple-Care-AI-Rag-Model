@@ -50,6 +50,7 @@ log = logging.getLogger("couplecare.orchestrator")
 
 HISTORY_CHAR_LIMIT = 1200
 PROMPT_OVERHEAD_TOKENS = 900
+VAGUE_MAX_TOKENS = 6
 
 
 @dataclass
@@ -104,7 +105,11 @@ class Orchestrator:
 
         retrieval: RetrievalResult | None = None
         context_items: list[RetrievedItem] = []
-        if not decision.skip_generation:
+        # A very short opening message ("We had a fight.") lacks the context needed for useful advice.
+        # Retrieval still finds loosely related passages, which led the model to confident but
+        # off-target answers (dev evaluation 2026-10-15); ask what happened first instead.
+        vague = analysis.token_count <= VAGUE_MAX_TOKENS and not request.conversation_id
+        if not decision.skip_generation and not vague:
             query = self._retrieval_query(message, conversation)
             params = RetrievalParams(
                 final_k=runtime.retrieval_top_k,
@@ -119,8 +124,7 @@ class Orchestrator:
             output_tokens = output_token_allowance(response_language, runtime.max_output_tokens)
             context_items = self._fit_budget(retrieval.relevant, output_tokens, conversation)
 
-        short = analysis.token_count < 6 and not request.conversation_id
-        hint = short or decision.level == SafetyLevel.CAUTION
+        hint = vague  # caution-level safety addenda already ask their own check-in question
         return TurnPlan(
             request=request,
             owner=owner,

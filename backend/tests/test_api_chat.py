@@ -195,3 +195,25 @@ def test_bangla_reply_gets_larger_output_allowance(client, fake_llm) -> None:
     client.post("/api/chat", json={"message": "ঝগড়া খুব উত্তপ্ত হয়ে যায়, আমরা কী করব?"})
     client.post("/api/chat", json={"message": LISTENING_Q})
     assert fake_llm.params[-2].max_tokens > fake_llm.params[-1].max_tokens
+
+
+def test_vague_opener_asks_first_without_grounding(client, fake_llm) -> None:
+    fake_llm.answer = "I'm sorry that happened. What was the argument about?"
+    body = client.post("/api/chat", json={"message": "We had a fight."}).json()
+    assert body["grounded"] is False and body["sources"] == []
+    assert body["needs_clarification"] is True
+    prompt = fake_llm.calls[-1][-1].content
+    assert "No sufficiently relevant passages" in prompt and "ask ONE focused clarifying question" in prompt
+
+
+def test_vague_opener_still_goes_through_safety(client, fake_llm) -> None:
+    body = client.post("/api/chat", json={"message": "He hit me."}).json()
+    assert body["safety"]["level"] == "support"
+
+
+def test_follow_up_short_message_is_grounded(client, fake_llm) -> None:
+    first = client.post("/api/chat", json={"message": LISTENING_Q}).json()
+    body = client.post(
+        "/api/chat", json={"message": "What should I say?", "conversation_id": first["conversation_id"]}
+    ).json()
+    assert body["grounded"] is True
