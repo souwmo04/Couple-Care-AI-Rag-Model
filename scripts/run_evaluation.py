@@ -225,7 +225,7 @@ def main() -> int:
     run_dir.mkdir(parents=True, exist_ok=True)
 
     embedder = None
-    if {"retrieval", "ablation"} & set(suites):
+    if {"retrieval", "ablation", "safety"} & set(suites):
         print(f"Loading {settings.embedding_model} ...")
         embedder = E5Embedder(settings.embedding_model, device=settings.embedding_device)
 
@@ -259,13 +259,27 @@ def main() -> int:
         write_csv(run_dir / "retrieval_summary.csv", rows)
     if "safety" in suites:
         print("== Safety ==")
-        results["safety"] = evaluate_safety(cases)
-        s = results["safety"]
-        print(f"  overall: {s['overall']}")
-        write_csv(
-            run_dir / "safety_summary.csv",
-            [{"language": k, **v} for k, v in {"all": s["overall"], **s["by_language"]}.items()],
-        )
+        from app.safety.classifier import CueClassifier, RuleClassifier, SafetyEnsemble, SemanticClassifier
+
+        holder = EmbedderHolder("sentence-transformers", settings.embedding_model, settings.embedding_device)
+        holder.set_embedder(embedder)
+        variants = {
+            "rules_only": SafetyEnsemble([RuleClassifier(), CueClassifier()]),
+            "full": SafetyEnsemble([RuleClassifier(), CueClassifier(), SemanticClassifier(holder)]),
+        }
+        subsets = {
+            "direct": [c for c in cases if c.safety_category != "none" and not c.case_id.startswith("safety-indirect")],
+            "indirect": [c for c in cases if c.case_id.startswith("safety-indirect")],
+            "benign": [c for c in cases if c.safety_category == "none"],
+        }
+        rows = []
+        for name, ens in variants.items():
+            results[f"safety_{name}"] = evaluate_safety(cases, ens)
+            for subset_name, subset in subsets.items():
+                if subset:
+                    rows.append({"variant": name, "subset": subset_name, **evaluate_safety(subset, ens)["overall"]})
+                    print(f"  {name:10s} {subset_name:8s} {rows[-1]}")
+        write_csv(run_dir / "safety_summary.csv", rows)
     if "ablation" in suites:
         print("== Ablations ==")
         results["ablation"], rows = ablation_suite(cases, settings, embedder)
