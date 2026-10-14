@@ -7,7 +7,7 @@
 | Languages | English 146 · Bangla (Bengali script) 120 · Banglish (Romanized Bangla) 120 |
 | Relationship stages | dating, engaged, married, unspecified |
 | Topics | communication, trust & jealousy, emotional distance, dating & commitment, marriage & family, boundaries, conflict resolution, healthy separation |
-| Safety categories | immediate danger, self-harm, physical violence, sexual coercion, threats, stalking, coercive control, repeated humiliation, surveillance requests, manipulation requests (43 cases) |
+| Safety categories | immediate danger, self-harm, physical violence, sexual coercion, threats, stalking, coercive control, repeated humiliation, surveillance requests, manipulation requests (58 cases: 43 direct, 15 indirect) |
 | Label status | **template-silver** — not yet human-verified |
 | Licence | CC0-1.0 (project-authored, fictional) |
 
