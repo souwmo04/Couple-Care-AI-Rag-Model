@@ -7,22 +7,29 @@ model and retrieval-augmented generation (RAG) with source citations and an inde
 > CoupleCare offers educational support. It is not therapy, diagnosis, legal advice or a crisis
 > service. If you are in immediate danger, contact your local emergency number.
 
-> **Screenshots:** _placeholder — screenshots will be added after the first full run with the local model._
+![CoupleCare AI landing page (light theme)](docs/screenshots/landing-light.jpg)
 
-## Status
+## Status (2026-10-15)
 
 | Area | State |
 |---|---|
-| Landing, chat, settings, knowledge, about/privacy/safety pages | Implemented, tested (Vitest + axe-core) |
-| FastAPI backend, hybrid RAG, citations, safety layer, storage | Implemented, 206 backend tests passing |
-| Multilingual E5 + FAISS + BM25 index | Built and measured on the synthetic corpus |
-| Local generation (llama.cpp + Qwen3-4B-Instruct-2507 GGUF) | Adapter implemented and tested with a mocked server; **not yet run on real weights** |
-| Evaluation framework | Retrieval and safety suites measured (see `research/results_log.md`); generation suite awaits the model |
+| Landing, chat, settings, knowledge, about/privacy/safety pages | Implemented; tested with Vitest + axe-core; checked in the browser at desktop and phone widths, light and dark |
+| FastAPI backend, hybrid RAG, citations, safety layer, storage | Implemented; 225 backend tests passing; CI on GitHub (Linux) green |
+| Local generation | **Running on the RTX 4060**: Qwen3-4B-Instruct-2507 Q4_K_M via llama.cpp b11603 (CUDA), ~80 tokens/s, ~3.8 GB VRAM at 8k context |
+| End-to-end in English, Bangla, Banglish | Verified in the UI with streaming, citations and safety routing |
+| Safety | Rules + cues + semantic (E5) classifier; held-out test: direct 15/15, indirect 4/5, false alarms 1/94 |
+| Evaluation | 386 fictional scenarios (silver labels); retrieval, safety, A–D generation and prompt ablations measured — see [research/results_log.md](research/results_log.md) |
+
+**Known weak spots** (measured, not guessed): Banglish answers are the least fluent; Bangla and
+Banglish retrieval ranks the right document lower than English; the knowledge base is synthetic;
+all evaluation data is single-author and not yet human-annotated.
 
 ## System requirements
 
 - Windows 11 (macOS/Linux work with equivalent commands), Python 3.11+ (tested 3.12.10), Node.js 20+ (tested 24.15)
-- ~6 GB free disk (dependencies ≈ 2 GB, embedding model ≈ 0.5 GB, GGUF ≈ 2.5 GB)
+- ~6 GB free disk on the drive holding the project (dependencies ≈ 2 GB, embedding model ≈ 0.5 GB,
+  GGUF ≈ 2.5 GB, llama.cpp CUDA ≈ 0.7 GB). All downloads and caches (pip, npm, Hugging Face) are
+  kept inside the project folder (`.cache/`, `models/`), not on the system drive.
 - Recommended: NVIDIA GPU with 8 GB VRAM (target: RTX 4060 Laptop). CPU-only also works, slowly.
 
 ## Install (PowerShell)
