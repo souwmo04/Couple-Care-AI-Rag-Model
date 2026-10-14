@@ -162,7 +162,9 @@ async def generate_for_config(case: EvalCase, config: str, container, runtime) -
             "answer": response.answer, "generated": response.generated, "grounded": response.grounded,
             "safety_level": response.safety.level.value, "cited": [s.citation_id for s in response.sources if s.cited],
             "retrieved_documents": [s.document_id for s in response.sources],
-            "needs_clarification": response.needs_clarification, "latency_ms": response.duration_ms,
+            # Measured from the text for every configuration (not the app's internal flag),
+            # so A-D are comparable.
+            "needs_clarification": asks_question(response.answer), "latency_ms": response.duration_ms,
             "citations_removed": None,
         }  # fmt: skip
 
@@ -190,9 +192,15 @@ async def generate_for_config(case: EvalCase, config: str, container, runtime) -
     return {
         "answer": check.text, "generated": True, "grounded": bool(items), "safety_level": "not_applied",
         "cited": check.cited_ids, "retrieved_documents": [i.passage.document_id for i in items],
-        "needs_clarification": "?" in check.text.strip()[-300:],
+        "needs_clarification": asks_question(check.text),
         "latency_ms": int((time.perf_counter() - started) * 1000), "citations_removed": check.removed_markers,
     }  # fmt: skip
+
+
+def asks_question(text: str) -> bool:
+    """True if the reply ends by asking the user something (a question mark in the last 300 chars)."""
+    tail = text.strip()[-300:]
+    return "?" in tail or "？" in tail
 
 
 def summarize_generation(rows: list[dict], cases: dict[str, EvalCase]) -> dict:
