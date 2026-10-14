@@ -20,11 +20,13 @@ _Screenshots of the real app running locally with Qwen3-4B on an RTX 4060; the k
 | Area | State |
 |---|---|
 | Landing, chat, settings, knowledge, about/privacy/safety pages | Implemented; tested with Vitest + axe-core; checked in the browser at desktop and phone widths, light and dark |
-| FastAPI backend, hybrid RAG, citations, safety layer, storage | Implemented; 225 backend tests passing; CI on GitHub (Linux) green |
+| FastAPI backend, hybrid RAG, citations, safety layer, storage | Implemented; 228 backend + 33 frontend tests passing (+4 real-model integration tests); CI on GitHub (Linux) green |
 | Local generation | **Running on the RTX 4060**: Qwen3-4B-Instruct-2507 Q4_K_M via llama.cpp b11603 (CUDA), ~80 tokens/s, ~3.8 GB VRAM at 8k context |
 | End-to-end in English, Bangla, Banglish | Verified in the UI with streaming, citations and safety routing |
 | Safety | Rules + cues + semantic (E5) classifier; held-out test: direct 15/15, indirect 4/5, false alarms 1/94 |
 | Evaluation | 386 fictional scenarios (silver labels); retrieval, safety, A–D generation and prompt ablations measured — see [research/results_log.md](research/results_log.md) |
+
+Full report: [docs/status-report.md](docs/status-report.md).
 
 **Known weak spots** (measured, not guessed): Banglish answers are the least fluent; Bangla and
 Banglish retrieval ranks the right document lower than English; the knowledge base is synthetic;

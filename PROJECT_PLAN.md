@@ -111,14 +111,14 @@ honest disclosure that local ≠ device-level security.
 - [x] **Stage 2** — Design tokens, landing page, chat UI shell
 - [x] **Stage 3** — FastAPI app, config, health/model status, model adapter
 - [x] **Stage 4** — Document ingestion + local retrieval (E5 + FAISS + BM25 + RRF)
-- [x] **Stage 5** — Retrieval → local generation orchestration *(verified against a mocked model server only)*
+- [x] **Stage 5** — Retrieval → local generation orchestration *(verified with the real local model)*
 - [x] **Stage 6** — Citation mapping & response validation
 - [x] **Stage 7** — Safety layer & privacy controls
 - [x] **Stage 8** — Frontend wired to the real API
 - [x] **Stage 9** — Conversation management & knowledge-base management
-- [x] **Stage 10** — Tests & evaluation scripts *(retrieval + safety measured; generation suite needs the model)*
-- [ ] **Stage 11** — Run, inspect UI, fix, refine design *(UI inspected end-to-end with the model offline; real-model run pending)*
-- [ ] **Stage 12** — Documentation & honest status report *(docs written; final report after the real-model run)*
+- [x] **Stage 10** — Tests & evaluation scripts *(retrieval, safety, A–D generation and ablations measured)*
+- [x] **Stage 11** — Run, inspect UI, fix, refine design *(real model on the RTX 4060; EN/BN/Banglish end-to-end)*
+- [x] **Stage 12** — Documentation & honest status report *(see `docs/status-report.md`)*
 
 Each stage ends with: integration check → relevant tests → fixes → commit(s) → push.
 
