@@ -76,7 +76,7 @@ RULES: tuple[Rule, ...] = (
     _r(R.SEXUAL_COERCION, r"জোর করে (?:শারীরিক সম্পর্ক|সেক্স|মেলামেশা)|ধর্ষণ|যৌন নির্যাতন", negatable=False, language="bn"),
     _r(R.SEXUAL_COERCION, r"\bjor kore (?:sex|shar[iy]rik|shomporko|somporko)|dhorshon\b", negatable=False, language="banglish"),
     # ---------------------------------------------------------------- threats
-    _r(R.THREATS, r"\bthreat(?:en|ens|ened|ening)\b.{0,40}\b(?:kill|hurt|harm|beat|take (?:the|my) (?:kids|children|baby)|leak|post (?:my|the) (?:photos|pictures|videos)|ruin|acid)\b"),
+    _r(R.THREATS, r"\bthreat(?:en|ens|ened|ening)\b.{0,40}\b(?:kill|hurt|harm|beat|take (?:the|my) (?:kids|children|baby)|leak|post (?:my |the )?(?:\w+ )?(?:photos|pictures|videos|pics)|ruin|acid)\b"),
     _r(R.THREATS, PARTNER + r"\b.{0,20}\b(?:said|says|told me) (?:he|she|they)(?:'ll| will| would)\b.{0,20}\b(?:kill|hurt|harm) (?:me|my|himself|herself)\b"),
     _r(R.THREATS, r"(?:মেরে ফেলার|ক্ষতি করার|ছবি ছড়িয়ে দেওয়ার|এসিড).{0,10}হুমকি|হুমকি (?:দেয়|দিয়েছে|দিচ্ছে)", language="bn"),
     _r(R.THREATS, r"\bhumki (?:dey|dise|diyeche|dicche|dey je)\b|\b(?:mere felar|chobi chorie deyar|pic leak) humki\b", language="banglish"),

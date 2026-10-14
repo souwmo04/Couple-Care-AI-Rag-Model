@@ -23,7 +23,7 @@ CONTACT_CONTEXT_RE = re.compile(
     r"\b(?:call|dial|text|phone|hotline|helpline|number|contact|ring)\b|ফোন|কল|নম্বর|নাম্বার|হেল্পলাইন|\b(?:fon|kol|nombor|number e)\b",
     re.IGNORECASE,
 )
-PHONE_RE = re.compile(r"(?<![\w/.-])(?:\+?\d[\d\s().-]{1,16}\d)(?![\w/.-])")
+PHONE_RE = re.compile(r"(?<![\w/.-])(?:\+?\d[\d\s().-]{1,16}\d)(?![\w/-]|\.\d)")
 
 DIAGNOSIS_RE = re.compile(
     r"\b(?:he|she|they|your (?:partner|husband|wife|boyfriend|girlfriend))\b[^.!?]{0,30}\b(?:is|are|sounds like|seems like|must be|clearly)\b"
