@@ -83,3 +83,9 @@ def test_rebuild_accepts_no_paths(client) -> None:
 def test_ingestion_errors_endpoint(client) -> None:
     body = client.get("/api/knowledge/errors").json()
     assert body["errors"] == [] and body["version"]
+
+
+def test_stats_report_loading_embedder_not_unavailable(client, container) -> None:
+    container.embedder.state = "loading"
+    container.embedder._embedder = None
+    assert client.get("/api/knowledge/stats").json()["health"] == "loading"

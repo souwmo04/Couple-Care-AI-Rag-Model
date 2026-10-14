@@ -390,6 +390,7 @@ export const en = {
     healthy: 'Healthy',
     lexicalOnly: 'Keyword search only',
     denseUnavailable: 'Semantic search unavailable',
+    loadingEmbedder: 'Embedding model loading…',
     missing: 'No index built yet',
     error: 'Index could not be loaded',
     topics: 'Topics',

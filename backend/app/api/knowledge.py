@@ -102,6 +102,8 @@ async def stats(c: Container = Depends(get_container)) -> KnowledgeStats:
         health = "healthy"
     elif bundle.vectors is None:
         health = "lexical_only"
+    elif c.embedder.state == "loading":
+        health = "loading"  # the index is fine; the embedding model is still starting up
     else:
         health = "dense_unavailable"
     synthetic_docs = len({p.document_id for p in bundle.passages if p.synthetic})

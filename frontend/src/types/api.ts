@@ -166,7 +166,7 @@ export interface KnowledgeStats {
   chunk_size: number | null
   chunk_overlap: number | null
   ingestion_errors: number
-  health: 'healthy' | 'lexical_only' | 'dense_unavailable' | 'missing' | 'error'
+  health: 'healthy' | 'lexical_only' | 'dense_unavailable' | 'loading' | 'missing' | 'error'
   rebuild: RebuildInfo
 }
 

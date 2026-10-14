@@ -391,6 +391,7 @@ export const bn: Copy = {
     healthy: 'সুস্থ',
     lexicalOnly: 'শুধু শব্দভিত্তিক খোঁজ',
     denseUnavailable: 'অর্থভিত্তিক খোঁজ পাওয়া যাচ্ছে না',
+    loadingEmbedder: 'এমবেডিং মডেল লোড হচ্ছে…',
     missing: 'এখনও কোনো ইনডেক্স তৈরি হয়নি',
     error: 'ইনডেক্স লোড করা যায়নি',
     topics: 'বিষয়',

@@ -56,6 +56,7 @@ function healthBadge(t: ReturnType<typeof useCopy>, stats: KnowledgeStats) {
     healthy: { tone: 'success', label: t.knowledge.healthy },
     lexical_only: { tone: 'warning', label: t.knowledge.lexicalOnly },
     dense_unavailable: { tone: 'warning', label: t.knowledge.denseUnavailable },
+    loading: { tone: 'neutral', label: t.knowledge.loadingEmbedder },
     missing: { tone: 'neutral', label: t.knowledge.missing },
     error: { tone: 'danger', label: t.knowledge.error },
   } as const
