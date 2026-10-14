@@ -12,15 +12,9 @@ import { Button } from '@/components/ui/button'
 import { Badge, Tooltip } from '@/components/ui/primitives'
 import type { UiMessage } from '@/hooks/useChat'
 import { useCopy } from '@/i18n'
+import { CITE_RE, linkCitations } from '@/lib/citations'
 import { cn } from '@/lib/utils'
 import { api } from '@/services/api'
-
-const CITE_RE = /\[(S\d{1,2})\]/g
-
-/** Turn validated "[S1]" markers into links the markdown renderer can show as chips. */
-export function linkCitations(text: string, available: Set<string>): string {
-  return text.replace(CITE_RE, (match, id: string) => (available.has(id) ? `[${id}](#cite-${id})` : match))
-}
 
 function TypingDots({ label }: { label: string }) {
   return (
