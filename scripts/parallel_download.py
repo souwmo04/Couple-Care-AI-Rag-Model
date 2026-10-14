@@ -49,7 +49,10 @@ def main() -> int:
         pos = start
         while pos <= end:
             try:
-                with httpx.Client(timeout=60) as c, c.stream("GET", final_url, headers={"Range": f"bytes={pos}-{end}"}) as r:
+                with (
+                    httpx.Client(timeout=60) as c,
+                    c.stream("GET", final_url, headers={"Range": f"bytes={pos}-{end}"}) as r,
+                ):
                     r.raise_for_status()
                     with part.open("r+b") as fh:
                         fh.seek(pos)
