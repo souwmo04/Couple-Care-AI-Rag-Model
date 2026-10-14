@@ -67,14 +67,23 @@ def strip_reasoning(text: str) -> str:
 def _oom_message(body: str) -> str | None:
     lowered = body.lower()
     if any(h.lower() in lowered for h in OOM_HINTS):
-        return ("The local model ran out of GPU memory. Lower the context size or the number of GPU "
-                "layers (-ngl) in the model-server launch script, or use a smaller quantization.")
+        return (
+            "The local model ran out of GPU memory. Lower the context size or the number of GPU "
+            "layers (-ngl) in the model-server launch script, or use a smaller quantization."
+        )
     return None
 
 
 class OpenAICompatibleClient:
-    def __init__(self, base_url: str, model_id: str, *, timeout: float, connect_timeout: float,
-                 transport: httpx.AsyncBaseTransport | None = None) -> None:
+    def __init__(
+        self,
+        base_url: str,
+        model_id: str,
+        *,
+        timeout: float,
+        connect_timeout: float,
+        transport: httpx.AsyncBaseTransport | None = None,
+    ) -> None:
         self.base_url = base_url.rstrip("/")
         self.model_id = model_id
         self._timeout = httpx.Timeout(timeout, connect=connect_timeout)
@@ -130,9 +139,10 @@ class OpenAICompatibleClient:
 
     async def stream(self, messages: list[ChatMessage], params: GenerationParams) -> AsyncIterator[str]:
         try:
-            async with self._client() as client, client.stream(
-                "POST", "/v1/chat/completions", json=self._payload(messages, params, True)
-            ) as response:
+            async with (
+                self._client() as client,
+                client.stream("POST", "/v1/chat/completions", json=self._payload(messages, params, True)) as response,
+            ):
                 if response.status_code >= 400:
                     await response.aread()
                     self._raise_for(response)

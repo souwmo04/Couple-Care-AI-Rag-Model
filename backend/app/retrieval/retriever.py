@@ -57,8 +57,9 @@ class RetrievalResult:
 
 
 class Retriever:
-    def __init__(self, embedder: EmbedderHolder, reranker: Reranker | None = None,
-                 calibration: Calibration | None = None) -> None:
+    def __init__(
+        self, embedder: EmbedderHolder, reranker: Reranker | None = None, calibration: Calibration | None = None
+    ) -> None:
         self.embedder = embedder
         self.calibration = calibration or Calibration()
         self.reranker = reranker
@@ -98,8 +99,17 @@ class Retriever:
         expanded = expand_query_terms(base_tokens) if params.expand else []
 
         if bundle is None or not bundle.passages:
-            return RetrievalResult(query, normalized, analysis, expanded, [], False,
-                                   int((time.perf_counter() - start) * 1000), params.mode, ["index_missing"])
+            return RetrievalResult(
+                query,
+                normalized,
+                analysis,
+                expanded,
+                [],
+                False,
+                int((time.perf_counter() - start) * 1000),
+                params.mode,
+                ["index_missing"],
+            )
 
         dense_ok = self.dense_available(bundle)
         dense_hits: list[tuple[int, float]] = []
@@ -124,8 +134,13 @@ class Retriever:
 
         if mode == "bm25":
             dense_lookup = None
-        fused = reciprocal_rank_fusion(dense_hits, lexical_hits, calibration=self.calibration,
-                                       dense_lookup=dense_lookup, lexical_active=mode in {"hybrid", "bm25"})
+        fused = reciprocal_rank_fusion(
+            dense_hits,
+            lexical_hits,
+            calibration=self.calibration,
+            dense_lookup=dense_lookup,
+            lexical_active=mode in {"hybrid", "bm25"},
+        )
 
         # Optional metadata filters (used by the retrieval-test UI).
         def _keep(p: Passage) -> bool:
@@ -144,14 +159,21 @@ class Retriever:
                 for item, score in zip(pool, scores, strict=True):
                     item.rerank_score = score
                 pool.sort(key=lambda i: i.rerank_score or 0.0, reverse=True)
-                items = pool + items[len(pool):]
+                items = pool + items[len(pool) :]
             else:
                 notes.append("reranker_unavailable")
 
         items = _dedupe(items)[: params.final_k]
         return RetrievalResult(
-            query, normalized, analysis, expanded, items, dense_ok,
-            int((time.perf_counter() - start) * 1000), mode, notes,
+            query,
+            normalized,
+            analysis,
+            expanded,
+            items,
+            dense_ok,
+            int((time.perf_counter() - start) * 1000),
+            mode,
+            notes,
         )
 
 

@@ -47,7 +47,13 @@ PRIORITY: list[tuple[RiskCategory, SafetyLevel]] = [
     (C.REPEATED_HUMILIATION, SafetyLevel.CAUTION),
 ]
 
-LEVEL_RANK = {SafetyLevel.NONE: 0, SafetyLevel.CAUTION: 1, SafetyLevel.SUPPORT: 2, SafetyLevel.DECLINED: 3, SafetyLevel.URGENT: 4}
+LEVEL_RANK = {
+    SafetyLevel.NONE: 0,
+    SafetyLevel.CAUTION: 1,
+    SafetyLevel.SUPPORT: 2,
+    SafetyLevel.DECLINED: 3,
+    SafetyLevel.URGENT: 4,
+}
 
 
 @dataclass(slots=True)
@@ -204,7 +210,10 @@ def decide(assessment: Assessment, language: str) -> SafetyDecision:
 def merge_levels(current: SafetyDecision, previous_level: SafetyLevel | None) -> SafetyDecision:
     """Keep conversation-level awareness: a disclosed risk earlier in the conversation keeps at
     least ``support``/``caution`` constraints on later turns even if the new message is benign."""
-    if previous_level in {SafetyLevel.SUPPORT, SafetyLevel.URGENT} and LEVEL_RANK[current.level] < LEVEL_RANK[SafetyLevel.SUPPORT]:
+    if (
+        previous_level in {SafetyLevel.SUPPORT, SafetyLevel.URGENT}
+        and LEVEL_RANK[current.level] < LEVEL_RANK[SafetyLevel.SUPPORT]
+    ):
         current.level = SafetyLevel.SUPPORT
         current.prompt_addendum = ADDENDA[SafetyLevel.SUPPORT]
     elif previous_level == SafetyLevel.CAUTION and current.level == SafetyLevel.NONE:
@@ -233,11 +242,17 @@ def resources_for(directory: dict, region: str | None, categories: list[RiskCate
     out = []
     for entry in entries:
         if wanted & set(entry.get("categories", [])):
-            out.append(SupportResource(
-                name=entry["name"], description=entry["description"], contact=entry.get("contact"),
-                url=entry.get("url"), region=region_label, verified_on=entry["verified_on"],
-                source_url=entry["source_url"],
-            ))
+            out.append(
+                SupportResource(
+                    name=entry["name"],
+                    description=entry["description"],
+                    contact=entry.get("contact"),
+                    url=entry.get("url"),
+                    region=region_label,
+                    verified_on=entry["verified_on"],
+                    source_url=entry["source_url"],
+                )
+            )
     return out
 
 

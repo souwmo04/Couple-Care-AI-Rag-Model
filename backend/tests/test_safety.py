@@ -73,7 +73,9 @@ CASES: list[tuple[str, C, str]] = [
 ]
 
 
-@pytest.mark.parametrize(("text", "expected", "language"), CASES, ids=[f"{c[2]}-{c[1].value}-{i}" for i, c in enumerate(CASES)])
+@pytest.mark.parametrize(
+    ("text", "expected", "language"), CASES, ids=[f"{c[2]}-{c[1].value}-{i}" for i, c in enumerate(CASES)]
+)
 def test_detects_category(text: str, expected: C, language: str) -> None:
     assert expected in categories(text)
 
@@ -164,7 +166,9 @@ def test_output_removes_unverified_phone_numbers() -> None:
 
 
 def test_output_keeps_verified_numbers_and_quantities() -> None:
-    out = check_response("Call 999 if you are in danger. Take a 20 minute break. It costs 200 taka.", SafetyLevel.NONE, {"999"})
+    out = check_response(
+        "Call 999 if you are in danger. Take a 20 minute break. It costs 200 taka.", SafetyLevel.NONE, {"999"}
+    )
     assert "999" in out.text and "200 taka" in out.text and not out.flags
 
 

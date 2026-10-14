@@ -22,7 +22,11 @@ src = ["backend"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP", "S", "SIM"]
-ignore = ["S101", "S311"]
+ignore = ["S101", "S311", "B008", "SIM905"]  # B008: FastAPI Depends() defaults
 
 [tool.ruff.lint.per-file-ignores]
-"backend/tests/**" = ["S", "B"]
+"backend/tests/**" = ["S", "B", "E501"]
+# Regex tables and trilingual templates are clearer unwrapped.
+"backend/app/safety/**" = ["E501"]
+"backend/app/core/language.py" = ["E501"]
+"backend/app/storage/sessions.py" = ["E501"]  # long SQL strings

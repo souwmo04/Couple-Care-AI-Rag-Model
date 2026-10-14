@@ -216,10 +216,3 @@ class RetrievalTestResponse(BaseModel):
     passages: list[RetrievedPassage]
     duration_ms: int
     dense_available: bool
-
-
-class Page[T](BaseModel):
-    items: list[T]
-    total: int
-    page: int
-    page_size: int

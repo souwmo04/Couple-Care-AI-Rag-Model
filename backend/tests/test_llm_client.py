@@ -14,8 +14,9 @@ MESSAGES = [ChatMessage("user", "hi")]
 
 
 def client_with(handler) -> OpenAICompatibleClient:
-    return OpenAICompatibleClient("http://127.0.0.1:8080", "m", timeout=5, connect_timeout=1,
-                                  transport=httpx.MockTransport(handler))
+    return OpenAICompatibleClient(
+        "http://127.0.0.1:8080", "m", timeout=5, connect_timeout=1, transport=httpx.MockTransport(handler)
+    )
 
 
 async def test_complete_returns_content_and_sends_params() -> None:
@@ -74,7 +75,9 @@ async def test_out_of_memory_is_explained() -> None:
 
 async def test_loading_server_is_reported_offline() -> None:
     with pytest.raises(ModelOfflineError):
-        await client_with(lambda r: httpx.Response(503, json={"error": "loading"})).complete(MESSAGES, GenerationParams())
+        await client_with(lambda r: httpx.Response(503, json={"error": "loading"})).complete(
+            MESSAGES, GenerationParams()
+        )
 
 
 async def test_malformed_body_is_model_error() -> None:
@@ -83,9 +86,10 @@ async def test_malformed_body_is_model_error() -> None:
 
 
 async def test_stream_yields_deltas() -> None:
-    body = "".join(
-        f"data: {json.dumps({'choices': [{'delta': {'content': t}}]})}\n\n" for t in ["Hel", "lo", "!"]
-    ) + "data: [DONE]\n\n"
+    body = (
+        "".join(f"data: {json.dumps({'choices': [{'delta': {'content': t}}]})}\n\n" for t in ["Hel", "lo", "!"])
+        + "data: [DONE]\n\n"
+    )
 
     def handler(_: httpx.Request) -> httpx.Response:
         return httpx.Response(200, text=body, headers={"content-type": "text/event-stream"})

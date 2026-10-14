@@ -63,8 +63,13 @@ async def _send_json(send: Send, status: int, body: dict) -> None:
     import json
 
     payload = json.dumps(body).encode()
-    await send({"type": "http.response.start", "status": status,
-                "headers": [(b"content-type", b"application/json"), (b"content-length", str(len(payload)).encode())]})
+    await send(
+        {
+            "type": "http.response.start",
+            "status": status,
+            "headers": [(b"content-type", b"application/json"), (b"content-length", str(len(payload)).encode())],
+        }
+    )
     await send({"type": "http.response.body", "body": payload})
 
 

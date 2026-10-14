@@ -33,7 +33,9 @@ def test_banglish_query_finds_banglish_document(container) -> None:
 
 
 def test_banglish_expansion_reaches_english_document(container) -> None:
-    result = container.retriever.search("shashuri amar songshar niye kotha bole", RetrievalParams(final_k=5, mode="bm25"))
+    result = container.retriever.search(
+        "shashuri amar songshar niye kotha bole", RetrievalParams(final_k=5, mode="bm25")
+    )
     assert "test-inlaws" in [i.passage.document_id for i in result.items]
     assert "in" in result.expanded_terms or "laws" in result.expanded_terms
 
@@ -59,7 +61,9 @@ def test_dense_mode_falls_back_when_embedder_mismatched(container) -> None:
 def test_language_and_topic_filters(container) -> None:
     result = container.retriever.search("partner", RetrievalParams(final_k=10, threshold=0, language_filter="bn"))
     assert all(i.passage.language == "bn" for i in result.items)
-    result = container.retriever.search("partner trust", RetrievalParams(final_k=10, threshold=0, topic_filter="trust_jealousy"))
+    result = container.retriever.search(
+        "partner trust", RetrievalParams(final_k=10, threshold=0, topic_filter="trust_jealousy")
+    )
     assert all(i.passage.topic == "trust_jealousy" for i in result.items)
 
 

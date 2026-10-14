@@ -61,7 +61,9 @@ CONTROL_ACTION_RE = re.compile(
     r"|রাগ হলে|বাইরে গেলে|না বললে|\b(?:rag hole|baire gele|na bolle)\b",
     re.IGNORECASE,
 )
-HARM_WORD_RE = re.compile(r"\b(?:bruise|bruises|injur(?:y|ies|ed)|hospital|bleeding)\b|রক্ত|আঘাত|\b(?:rokto|aghat)\b", re.IGNORECASE)
+HARM_WORD_RE = re.compile(
+    r"\b(?:bruise|bruises|injur(?:y|ies|ed)|hospital|bleeding)\b|রক্ত|আঘাত|\b(?:rokto|aghat)\b", re.IGNORECASE
+)
 
 
 class CueClassifier:

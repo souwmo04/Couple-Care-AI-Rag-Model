@@ -52,8 +52,12 @@ def build_messages(
     safety_addendum: str | None,
     needs_clarification_hint: bool,
 ) -> list[ChatMessage]:
-    system_parts = [load_system_prompt(), "", LANGUAGE_INSTRUCTIONS.get(response_language, LANGUAGE_INSTRUCTIONS["en"]),
-                    STAGE_CONTEXT.get(relationship_stage, STAGE_CONTEXT["unspecified"])]
+    system_parts = [
+        load_system_prompt(),
+        "",
+        LANGUAGE_INSTRUCTIONS.get(response_language, LANGUAGE_INSTRUCTIONS["en"]),
+        STAGE_CONTEXT.get(relationship_stage, STAGE_CONTEXT["unspecified"]),
+    ]
     if safety_addendum:
         system_parts += ["", safety_addendum]
     system = "\n".join(system_parts)
@@ -63,9 +67,7 @@ def build_messages(
         messages.append(ChatMessage(role, content))
 
     if grounded:
-        evidence = (
-            "Knowledge-base passages for this question (cite with their labels):\n\n" + context
-        )
+        evidence = "Knowledge-base passages for this question (cite with their labels):\n\n" + context
     else:
         evidence = (
             "No sufficiently relevant passages were found in the knowledge base for this question. "
@@ -75,7 +77,8 @@ def build_messages(
     hint = (
         "\n\nThe message is short or missing key details. If it would change your advice, ask one focused clarifying "
         "question (you may still offer a brief, general first thought)."
-        if needs_clarification_hint else ""
+        if needs_clarification_hint
+        else ""
     )
     messages.append(ChatMessage("user", f"{evidence}\n\n---\nUser message:\n{user_message}{hint}"))
     return messages

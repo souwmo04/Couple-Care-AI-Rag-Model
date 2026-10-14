@@ -69,8 +69,13 @@ class Conversation:
 
     def summary(self) -> ConversationSummary:
         return ConversationSummary(
-            id=self.id, title=self.title, created_at=self.created_at, updated_at=self.updated_at,
-            message_count=self.message_count if self.message_count is not None else len(self.messages), relationship_stage=self.relationship_stage, language=self.language,
+            id=self.id,
+            title=self.title,
+            created_at=self.created_at,
+            updated_at=self.updated_at,
+            message_count=self.message_count if self.message_count is not None else len(self.messages),
+            relationship_stage=self.relationship_stage,
+            language=self.language,
         )
 
     def detail(self) -> ConversationDetail:
@@ -82,9 +87,19 @@ class ConversationStore(Protocol):
 
     def create(self, owner: str, first_message: str, stage: RelationshipStage, language: str) -> Conversation: ...
     def get(self, owner: str, conversation_id: str) -> Conversation | None: ...
-    def list(self, owner: str, query: str | None = None, limit: int = 50, offset: int = 0) -> tuple[list[Conversation], int]: ...
-    def append(self, owner: str, conversation_id: str, message: StoredMessage, *, safety_level: str | None = None,
-               stage: RelationshipStage | None = None, language: str | None = None) -> None: ...
+    def list(
+        self, owner: str, query: str | None = None, limit: int = 50, offset: int = 0
+    ) -> tuple[list[Conversation], int]: ...
+    def append(
+        self,
+        owner: str,
+        conversation_id: str,
+        message: StoredMessage,
+        *,
+        safety_level: str | None = None,
+        stage: RelationshipStage | None = None,
+        language: str | None = None,
+    ) -> None: ...
     def remove_last_assistant(self, owner: str, conversation_id: str) -> None: ...
     def set_feedback(self, owner: str, conversation_id: str, message_id: str, rating: str) -> bool: ...
     def delete(self, owner: str, conversation_id: str) -> bool: ...
@@ -129,7 +144,9 @@ class MemoryConversationStore:
             self._touched[conversation_id] = time.monotonic()
             return conv
 
-    def list(self, owner: str, query: str | None = None, limit: int = 50, offset: int = 0) -> tuple[list[Conversation], int]:
+    def list(
+        self, owner: str, query: str | None = None, limit: int = 50, offset: int = 0
+    ) -> tuple[list[Conversation], int]:
         with self._lock:
             self._evict()
             items = [c for c in self._items.values() if c.owner == owner]
@@ -139,8 +156,16 @@ class MemoryConversationStore:
         items.sort(key=lambda c: c.updated_at, reverse=True)
         return items[offset : offset + limit], len(items)
 
-    def append(self, owner: str, conversation_id: str, message: StoredMessage, *, safety_level: str | None = None,
-               stage: RelationshipStage | None = None, language: str | None = None) -> None:
+    def append(
+        self,
+        owner: str,
+        conversation_id: str,
+        message: StoredMessage,
+        *,
+        safety_level: str | None = None,
+        stage: RelationshipStage | None = None,
+        language: str | None = None,
+    ) -> None:
         conv = self.get(owner, conversation_id)
         if conv is None:
             return
@@ -231,9 +256,13 @@ class SQLiteConversationStore:
     # -- helpers ---------------------------------------------------------------------
     def _row_to_conv(self, row: sqlite3.Row, with_messages: bool) -> Conversation:
         conv = Conversation(
-            id=row["id"], owner=row["owner"], title=row["title"],
-            created_at=datetime.fromisoformat(row["created_at"]), updated_at=datetime.fromisoformat(row["updated_at"]),
-            relationship_stage=RelationshipStage(row["relationship_stage"]), language=row["language"],
+            id=row["id"],
+            owner=row["owner"],
+            title=row["title"],
+            created_at=datetime.fromisoformat(row["created_at"]),
+            updated_at=datetime.fromisoformat(row["updated_at"]),
+            relationship_stage=RelationshipStage(row["relationship_stage"]),
+            language=row["language"],
             safety_level=row["safety_level"],
         )
         if with_messages:
@@ -242,7 +271,9 @@ class SQLiteConversationStore:
             ).fetchall()
             conv.messages = [self._row_to_message(r) for r in rows]
         else:
-            count = self._conn.execute("SELECT COUNT(*) FROM messages WHERE conversation_id = ?", (conv.id,)).fetchone()[0]
+            count = self._conn.execute(
+                "SELECT COUNT(*) FROM messages WHERE conversation_id = ?", (conv.id,)
+            ).fetchone()[0]
             conv.message_count = int(count)
         return conv
 
@@ -250,10 +281,15 @@ class SQLiteConversationStore:
     def _row_to_message(row: sqlite3.Row) -> StoredMessage:
         payload = json.loads(row["payload"] or "{}")
         return StoredMessage(
-            id=row["id"], role=row["role"], content=row["content"], created_at=datetime.fromisoformat(row["created_at"]),
+            id=row["id"],
+            role=row["role"],
+            content=row["content"],
+            created_at=datetime.fromisoformat(row["created_at"]),
             sources=[SourceCard(**s) for s in payload.get("sources", [])],
             safety=SafetyStatus(**payload["safety"]) if payload.get("safety") else None,
-            language=payload.get("language"), grounded=payload.get("grounded"), generated=payload.get("generated"),
+            language=payload.get("language"),
+            grounded=payload.get("grounded"),
+            generated=payload.get("generated"),
         )
 
     # -- API -------------------------------------------------------------------------
@@ -275,12 +311,16 @@ class SQLiteConversationStore:
             ).fetchone()
             return self._row_to_conv(row, with_messages=True) if row else None
 
-    def list(self, owner: str, query: str | None = None, limit: int = 50, offset: int = 0) -> tuple[list[Conversation], int]:
+    def list(
+        self, owner: str, query: str | None = None, limit: int = 50, offset: int = 0
+    ) -> tuple[list[Conversation], int]:
         with self._lock:
             if query:
                 like = "%" + query.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_") + "%"
-                where = ("WHERE c.owner = ? AND (c.title LIKE ? ESCAPE '\\' OR EXISTS (SELECT 1 FROM messages m "
-                         "WHERE m.conversation_id = c.id AND m.content LIKE ? ESCAPE '\\'))")
+                where = (
+                    "WHERE c.owner = ? AND (c.title LIKE ? ESCAPE '\\' OR EXISTS (SELECT 1 FROM messages m "
+                    "WHERE m.conversation_id = c.id AND m.content LIKE ? ESCAPE '\\'))"
+                )
                 params: tuple = (owner, like, like)
             else:
                 where, params = "WHERE c.owner = ?", (owner,)
@@ -291,13 +331,26 @@ class SQLiteConversationStore:
             ).fetchall()
             return [self._row_to_conv(r, with_messages=False) for r in rows], int(total)
 
-    def append(self, owner: str, conversation_id: str, message: StoredMessage, *, safety_level: str | None = None,
-               stage: RelationshipStage | None = None, language: str | None = None) -> None:
-        payload = json.dumps({
-            "sources": [s.model_dump() for s in message.sources],
-            "safety": message.safety.model_dump() if message.safety else None,
-            "language": message.language, "grounded": message.grounded, "generated": message.generated,
-        }, ensure_ascii=False)
+    def append(
+        self,
+        owner: str,
+        conversation_id: str,
+        message: StoredMessage,
+        *,
+        safety_level: str | None = None,
+        stage: RelationshipStage | None = None,
+        language: str | None = None,
+    ) -> None:
+        payload = json.dumps(
+            {
+                "sources": [s.model_dump() for s in message.sources],
+                "safety": message.safety.model_dump() if message.safety else None,
+                "language": message.language,
+                "grounded": message.grounded,
+                "generated": message.generated,
+            },
+            ensure_ascii=False,
+        )
         now = _now().isoformat()
         with self._lock:
             owned = self._conn.execute(
@@ -312,7 +365,15 @@ class SQLiteConversationStore:
             try:
                 self._conn.execute(
                     "INSERT INTO messages (id, conversation_id, seq, role, content, created_at, payload) VALUES (?, ?, ?, ?, ?, ?, ?)",
-                    (message.id, conversation_id, seq, message.role, message.content, message.created_at.isoformat(), payload),
+                    (
+                        message.id,
+                        conversation_id,
+                        seq,
+                        message.role,
+                        message.content,
+                        message.created_at.isoformat(),
+                        payload,
+                    ),
                 )
                 self._conn.execute(
                     "UPDATE conversations SET updated_at = ?, safety_level = COALESCE(?, safety_level), "

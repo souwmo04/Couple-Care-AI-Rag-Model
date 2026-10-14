@@ -169,17 +169,33 @@ def build_passages(
                 )
                 doc_passages += 1
         if doc_passages == 0:
-            report.errors.append({"document_id": entry.id, "path": entry.path, "stage": "chunk",
-                                  "error": "No usable text after cleaning"})
+            report.errors.append(
+                {
+                    "document_id": entry.id,
+                    "path": entry.path,
+                    "stage": "chunk",
+                    "error": "No usable text after cleaning",
+                }
+            )
             report.documents_failed += 1
             continue
         report.documents_ok += 1
-        report.documents.append({
-            "document_id": entry.id, "title": entry.title, "path": entry.path, "passages": doc_passages,
-            "sha256": hashlib.sha256(path.read_bytes()).hexdigest(), "license": entry.license,
-            "permission": entry.permission, "synthetic": entry.synthetic, "language": entry.language,
-            "topic": entry.topic, "url": entry.url, "organization": entry.organization,
-        })
+        report.documents.append(
+            {
+                "document_id": entry.id,
+                "title": entry.title,
+                "path": entry.path,
+                "passages": doc_passages,
+                "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+                "license": entry.license,
+                "permission": entry.permission,
+                "synthetic": entry.synthetic,
+                "language": entry.language,
+                "topic": entry.topic,
+                "url": entry.url,
+                "organization": entry.organization,
+            }
+        )
     return passages
 
 
@@ -198,8 +214,9 @@ def run_ingestion(
     started = time.perf_counter()
 
     manifest = load_manifest(manifest_path)
-    passages = build_passages(manifest, raw_dir, max_bytes=max_bytes, chunk_size=chunk_size,
-                              overlap=overlap, report=report)
+    passages = build_passages(
+        manifest, raw_dir, max_bytes=max_bytes, chunk_size=chunk_size, overlap=overlap, report=report
+    )
     if not passages:
         report.finished_at = datetime.now(UTC).isoformat()
         raise ExtractionError("Ingestion produced no passages; the active index was left unchanged")

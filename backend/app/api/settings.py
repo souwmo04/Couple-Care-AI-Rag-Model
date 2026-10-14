@@ -67,8 +67,10 @@ def _response(c: Container) -> SettingsResponse:
     bundle = c.retriever.bundle
     return SettingsResponse(
         values=c.settings_store.get(),
-        models=[ModelOption(id=m.id, display_name=m.display_name, license=m.license, context_length=m.context_length)
-                for m in c.settings.models],
+        models=[
+            ModelOption(id=m.id, display_name=m.display_name, license=m.license, context_length=m.context_length)
+            for m in c.settings.models
+        ],
         embedding_model=c.settings.embedding_model,
         embedding_device=c.settings.embedding_device,
         reranker_configured=c.reranker.configured,

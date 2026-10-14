@@ -17,7 +17,9 @@ router = APIRouter(prefix="/api", tags=["chat"])
 
 
 @router.post("/chat", response_model=ChatResponse)
-async def chat(body: ChatRequest, owner: str = Depends(get_owner), c: Container = Depends(get_container)) -> ChatResponse:
+async def chat(
+    body: ChatRequest, owner: str = Depends(get_owner), c: Container = Depends(get_container)
+) -> ChatResponse:
     return await Orchestrator(c).respond(body, owner)
 
 

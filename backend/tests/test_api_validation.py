@@ -48,7 +48,9 @@ def test_missing_client_id_rejected(settings, container) -> None:
 
 
 def test_oversized_body_rejected(client) -> None:
-    res = client.post("/api/chat", content=b"{" + b" " * (70 * 1024) + b"}", headers={"Content-Type": "application/json"})
+    res = client.post(
+        "/api/chat", content=b"{" + b" " * (70 * 1024) + b"}", headers={"Content-Type": "application/json"}
+    )
     assert res.status_code == 413
     assert res.json()["error"]["code"] == "payload_too_large"
 
@@ -60,9 +62,13 @@ def test_security_headers_present(client) -> None:
 
 
 def test_cors_only_allows_local_frontend(client) -> None:
-    ok = client.options("/api/health", headers={"Origin": "http://127.0.0.1:5173", "Access-Control-Request-Method": "GET"})
+    ok = client.options(
+        "/api/health", headers={"Origin": "http://127.0.0.1:5173", "Access-Control-Request-Method": "GET"}
+    )
     assert ok.headers.get("access-control-allow-origin") == "http://127.0.0.1:5173"
-    bad = client.options("/api/health", headers={"Origin": "https://evil.example", "Access-Control-Request-Method": "GET"})
+    bad = client.options(
+        "/api/health", headers={"Origin": "https://evil.example", "Access-Control-Request-Method": "GET"}
+    )
     assert "access-control-allow-origin" not in bad.headers
 
 

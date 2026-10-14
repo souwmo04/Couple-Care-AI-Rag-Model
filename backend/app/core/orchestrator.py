@@ -102,8 +102,11 @@ class Orchestrator:
         if not decision.skip_generation:
             query = self._retrieval_query(message, conversation)
             params = RetrievalParams(
-                final_k=runtime.retrieval_top_k, dense_k=runtime.dense_top_k, bm25_k=runtime.bm25_top_k,
-                threshold=runtime.relevance_threshold, rerank=runtime.rerank_enabled,
+                final_k=runtime.retrieval_top_k,
+                dense_k=runtime.dense_top_k,
+                bm25_k=runtime.bm25_top_k,
+                threshold=runtime.relevance_threshold,
+                rerank=runtime.rerank_enabled,
                 expand=runtime.query_expansion_enabled,
             )
             # Embedding + FAISS search are CPU-bound; keep them off the event loop.
@@ -113,9 +116,18 @@ class Orchestrator:
         short = analysis.token_count < 6 and not request.conversation_id
         hint = short or decision.level == SafetyLevel.CAUTION
         return TurnPlan(
-            request=request, owner=owner, conversation=conversation, message=message, detected=analysis.detected,
-            response_language=response_language, decision=decision, retrieval=retrieval, context_items=context_items,
-            grounded=bool(context_items), needs_clarification_hint=hint, started=started,
+            request=request,
+            owner=owner,
+            conversation=conversation,
+            message=message,
+            detected=analysis.detected,
+            response_language=response_language,
+            decision=decision,
+            retrieval=retrieval,
+            context_items=context_items,
+            grounded=bool(context_items),
+            needs_clarification_hint=hint,
+            started=started,
         )
 
     def _retrieval_query(self, message: str, conversation: Conversation) -> str:
@@ -155,9 +167,19 @@ class Orchestrator:
         if plan.request.regenerate:
             store.remove_last_assistant(plan.owner, plan.conversation.id)
             return
-        store.append(plan.owner, plan.conversation.id, StoredMessage(
-            id=new_id(), role="user", content=plan.message, created_at=datetime.now(UTC), language=plan.detected.value,
-        ), stage=plan.request.relationship_stage, language=plan.response_language)
+        store.append(
+            plan.owner,
+            plan.conversation.id,
+            StoredMessage(
+                id=new_id(),
+                role="user",
+                content=plan.message,
+                created_at=datetime.now(UTC),
+                language=plan.detected.value,
+            ),
+            stage=plan.request.relationship_stage,
+            language=plan.response_language,
+        )
 
     def _safety_status(self, plan: TurnPlan) -> SafetyStatus:
         d = plan.decision
@@ -179,9 +201,13 @@ class Orchestrator:
         conversation = self.c.store().get(plan.owner, plan.conversation.id) or plan.conversation
         history = self._history(conversation, drop_trailing_user=True)
         return build_messages(
-            user_message=plan.message, history=history, context=format_context(plan.context_items),
-            response_language=plan.response_language, relationship_stage=_stage_value(plan.request.relationship_stage),
-            grounded=plan.grounded, safety_addendum=plan.decision.prompt_addendum,
+            user_message=plan.message,
+            history=history,
+            context=format_context(plan.context_items),
+            response_language=plan.response_language,
+            relationship_stage=_stage_value(plan.request.relationship_stage),
+            grounded=plan.grounded,
+            safety_addendum=plan.decision.prompt_addendum,
             needs_clarification_hint=plan.needs_clarification_hint,
         )
 
@@ -206,22 +232,47 @@ class Orchestrator:
 
         safety = self._safety_status(plan)
         message_id = new_id()
-        self.c.store().append(plan.owner, plan.conversation.id, StoredMessage(
-            id=message_id, role="assistant", content=answer, created_at=datetime.now(UTC), sources=sources,
-            safety=safety, language=plan.response_language, grounded=plan.grounded and generated, generated=generated,
-        ), safety_level=plan.decision.level.value if plan.decision.level != SafetyLevel.NONE else None)
+        self.c.store().append(
+            plan.owner,
+            plan.conversation.id,
+            StoredMessage(
+                id=message_id,
+                role="assistant",
+                content=answer,
+                created_at=datetime.now(UTC),
+                sources=sources,
+                safety=safety,
+                language=plan.response_language,
+                grounded=plan.grounded and generated,
+                generated=generated,
+            ),
+            safety_level=plan.decision.level.value if plan.decision.level != SafetyLevel.NONE else None,
+        )
 
         needs_clarification = plan.needs_clarification_hint and _ends_with_question(answer)
         duration_ms = int((time.perf_counter() - plan.started) * 1000)
-        log.info("chat_turn", extra={
-            "duration_ms": duration_ms, "language": plan.detected.value, "safety_level": plan.decision.level.value,
-            "passages": len(plan.context_items), "generated": generated,
-        })
+        log.info(
+            "chat_turn",
+            extra={
+                "duration_ms": duration_ms,
+                "language": plan.detected.value,
+                "safety_level": plan.decision.level.value,
+                "passages": len(plan.context_items),
+                "generated": generated,
+            },
+        )
         return ChatResponse(
-            conversation_id=plan.conversation.id, message_id=message_id, answer=answer,
-            detected_language=plan.detected, response_language=plan.response_language, sources=sources,
-            grounded=plan.grounded and generated, safety=safety, needs_clarification=needs_clarification,
-            model_id=self.c.settings_store.get().model_id if generated else None, generated=generated,
+            conversation_id=plan.conversation.id,
+            message_id=message_id,
+            answer=answer,
+            detected_language=plan.detected,
+            response_language=plan.response_language,
+            sources=sources,
+            grounded=plan.grounded and generated,
+            safety=safety,
+            needs_clarification=needs_clarification,
+            model_id=self.c.settings_store.get().model_id if generated else None,
+            generated=generated,
             duration_ms=duration_ms,
         )
 
@@ -242,8 +293,13 @@ class Orchestrator:
         """
         plan = await self.prepare(request, owner)
         self._record_user_message(plan)
-        yield {"event": "meta", "conversation_id": plan.conversation.id, "detected_language": plan.detected.value,
-               "response_language": plan.response_language, "safety": self._safety_status(plan).model_dump()}
+        yield {
+            "event": "meta",
+            "conversation_id": plan.conversation.id,
+            "detected_language": plan.detected.value,
+            "response_language": plan.response_language,
+            "safety": self._safety_status(plan).model_dump(),
+        }
 
         if plan.decision.skip_generation:
             final = self._finalize(plan, plan.decision.template or "", generated=False)
@@ -311,4 +367,6 @@ def _empty_fallback(language: str) -> str:
     return {
         "bn": "দুঃখিত, এই উত্তরটি নিরাপত্তা যাচাইয়ে আটকে গেছে। আপনার প্রশ্নটি একটু অন্যভাবে লিখে আবার চেষ্টা করবেন?",
         "banglish": "Dukkhito, ei uttor ta safety check e atke geche. Proshno ta ektu onnobhabe likhe abar try korben?",
-    }.get(language, "Sorry — that answer didn't pass the safety checks. Could you rephrase your question and try again?")
+    }.get(
+        language, "Sorry — that answer didn't pass the safety checks. Could you rephrase your question and try again?"
+    )

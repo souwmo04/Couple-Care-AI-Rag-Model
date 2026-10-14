@@ -90,7 +90,10 @@ def reciprocal_rank_fusion(
     for hit in hits.values():
         lexical_rel = calibration.lexical(hit.bm25_score)
         if dense_active and lexical_active:
-            rel = calibration.dense_weight * calibration.dense(hit.dense_score) + (1 - calibration.dense_weight) * lexical_rel
+            rel = (
+                calibration.dense_weight * calibration.dense(hit.dense_score)
+                + (1 - calibration.dense_weight) * lexical_rel
+            )
         elif dense_active:
             rel = calibration.dense(hit.dense_score)
         else:

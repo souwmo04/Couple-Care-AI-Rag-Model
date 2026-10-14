@@ -21,8 +21,9 @@ class AppError(Exception):
     code = "internal_error"
     retryable = False
 
-    def __init__(self, message: str, *, code: str | None = None, status_code: int | None = None,
-                 retryable: bool | None = None) -> None:
+    def __init__(
+        self, message: str, *, code: str | None = None, status_code: int | None = None, retryable: bool | None = None
+    ) -> None:
         super().__init__(message)
         self.message = message
         if code is not None:
@@ -98,7 +99,9 @@ def install_error_handlers(app: FastAPI) -> None:
 
     @app.exception_handler(StarletteHTTPException)
     async def _http_error(_: Request, exc: StarletteHTTPException) -> JSONResponse:
-        code = {404: "not_found", 405: "method_not_allowed", 413: "payload_too_large"}.get(exc.status_code, "http_error")
+        code = {404: "not_found", 405: "method_not_allowed", 413: "payload_too_large"}.get(
+            exc.status_code, "http_error"
+        )
         return JSONResponse(error_body(code, str(exc.detail)), status_code=exc.status_code)
 
     @app.exception_handler(Exception)

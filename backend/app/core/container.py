@@ -33,16 +33,29 @@ class RebuildState:
 
 
 class Container:
-    def __init__(self, settings: Settings, *, llm: ChatModel | None = None, embedder: EmbedderHolder | None = None,
-                 load_embedder: bool = True) -> None:
+    def __init__(
+        self,
+        settings: Settings,
+        *,
+        llm: ChatModel | None = None,
+        embedder: EmbedderHolder | None = None,
+        load_embedder: bool = True,
+    ) -> None:
         self.settings = settings
         self.settings_store = SettingsStore(settings)
-        self.embedder = embedder or EmbedderHolder(settings.embedding_backend, settings.embedding_model,
-                                                   settings.embedding_device)
+        self.embedder = embedder or EmbedderHolder(
+            settings.embedding_backend, settings.embedding_model, settings.embedding_device
+        )
         self.reranker = Reranker(settings.reranker_model)
-        self.retriever = Retriever(self.embedder, self.reranker, Calibration(
-            dense_floor=settings.dense_score_floor, dense_ceiling=settings.dense_score_ceiling,
-            bm25_saturation=settings.bm25_saturation))
+        self.retriever = Retriever(
+            self.embedder,
+            self.reranker,
+            Calibration(
+                dense_floor=settings.dense_score_floor,
+                dense_ceiling=settings.dense_score_ceiling,
+                bm25_saturation=settings.bm25_saturation,
+            ),
+        )
         self.safety = SafetyEnsemble()
         self.support_directory = load_directory(settings.support_directory_path)
         self.allowed_numbers = allowed_numbers(self.support_directory)
@@ -63,8 +76,10 @@ class Container:
             return self._llm
         runtime = self.settings_store.get()
         return OpenAICompatibleClient(
-            self.settings.llm_base_url, runtime.model_id,
-            timeout=self.settings.llm_timeout_seconds, connect_timeout=self.settings.llm_connect_timeout_seconds,
+            self.settings.llm_base_url,
+            runtime.model_id,
+            timeout=self.settings.llm_timeout_seconds,
+            connect_timeout=self.settings.llm_connect_timeout_seconds,
         )
 
     # -- storage ---------------------------------------------------------------------

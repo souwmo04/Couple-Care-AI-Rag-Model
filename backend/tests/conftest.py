@@ -32,8 +32,13 @@ OTHER_CLIENT_ID = "other-client-0123456789abcdef"
 class FakeChatModel:
     """Deterministic stand-in for the llama.cpp server."""
 
-    def __init__(self, answer: str = "Here is some thoughtful guidance [S1].", *, online: bool = True,
-                 error: Exception | None = None) -> None:
+    def __init__(
+        self,
+        answer: str = "Here is some thoughtful guidance [S1].",
+        *,
+        online: bool = True,
+        error: Exception | None = None,
+    ) -> None:
         self.answer = answer
         self.online = online
         self.error = error
@@ -91,8 +96,13 @@ def make_settings(tmp_path: Path, **overrides) -> Settings:
 
 def build_test_index(settings: Settings) -> None:
     run_ingestion(
-        manifest_path=settings.manifest_path, raw_dir=settings.raw_dir, index_dir=settings.index_dir,
-        embedder=HashingEmbedder(), chunk_size=600, overlap=100, max_bytes=settings.max_ingest_file_bytes,
+        manifest_path=settings.manifest_path,
+        raw_dir=settings.raw_dir,
+        index_dir=settings.index_dir,
+        embedder=HashingEmbedder(),
+        chunk_size=600,
+        overlap=100,
+        max_bytes=settings.max_ingest_file_bytes,
     )
 
 

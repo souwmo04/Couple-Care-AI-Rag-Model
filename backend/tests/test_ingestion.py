@@ -13,8 +13,10 @@ from app.retrieval.embeddings import HashingEmbedder
 from app.retrieval.index_store import current_version, load_bundle
 
 
-@pytest.mark.parametrize("bad", ["../secret.txt", "..\\..\\windows\\win.ini", "/etc/passwd", "C:\\Windows\\win.ini",
-                                 "corpus/../../outside.md", ""])
+@pytest.mark.parametrize(
+    "bad",
+    ["../secret.txt", "..\\..\\windows\\win.ini", "/etc/passwd", "C:\\Windows\\win.ini", "corpus/../../outside.md", ""],
+)
 def test_path_traversal_is_rejected(tmp_path, bad: str) -> None:
     (tmp_path / "raw").mkdir()
     with pytest.raises(ExtractionError):
@@ -95,16 +97,39 @@ def test_manifest_rejects_non_https_urls(settings) -> None:
 
 
 def _ingest(settings):
-    return run_ingestion(manifest_path=settings.manifest_path, raw_dir=settings.raw_dir, index_dir=settings.index_dir,
-                         embedder=HashingEmbedder(), chunk_size=600, overlap=100, max_bytes=100_000)
+    return run_ingestion(
+        manifest_path=settings.manifest_path,
+        raw_dir=settings.raw_dir,
+        index_dir=settings.index_dir,
+        embedder=HashingEmbedder(),
+        chunk_size=600,
+        overlap=100,
+        max_bytes=100_000,
+    )
 
 
 def test_ingestion_records_errors_and_provenance(settings) -> None:
     data = json.loads(settings.manifest_path.read_text(encoding="utf-8"))
-    data["documents"].append({"id": "escape-attempt", "path": "../../secrets.txt", "title": "x", "license": "x",
-                              "permission": "project-authored", "topic": "general"})
-    data["documents"].append({"id": "missing-file", "path": "corpus/nope.md", "title": "x", "license": "x",
-                              "permission": "project-authored", "topic": "general"})
+    data["documents"].append(
+        {
+            "id": "escape-attempt",
+            "path": "../../secrets.txt",
+            "title": "x",
+            "license": "x",
+            "permission": "project-authored",
+            "topic": "general",
+        }
+    )
+    data["documents"].append(
+        {
+            "id": "missing-file",
+            "path": "corpus/nope.md",
+            "title": "x",
+            "license": "x",
+            "permission": "project-authored",
+            "topic": "general",
+        }
+    )
     settings.manifest_path.write_text(json.dumps(data), encoding="utf-8")
     report = _ingest(settings)
     assert report.documents_ok == 5 and report.documents_failed == 2
@@ -130,8 +155,15 @@ def test_failed_build_keeps_previous_index(settings) -> None:
 
 
 def test_lexical_only_build(settings) -> None:
-    report = run_ingestion(manifest_path=settings.manifest_path, raw_dir=settings.raw_dir, index_dir=settings.index_dir,
-                           embedder=None, chunk_size=600, overlap=100, max_bytes=100_000)
+    report = run_ingestion(
+        manifest_path=settings.manifest_path,
+        raw_dir=settings.raw_dir,
+        index_dir=settings.index_dir,
+        embedder=None,
+        chunk_size=600,
+        overlap=100,
+        max_bytes=100_000,
+    )
     assert report.dense is False
     assert load_bundle(settings.index_dir).vectors is None
 

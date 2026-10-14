@@ -114,7 +114,9 @@ def test_model_timeout_returns_504(client, fake_llm) -> None:
 
 def test_conversation_context_is_carried(client, fake_llm) -> None:
     first = client.post("/api/chat", json={"message": LISTENING_Q}).json()
-    client.post("/api/chat", json={"message": "What exactly should I say?", "conversation_id": first["conversation_id"]})
+    client.post(
+        "/api/chat", json={"message": "What exactly should I say?", "conversation_id": first["conversation_id"]}
+    )
     messages = fake_llm.calls[-1]
     roles = [m.role for m in messages]
     assert roles[:3] == ["system", "user", "assistant"]
@@ -125,8 +127,9 @@ def test_conversation_context_is_carried(client, fake_llm) -> None:
 def test_regenerate_replaces_last_answer(client, fake_llm) -> None:
     first = client.post("/api/chat", json={"message": LISTENING_Q}).json()
     fake_llm.answer = "A different answer [S1]."
-    again = client.post("/api/chat", json={"message": LISTENING_Q, "conversation_id": first["conversation_id"],
-                                           "regenerate": True}).json()
+    again = client.post(
+        "/api/chat", json={"message": LISTENING_Q, "conversation_id": first["conversation_id"], "regenerate": True}
+    ).json()
     assert again["answer"].startswith("A different answer")
     detail = client.get(f"/api/conversations/{first['conversation_id']}").json()
     assert [m["role"] for m in detail["messages"]] == ["user", "assistant"]
