@@ -137,6 +137,14 @@ class Settings(BaseSettings):
     def runtime_settings_path(self) -> Path:
         return self.user_dir / "settings.json"
 
+    @property
+    def support_directory_path(self) -> Path:
+        return self.metadata_dir / "support_directory.json"
+
+    @property
+    def manifest_path(self) -> Path:
+        return self.metadata_dir / "sources.json"
+
     def model_ids(self) -> list[str]:
         return [m.id for m in self.models]
 
@@ -160,6 +168,8 @@ class RuntimeSettings(BaseModel):
     query_expansion_enabled: bool = True
     history_turns: int = Field(default=6, ge=0, le=12)
     persistence_enabled: bool = False
+    # Region for the verified support directory. Never inferred from language.
+    support_region: Literal["unspecified", "BD", "IN", "GB", "US"] = "unspecified"
 
 
 @lru_cache
