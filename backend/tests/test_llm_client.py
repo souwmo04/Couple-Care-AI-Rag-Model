@@ -126,3 +126,26 @@ def test_settings_reject_non_loopback_model_url() -> None:
     with pytest.raises(ValidationError):
         Settings(_env_file=None, host="0.0.0.0")  # noqa: S104
     assert Settings(_env_file=None, llm_base_url="http://localhost:8080").llm_base_url == "http://localhost:8080"
+
+
+async def test_api_key_file_is_sent_as_bearer(tmp_path) -> None:
+    key = tmp_path / "server.key"
+    key.write_text("abc123\n", encoding="utf-8")
+    seen = {}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen["auth"] = request.headers.get("authorization")
+        return httpx.Response(200, json={"choices": [{"message": {"content": "ok"}}]})
+
+    c = OpenAICompatibleClient("http://127.0.0.1:18080", "m", timeout=5, connect_timeout=1,
+                               transport=httpx.MockTransport(handler), api_key_file=key)  # fmt: skip
+    assert await c.complete(MESSAGES, GenerationParams()) == "ok"
+    assert seen["auth"] == "Bearer abc123"
+
+
+async def test_rejected_key_is_reported_clearly() -> None:
+    with pytest.raises(ModelOfflineError) as info:
+        await client_with(lambda r: httpx.Response(401, json={"error": "invalid key"})).complete(
+            MESSAGES, GenerationParams()
+        )
+    assert info.value.code == "model_auth"

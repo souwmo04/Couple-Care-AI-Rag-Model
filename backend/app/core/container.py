@@ -80,6 +80,7 @@ class Container:
             runtime.model_id,
             timeout=self.settings.llm_timeout_seconds,
             connect_timeout=self.settings.llm_connect_timeout_seconds,
+            api_key_file=self.settings.llm_api_key_file,
         )
 
     # -- storage ---------------------------------------------------------------------

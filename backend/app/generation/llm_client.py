@@ -16,6 +16,7 @@ import json
 import re
 from collections.abc import AsyncIterator
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Protocol
 
 import httpx
@@ -83,14 +84,27 @@ class OpenAICompatibleClient:
         timeout: float,
         connect_timeout: float,
         transport: httpx.AsyncBaseTransport | None = None,
+        api_key_file: Path | None = None,
     ) -> None:
         self.base_url = base_url.rstrip("/")
         self.model_id = model_id
         self._timeout = httpx.Timeout(timeout, connect=connect_timeout)
         self._transport = transport
+        self._api_key_file = api_key_file
+
+    def _headers(self) -> dict[str, str]:
+        """Bearer key written by scripts/start-model.ps1. Read per request so a restarted server's
+        new key is picked up; without it, any web page could use the local model via the browser."""
+        if self._api_key_file and self._api_key_file.exists():
+            key = self._api_key_file.read_text(encoding="utf-8").strip()
+            if key:
+                return {"Authorization": f"Bearer {key}"}
+        return {}
 
     def _client(self, timeout: httpx.Timeout | None = None) -> httpx.AsyncClient:
-        return httpx.AsyncClient(base_url=self.base_url, timeout=timeout or self._timeout, transport=self._transport)
+        return httpx.AsyncClient(
+            base_url=self.base_url, timeout=timeout or self._timeout, transport=self._transport, headers=self._headers()
+        )
 
     def _payload(self, messages: list[ChatMessage], params: GenerationParams, stream: bool) -> dict:
         payload: dict = {
@@ -113,6 +127,12 @@ class OpenAICompatibleClient:
         oom = _oom_message(body)
         if oom:
             raise ModelResponseError(oom, code="model_out_of_memory")
+        if response.status_code == 401:
+            raise ModelOfflineError(
+                "The local model server rejected the request (API key mismatch). "
+                "Restart it with scripts\\start-model.ps1.",
+                code="model_auth",
+            )
         if response.status_code == 503:
             raise ModelOfflineError("The local model server is still loading the model. Try again shortly.")
         raise ModelResponseError(f"The local model server returned an error (HTTP {response.status_code}).")

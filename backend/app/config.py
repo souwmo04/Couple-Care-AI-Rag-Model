@@ -81,7 +81,9 @@ class Settings(BaseSettings):
     log_message_content: bool = False
 
     # Local generation server (llama.cpp, OpenAI-compatible API)
-    llm_base_url: str = "http://127.0.0.1:8080"
+    # 18080 avoids the 8001-8100 range that Windows (Hyper-V/WSL) often reserves.
+    llm_base_url: str = "http://127.0.0.1:18080"
+    llm_api_key_file: Path = REPO_ROOT / "models" / "server.key"
     llm_timeout_seconds: float = 120.0
     llm_connect_timeout_seconds: float = 3.0
     models: list[ModelProfile] = DEFAULT_MODELS
