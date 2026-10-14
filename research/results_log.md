@@ -49,10 +49,9 @@ evaluation is not independent of the system (train/test leakage in all but name)
 estimate needs held-out safety descriptions written by people who have not seen the rules,
 including indirect, euphemistic and dialectal phrasings, reviewed by native Bangla speakers.
 
-### Not yet measured
+### Not yet measured (at the time of this entry)
 
-Generation quality, grounding, latency of generation, VRAM use, and Bangla fluency — the local
-model has not been downloaded or run on this machine yet.
+Generation quality, latency and VRAM — measured in later entries and in `docs/model-selection.md`.
 
 ---
 
