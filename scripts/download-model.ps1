@@ -69,7 +69,7 @@ Write-Host "llama-server: $($server.FullName)"
 # ---------------------------------------------------------------- GGUF model
 $file = "Qwen3-4B-Instruct-2507-$Quant.gguf"
 $target = Join-Path $Models $file
-$meta = Invoke-RestMethod -Uri "https://huggingface.co/api/models/$Repo/revision/$Revision?blobs=true"
+$meta = Invoke-RestMethod -Uri "https://huggingface.co/api/models/$Repo/revision/${Revision}?blobs=true"
 $entry = $meta.siblings | Where-Object { $_.rfilename -eq $file }
 if (-not $entry) { throw "$file is not present in $Repo at revision $Revision." }
 $expected = $entry.lfs.sha256
