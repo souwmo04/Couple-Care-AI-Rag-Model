@@ -36,7 +36,7 @@ export function ContextPanel({ message, activeCitation }: ContextPanelProps) {
         <h2 id="context-sources" className="flex items-center gap-2 text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
           <BookOpenText className="size-3.5" /> {t.chat.sources}
         </h2>
-        {!message ? (
+        {!message || message.status === 'error' ? (
           <p className="mt-4 text-sm leading-relaxed text-muted-foreground">{t.chat.selectMessage}</p>
         ) : sources.length === 0 ? (
           <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
