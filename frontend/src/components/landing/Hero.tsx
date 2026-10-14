@@ -1,4 +1,5 @@
 import { ArrowRight, LockKeyhole } from 'lucide-react'
+import { useEntrance } from '@/components/landing/Reveal'
 import { motion } from 'motion/react'
 import { Link } from 'react-router'
 import { ChatPreview } from '@/components/landing/ChatPreview'
@@ -10,6 +11,7 @@ const ease = [0.22, 1, 0.36, 1] as const
 
 export function Hero() {
   const t = useCopy()
+  const enter = useEntrance()
   return (
     <section className="relative isolate overflow-hidden">
       {/* Quiet, static backdrop: two soft glows and a hairline grid fading out. */}
@@ -21,11 +23,11 @@ export function Hero() {
 
       <div className="mx-auto grid max-w-7xl items-center gap-14 px-4 pb-20 pt-12 sm:px-6 sm:pt-16 lg:grid-cols-[1.08fr_1fr] lg:gap-10 lg:px-8 lg:pb-28 lg:pt-24">
         <div>
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease }}>
+          <motion.div initial={enter({ opacity: 0, y: 10 })} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease }}>
             <SectionEyebrow>{t.hero.eyebrow}</SectionEyebrow>
           </motion.div>
           <motion.h1
-            initial={{ opacity: 0, y: 18 }}
+            initial={enter({ opacity: 0, y: 18 })}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.9, ease, delay: 0.08 }}
             className="mt-6 text-balance font-display text-[clamp(2.75rem,7vw,5.5rem)] font-normal leading-[0.98] tracking-[-0.02em] text-foreground"
@@ -40,7 +42,7 @@ export function Hero() {
                   stroke="var(--accent)"
                   strokeWidth="3"
                   strokeLinecap="round"
-                  initial={{ pathLength: 0 }}
+                  initial={enter({ pathLength: 0 })}
                   animate={{ pathLength: 1 }}
                   transition={{ duration: 1.1, ease, delay: 0.7 }}
                 />
@@ -49,7 +51,7 @@ export function Hero() {
             {t.hero.titleC}
           </motion.h1>
           <motion.p
-            initial={{ opacity: 0, y: 14 }}
+            initial={enter({ opacity: 0, y: 14 })}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease, delay: 0.2 }}
             className="mt-8 max-w-xl text-lg leading-relaxed text-muted-foreground"
@@ -57,7 +59,7 @@ export function Hero() {
             {t.hero.lead}
           </motion.p>
           <motion.div
-            initial={{ opacity: 0, y: 12 }}
+            initial={enter({ opacity: 0, y: 12 })}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease, delay: 0.3 }}
             className="mt-10 flex flex-wrap items-center gap-3"
@@ -73,7 +75,7 @@ export function Hero() {
             </Button>
           </motion.div>
           <motion.p
-            initial={{ opacity: 0 }}
+            initial={enter({ opacity: 0 })}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.45 }}
             className="mt-8 flex max-w-lg items-start gap-2.5 text-sm leading-relaxed text-muted-foreground"

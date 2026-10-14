@@ -1,4 +1,5 @@
 import { BookOpenText, Check, ChevronDown, Copy, PlugZap, RefreshCw, ThumbsDown, ThumbsUp, TriangleAlert } from 'lucide-react'
+import { useEntrance } from '@/components/landing/Reveal'
 import { AnimatePresence, motion } from 'motion/react'
 import { memo, useMemo, useState, type ReactNode } from 'react'
 import Markdown, { type Components } from 'react-markdown'
@@ -60,6 +61,7 @@ export const AssistantMessage = memo(function AssistantMessage({
   onRetry,
 }: AssistantProps) {
   const t = useCopy()
+  const enter = useEntrance()
   const [copied, setCopied] = useState(false)
   const [rating, setRating] = useState<'helpful' | 'not_helpful' | null>(null)
   const [showEvidence, setShowEvidence] = useState(false)
@@ -122,7 +124,7 @@ export const AssistantMessage = memo(function AssistantMessage({
 
   return (
     <motion.article
-      initial={{ opacity: 0, y: 8 }}
+      initial={enter({ opacity: 0, y: 8 })}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
       className="group flex gap-3 sm:gap-4"
@@ -201,7 +203,7 @@ export const AssistantMessage = memo(function AssistantMessage({
             <AnimatePresence initial={false}>
               {showEvidence && (
                 <motion.div
-                  initial={{ height: 0, opacity: 0 }}
+                  initial={enter({ height: 0, opacity: 0 })}
                   animate={{ height: 'auto', opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
                   transition={{ duration: 0.25 }}
@@ -281,9 +283,10 @@ function ActionButton({ label, onClick, children, pressed }: { label: string; on
 
 export function UserMessage({ message }: { message: UiMessage }) {
   const t = useCopy()
+  const enter = useEntrance()
   return (
     <motion.article
-      initial={{ opacity: 0, y: 8 }}
+      initial={enter({ opacity: 0, y: 8 })}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
       className="flex justify-end"

@@ -1,4 +1,5 @@
 import { BookOpenText, Cpu, Languages } from 'lucide-react'
+import { useEntrance } from '@/components/landing/Reveal'
 import { motion } from 'motion/react'
 import { LogoMark } from '@/components/layout/Brand'
 import { Badge } from '@/components/ui/primitives'
@@ -12,6 +13,7 @@ const ease = [0.22, 1, 0.36, 1] as const
  */
 export function ChatPreview() {
   const t = useCopy()
+  const enter = useEntrance()
   return (
     <div className="relative mx-auto w-full max-w-[34rem]">
       {/* Organic backdrop */}
@@ -33,7 +35,7 @@ export function ChatPreview() {
       </svg>
 
       <motion.figure
-        initial={{ opacity: 0, y: 24, scale: 0.98 }}
+        initial={enter({ opacity: 0, y: 24, scale: 0.98 })}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.9, ease, delay: 0.15 }}
         className="glass relative overflow-hidden rounded-[1.75rem] shadow-lift"
@@ -49,7 +51,7 @@ export function ChatPreview() {
 
         <div className="space-y-4 px-5 py-6 sm:px-6">
           <motion.p
-            initial={{ opacity: 0, y: 10 }}
+            initial={enter({ opacity: 0, y: 10 })}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease, delay: 0.6 }}
             className="ml-auto max-w-[85%] rounded-2xl rounded-br-md bg-primary px-4 py-3 text-sm leading-relaxed text-primary-foreground"
@@ -58,7 +60,7 @@ export function ChatPreview() {
           </motion.p>
 
           <motion.div
-            initial={{ opacity: 0, y: 10 }}
+            initial={enter({ opacity: 0, y: 10 })}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, ease, delay: 1.2 }}
             className="max-w-[92%]"
@@ -70,7 +72,7 @@ export function ChatPreview() {
               </span>
             </p>
             <motion.div
-              initial={{ opacity: 0, y: 8 }}
+              initial={enter({ opacity: 0, y: 8 })}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, ease, delay: 1.8 }}
               className="mt-3 flex items-start gap-3 rounded-xl border border-border bg-surface-sunken px-3.5 py-3"
@@ -94,20 +96,20 @@ export function ChatPreview() {
 
       <motion.div
         aria-hidden
-        initial={{ opacity: 0, x: -12 }}
+        initial={enter({ opacity: 0, x: -12 })}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.7, ease, delay: 0.9 }}
-        className="glass absolute -left-4 top-16 hidden items-center gap-2 rounded-full px-3.5 py-2 text-xs font-medium shadow-soft sm:flex md:-left-10"
+        className="glass absolute -top-5 left-8 hidden items-center gap-2 rounded-full px-3.5 py-2 text-xs font-medium shadow-soft sm:flex"
       >
         <Languages className="size-3.5 text-lavender" />
         {t.hero.floatingLanguages}
       </motion.div>
       <motion.div
         aria-hidden
-        initial={{ opacity: 0, x: 12 }}
+        initial={enter({ opacity: 0, x: 12 })}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.7, ease, delay: 1.1 }}
-        className="glass absolute -right-3 bottom-20 hidden items-center gap-2 rounded-full px-3.5 py-2 text-xs font-medium shadow-soft sm:flex md:-right-8"
+        className="glass absolute -bottom-5 right-8 hidden items-center gap-2 rounded-full px-3.5 py-2 text-xs font-medium shadow-soft sm:flex"
       >
         <Cpu className="size-3.5 text-accent" />
         {t.hero.floatingLocal}
