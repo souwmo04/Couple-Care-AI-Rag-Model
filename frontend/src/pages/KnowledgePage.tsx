@@ -8,6 +8,7 @@ import { ConfirmDialog, Modal, Select } from '@/components/ui/overlay'
 import { Badge, Card, SectionEyebrow, Segmented, Skeleton } from '@/components/ui/primitives'
 import { keys, useKnowledgeStats } from '@/hooks/useBackend'
 import { useCopy } from '@/i18n'
+import { topicTitle } from '@/lib/topics'
 import { cn } from '@/lib/utils'
 import { ApiError, api } from '@/services/api'
 import type { KnowledgeStats, RetrievalTestResponse } from '@/types/api'
@@ -90,7 +91,7 @@ export default function KnowledgePage() {
     }
   }
 
-  const topicLabel = (k: string) => t.topics.items[k as keyof typeof t.topics.items]?.title ?? k
+  const topicLabel = (k: string) => topicTitle(t, k)
 
   return (
     <div className="px-4 pb-24 pt-12 sm:px-6 lg:px-8">
@@ -244,7 +245,7 @@ function SourceBrowser() {
                 <div className="mt-3 flex flex-wrap gap-1.5">
                   {s.synthetic && <Badge tone="coral">{t.common.syntheticBadge}</Badge>}
                   <Badge>{languageLabel(s.language)}</Badge>
-                  <Badge>{t.topics.items[s.topic as keyof typeof t.topics.items]?.title ?? s.topic}</Badge>
+                  <Badge>{topicTitle(t, s.topic)}</Badge>
                   <Badge tone="outline">
                     {s.passages} {t.knowledge.passagesCount}
                   </Badge>

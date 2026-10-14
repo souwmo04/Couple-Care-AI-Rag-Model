@@ -79,3 +79,9 @@ export const TOPIC_STARTERS: Record<'en' | 'bn' | 'banglish', Record<TopicId, st
     healthy_separation: 'Relationship ta shesh korar kotha bhabchi, kintu kivabe decide korbo bujhchi na. ',
   },
 }
+
+/** Display name for any index topic, including ones without a chat topic card (e.g. "safety"). */
+export function topicTitle(copy: { topics: { items: Record<string, { title: string }> }; nav: { safety: string } }, topic: string): string {
+  if (topic === 'safety') return copy.nav.safety
+  return copy.topics.items[topic]?.title ?? topic
+}

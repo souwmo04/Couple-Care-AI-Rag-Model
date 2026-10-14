@@ -2,6 +2,7 @@ import { BookOpenText, ExternalLink } from 'lucide-react'
 import { forwardRef } from 'react'
 import { Badge } from '@/components/ui/primitives'
 import { useCopy } from '@/i18n'
+import { topicTitle } from '@/lib/topics'
 import { cn } from '@/lib/utils'
 import type { SourceCard } from '@/types/api'
 
@@ -25,7 +26,7 @@ function safeUrl(url: string | null): string | null {
 export const SourceCardView = forwardRef<HTMLDivElement, { source: SourceCard; active?: boolean; compact?: boolean }>(
   ({ source, active, compact }, ref) => {
     const t = useCopy()
-    const topic = t.topics.items[source.topic as keyof typeof t.topics.items]?.title ?? source.topic
+    const topic = topicTitle(t, source.topic)
     const url = safeUrl(source.url)
     return (
       <div
