@@ -1,0 +1,161 @@
+"""Hybrid retrieval service: normalize → expand → dense + BM25 → RRF → rerank → filter."""
+
+from __future__ import annotations
+
+import threading
+import time
+from dataclasses import dataclass, field
+from typing import Literal
+
+from app.core.language import LanguageAnalysis, analyze_language, expand_query_terms, normalize_text
+from app.retrieval.bm25 import bm25_tokens
+from app.retrieval.embeddings import EmbedderHolder
+from app.retrieval.hybrid import FusedHit, reciprocal_rank_fusion
+from app.retrieval.index_store import IndexBundle
+from app.retrieval.passages import Passage
+from app.retrieval.reranker import Reranker
+
+Mode = Literal["hybrid", "dense", "bm25"]
+
+
+@dataclass(slots=True)
+class RetrievalParams:
+    final_k: int = 4
+    dense_k: int = 20
+    bm25_k: int = 20
+    threshold: float = 0.3
+    rerank: bool = False
+    expand: bool = True
+    mode: Mode = "hybrid"
+    language_filter: str | None = None
+    topic_filter: str | None = None
+
+
+@dataclass(slots=True)
+class RetrievedItem:
+    passage: Passage
+    hit: FusedHit
+    above_threshold: bool
+    rerank_score: float | None = None
+
+
+@dataclass(slots=True)
+class RetrievalResult:
+    query: str
+    normalized_query: str
+    analysis: LanguageAnalysis
+    expanded_terms: list[str]
+    items: list[RetrievedItem]
+    dense_available: bool
+    duration_ms: int
+    mode: str
+    notes: list[str] = field(default_factory=list)
+
+    @property
+    def relevant(self) -> list[RetrievedItem]:
+        return [i for i in self.items if i.above_threshold]
+
+
+class Retriever:
+    def __init__(self, embedder: EmbedderHolder, reranker: Reranker | None = None) -> None:
+        self.embedder = embedder
+        self.reranker = reranker
+        self._bundle: IndexBundle | None = None
+        self._lock = threading.RLock()
+
+    # -- index lifecycle -------------------------------------------------------------
+    def set_bundle(self, bundle: IndexBundle | None) -> None:
+        with self._lock:
+            self._bundle = bundle
+
+    @property
+    def bundle(self) -> IndexBundle | None:
+        with self._lock:
+            return self._bundle
+
+    def dense_available(self, bundle: IndexBundle | None = None) -> bool:
+        bundle = bundle or self.bundle
+        embedder = self.embedder.get()
+        return bool(
+            bundle
+            and bundle.vectors is not None
+            and embedder is not None
+            and embedder.name == bundle.embedding_model
+            and embedder.dimension == bundle.vectors.dimension
+        )
+
+    # -- search ----------------------------------------------------------------------
+    def search(self, query: str, params: RetrievalParams) -> RetrievalResult:
+        start = time.perf_counter()
+        normalized = normalize_text(query)
+        analysis = analyze_language(normalized)
+        bundle = self.bundle
+        notes: list[str] = []
+
+        base_tokens = bm25_tokens(normalized)
+        expanded = expand_query_terms(base_tokens) if params.expand else []
+
+        if bundle is None or not bundle.passages:
+            return RetrievalResult(query, normalized, analysis, expanded, [], False,
+                                   int((time.perf_counter() - start) * 1000), params.mode, ["index_missing"])
+
+        dense_ok = self.dense_available(bundle)
+        dense_hits: list[tuple[int, float]] = []
+        lexical_hits: list[tuple[int, float]] = []
+        mode = params.mode
+
+        if mode in {"hybrid", "dense"}:
+            if dense_ok:
+                embedder = self.embedder.get()
+                assert embedder is not None and bundle.vectors is not None
+                vector = embedder.embed_queries([normalized])[0]
+                dense_hits = bundle.vectors.search(vector, params.dense_k)
+            else:
+                notes.append("dense_unavailable")
+                if mode == "dense":
+                    mode = "bm25"
+        if mode in {"hybrid", "bm25"}:
+            lexical_hits = bundle.bm25.search(base_tokens + expanded, params.bm25_k)
+
+        fused = reciprocal_rank_fusion(dense_hits, lexical_hits)
+
+        # Optional metadata filters (used by the retrieval-test UI).
+        def _keep(p: Passage) -> bool:
+            if params.language_filter and p.language != params.language_filter:
+                return False
+            return not (params.topic_filter and p.topic != params.topic_filter)
+
+        candidates = [h for h in fused if _keep(bundle.passages[h.index])]
+
+        items = [RetrievedItem(bundle.passages[h.index], h, h.relevance >= params.threshold) for h in candidates]
+
+        if params.rerank and self.reranker and self.reranker.configured and items:
+            pool = items[: max(params.final_k * 3, 10)]
+            scores = self.reranker.rerank(normalized, [i.passage.text for i in pool])
+            if scores is not None:
+                for item, score in zip(pool, scores, strict=True):
+                    item.rerank_score = score
+                pool.sort(key=lambda i: i.rerank_score or 0.0, reverse=True)
+                items = pool + items[len(pool):]
+            else:
+                notes.append("reranker_unavailable")
+
+        items = _dedupe(items)[: params.final_k]
+        return RetrievalResult(
+            query, normalized, analysis, expanded, items, dense_ok,
+            int((time.perf_counter() - start) * 1000), mode, notes,
+        )
+
+
+def _dedupe(items: list[RetrievedItem]) -> list[RetrievedItem]:
+    """Drop near-duplicate passages (same document + heavily overlapping text)."""
+    kept: list[RetrievedItem] = []
+    seen_fingerprints: set[str] = set()
+    for item in items:
+        words = item.passage.text.split()
+        fingerprint = item.passage.document_id + "|" + " ".join(words[:25]).lower()
+        if fingerprint in seen_fingerprints:
+            continue
+        seen_fingerprints.add(fingerprint)
+        kept.append(item)
+    return kept
