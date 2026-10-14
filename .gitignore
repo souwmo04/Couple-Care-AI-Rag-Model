@@ -30,7 +30,8 @@ frontend/coverage/
 data/user/
 
 # Model weights & caches
-models/
+models/*
+!models/README.md
 *.gguf
 *.safetensors
 *.bin
