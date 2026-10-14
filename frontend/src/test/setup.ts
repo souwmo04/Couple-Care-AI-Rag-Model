@@ -1,8 +1,9 @@
 import '@testing-library/jest-dom/vitest'
-import { afterEach } from 'vitest'
+import { afterEach, vi } from 'vitest'
 import { cleanup } from '@testing-library/react'
 
 afterEach(() => {
+  vi.unstubAllGlobals()
   cleanup()
   localStorage.clear()
 })
@@ -22,3 +23,22 @@ if (!window.matchMedia) {
       dispatchEvent: () => false,
     }) as MediaQueryList
 }
+
+// jsdom lacks these browser APIs used by Radix and scroll handling.
+class ResizeObserverStub {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+globalThis.ResizeObserver ??= ResizeObserverStub as unknown as typeof ResizeObserver
+class IntersectionObserverStub {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+  takeRecords() {
+    return []
+  }
+}
+globalThis.IntersectionObserver ??= IntersectionObserverStub as unknown as typeof IntersectionObserver
+Element.prototype.scrollIntoView ??= function () {}
+Element.prototype.hasPointerCapture ??= () => false
