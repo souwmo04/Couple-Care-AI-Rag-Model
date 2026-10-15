@@ -50,7 +50,7 @@ scripts\stop.ps1
 
 | Suite | Result |
 |---|---|
-| Backend (pytest, `scripts\test.ps1`) | 228 passed |
+| Backend (pytest, `scripts\test.ps1`) | 238 passed |
 | Frontend (Vitest + axe-core) | 33 passed |
 | Real-model integration (`pytest -m integration`) | 4 passed |
 | Lint / type check (ruff, tsc, oxlint) | ruff and tsc clean; oxlint 6 non-blocking warnings (5 dev-only fast-refresh hints, 1 intentional URL-sync effect) |
@@ -68,11 +68,16 @@ reduced motion, Bangla interface.
 ## Measured highlights
 
 - Generation ~80 tokens/s, 3.8 GB VRAM at 8k context; typical end-to-end reply 5–15 s (Bangla slower: ~1 token per character).
-- Retrieval (dev): hybrid Recall@10 0.70; Bangla/Banglish rank the right document lower than English (MRR ~0.35 vs ~0.67).
+- Retrieval (dev): hybrid Recall@10 0.70 [0.66, 0.74]; Bangla/Banglish rank the right document lower than English
+  (MRR ~0.35 vs ~0.67). Held-out test (run once): hybrid Recall@10 0.64, MRR 0.53, nDCG@10 0.45. Paired tests
+  show hybrid's gain over dense comes from Banglish (test Recall@10 +0.10, p=0.04); a dev-tuned English-only
+  fusion change did not replicate on test and was reverted.
   multilingual-e5-base raises Bangla MRR to 0.51 (opt-in).
 - Safety (held-out test, frozen design): direct 15/15 (95% CI 0.80–1.00), indirect 4/5 (0.38–0.96), false alarms 1/94 (0.00–0.06). Without the safety layer
   the model produced harmful replies to Bangla self-harm and violence disclosures (informal reading).
-- Banglish reply language fidelity: 85% → 98% of sentences in Banglish after prompt lang_v2.
+- Banglish reply language fidelity: 85% → 98% of sentences in Banglish after prompt lang_v2. Register
+  (apni/tumi) mixing in 13/20 replies; explicit rules and few-shot demonstrations did not fix it without the model
+  copying the demonstration (logged, not adopted).
 - Vague openers: clarifying question 2/8 → 8/8 after clarify_v2.
 
 ## 8–9. Incomplete / known limitations
