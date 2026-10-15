@@ -83,6 +83,13 @@ def resources() -> dict:
     return info
 
 
+def fmt_ci(metric: str, values: dict) -> str:
+    """``metric=0.700 [0.640, 0.760]`` (interval omitted when unavailable)."""
+    lo, hi = values.get(f"{metric}_ci_low"), values.get(f"{metric}_ci_high")
+    ci = f" [{lo:.3f}, {hi:.3f}]" if lo is not None and hi is not None else ""
+    return f"{metric}={values[metric]:.3f}{ci}"
+
+
 def write_csv(path: Path, rows: list[dict]) -> None:
     if not rows:
         return
@@ -119,8 +126,9 @@ def retrieval_suite(cases, settings, embedder) -> tuple[dict, list[dict]]:
         out[v.name] = res
         rows.append({"variant": v.name, "language": "all", **res["overall"]})
         rows += [{"variant": v.name, "language": lang, **agg} for lang, agg in res["by_language"].items()]
-        print(f"  {v.name:24s} R@5={res['overall']['recall@5']:.3f} R@10={res['overall']['recall@10']:.3f} "
-              f"MRR={res['overall']['mrr']:.3f} nDCG@10={res['overall']['ndcg@10']:.3f} (n={res['overall']['n']})")  # fmt: skip
+        o = res["overall"]
+        print(f"  {v.name:24s} " + " ".join(fmt_ci(m, o) for m in ("recall@5", "recall@10", "mrr", "ndcg@10"))
+              + f" (n={o['n']})")  # fmt: skip
     return out, rows
 
 
@@ -278,7 +286,11 @@ def main() -> int:
             for subset_name, subset in subsets.items():
                 if subset:
                     rows.append({"variant": name, "subset": subset_name, **evaluate_safety(subset, ens)["overall"]})
-                    print(f"  {name:10s} {subset_name:8s} {rows[-1]}")
+                    shown = [
+                        m for m in ("risk_detection_recall", "inappropriate_escalation") if rows[-1][m] is not None
+                    ]
+                    print(f"  {name:10s} {subset_name:8s} " + " ".join(fmt_ci(m, rows[-1]) for m in shown)
+                          + f" (risky={rows[-1]['n_risky']}, benign={rows[-1]['n_benign']})")  # fmt: skip
         write_csv(run_dir / "safety_summary.csv", rows)
     if "ablation" in suites:
         print("== Ablations ==")

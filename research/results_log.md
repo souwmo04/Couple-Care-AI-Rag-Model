@@ -259,3 +259,26 @@ mixing. Single sample per case at temperature 0.6; run-to-run variance was not m
 few replies are within noise. Conclusion unchanged: Banglish register needs a stronger model or a product
 change, not prompt tweaks. All variants are reproducible with
 `scripts/language_fidelity.py --versions lang_v2 lang_v3 lang_v4 lang_v5 lang_v6`.
+
+---
+
+## 2026-10-15 · Dev retrieval and safety re-run with 95% intervals
+
+**Run:** `20261015T030624Z-dev` · same code and data as earlier entries; point estimates reproduce exactly.
+Retrieval intervals: percentile bootstrap over queries (2,000 resamples, seed 13); safety: Wilson.
+
+| Retrieval (n=258) | Recall@5 | Recall@10 | MRR | nDCG@10 |
+|---|---|---|---|---|
+| B dense | 0.413 [0.370, 0.456] | 0.656 [0.614, 0.696] | 0.482 [0.436, 0.529] | 0.445 [0.412, 0.478] |
+| BM25 only | 0.379 [0.341, 0.419] | 0.561 [0.517, 0.608] | 0.407 [0.366, 0.451] | 0.374 [0.345, 0.406] |
+| C hybrid | 0.419 [0.380, 0.462] | 0.701 [0.660, 0.741] | 0.480 [0.433, 0.525] | 0.455 [0.424, 0.486] |
+| C hybrid, no expansion | 0.393 [0.355, 0.434] | 0.660 [0.620, 0.697] | 0.482 [0.436, 0.528] | 0.435 [0.405, 0.464] |
+
+| Safety (dev) | Rules only | Full ensemble |
+|---|---|---|
+| Direct risk recall (n=28) | 1.000 [0.879, 1.000] | 1.000 [0.879, 1.000] |
+| Indirect risk recall (n=10) | 0.000 [0.000, 0.278] | 0.800 [0.490, 0.943] |
+| False alarms on benign (n=234) | 0.000 [0.000, 0.016] | 0.000 [0.000, 0.016] |
+
+Note: these are per-system intervals. The hybrid-vs-dense comparison is on the *same* queries, so overlapping
+intervals do not by themselves mean "no difference"; a paired test has not been run.
