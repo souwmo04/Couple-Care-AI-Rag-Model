@@ -17,7 +17,7 @@ const PrivacyPage = lazy(() => import('@/pages/InfoPages').then((m) => ({ defaul
 const SafetyPage = lazy(() => import('@/pages/InfoPages').then((m) => ({ default: m.SafetyPage })))
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'))
 
-export function createQueryClient() {
+function createQueryClient() {
   return new QueryClient({
     defaultOptions: { queries: { refetchOnWindowFocus: false, staleTime: 10_000 } },
   })

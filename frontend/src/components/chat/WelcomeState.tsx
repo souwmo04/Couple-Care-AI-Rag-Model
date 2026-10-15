@@ -1,5 +1,5 @@
 import { motion } from 'motion/react'
-import { useEntrance } from '@/components/landing/Reveal'
+import { useEntrance } from '@/hooks/useEntrance'
 import { LogoMark } from '@/components/layout/Brand'
 import { Segmented } from '@/components/ui/primitives'
 import { usePreferences } from '@/hooks/usePreferences'

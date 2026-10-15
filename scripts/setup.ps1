@@ -37,7 +37,7 @@ $env:PIP_CACHE_DIR = Join-Path $cache 'pip'
 $env:HF_HOME = Join-Path $cache 'huggingface'
 "[global]`ncache-dir = $env:PIP_CACHE_DIR`n" | Set-Content -Encoding ascii (Join-Path $Root '.venv\pip.ini')
 
-& $Py -m pip install --upgrade pip
+& $Py -m pip install --upgrade pip "setuptools>=83"  # older setuptools has known vulnerabilities (pip-audit)
 Write-Host 'Installing CPU-only PyTorch (keeps the GPU free for the language model)...'
 & $Py -m pip install torch==2.14.1 --index-url https://download.pytorch.org/whl/cpu
 Write-Host 'Installing backend dependencies...'

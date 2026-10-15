@@ -2,15 +2,10 @@ import { BookOpenText, ExternalLink } from 'lucide-react'
 import { forwardRef } from 'react'
 import { Badge } from '@/components/ui/primitives'
 import { useCopy } from '@/i18n'
+import { languageLabel } from '@/lib/languages'
 import { topicTitle } from '@/lib/topics'
 import { cn } from '@/lib/utils'
 import type { SourceCard } from '@/types/api'
-
-const LANGUAGE_LABELS: Record<string, string> = { en: 'English', bn: 'বাংলা', banglish: 'Banglish', mixed: 'Mixed' }
-
-export function languageLabel(code: string): string {
-  return LANGUAGE_LABELS[code] ?? code
-}
 
 function safeUrl(url: string | null): string | null {
   if (!url) return null

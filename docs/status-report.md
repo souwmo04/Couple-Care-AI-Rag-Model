@@ -53,9 +53,10 @@ scripts\stop.ps1
 | Backend (pytest, `scripts\test.ps1`) | 268 passed |
 | Frontend (Vitest + axe-core) | 33 passed |
 | Real-model integration (`pytest -m integration`) | 4 passed |
-| Lint / type check (ruff, tsc, oxlint) | ruff and tsc clean; oxlint 6 non-blocking warnings (5 dev-only fast-refresh hints, 1 intentional URL-sync effect) |
+| Lint / type check (ruff, tsc, oxlint) | clean (0 warnings) |
 | Production build | succeeds |
 | CI (GitHub Actions, Linux) | green |
+| Dependency audit (`scriptsudit.ps1`: pip-audit, torch by version, npm audit) | no known vulnerabilities (setuptools upgraded to ≥ 83) |
 
 ## 7. Fully functional
 

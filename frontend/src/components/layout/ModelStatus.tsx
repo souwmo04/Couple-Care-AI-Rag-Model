@@ -1,15 +1,7 @@
-import { useHealth } from '@/hooks/useBackend'
+import { useModelState } from '@/hooks/useModelState'
 import { useCopy } from '@/i18n'
 import { cn } from '@/lib/utils'
 
-export type ModelState = 'online' | 'offline' | 'backend-down' | 'checking'
-
-export function useModelState(): ModelState {
-  const health = useHealth()
-  if (health.isPending) return 'checking'
-  if (health.isError) return 'backend-down'
-  return health.data.model_server === 'online' ? 'online' : 'offline'
-}
 
 /** A small status pill. Reflects the *measured* state of the local model server, never an assumption. */
 export function ModelStatusPill({ className, showLabel = true }: { className?: string; showLabel?: boolean }) {

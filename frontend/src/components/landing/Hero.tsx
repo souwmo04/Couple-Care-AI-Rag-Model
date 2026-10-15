@@ -1,5 +1,5 @@
 import { ArrowRight, LockKeyhole } from 'lucide-react'
-import { useEntrance } from '@/components/landing/Reveal'
+import { useEntrance } from '@/hooks/useEntrance'
 import { motion } from 'motion/react'
 import { Link } from 'react-router'
 import { ChatPreview } from '@/components/landing/ChatPreview'

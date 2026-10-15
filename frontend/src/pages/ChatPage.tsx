@@ -7,7 +7,8 @@ import { ContextPanel } from '@/components/chat/ContextPanel'
 import { AssistantMessage, UserMessage } from '@/components/chat/MessageItem'
 import { WelcomeState } from '@/components/chat/WelcomeState'
 import { ThemeToggle } from '@/components/layout/Controls'
-import { ModelStatusPill, useModelState } from '@/components/layout/ModelStatus'
+import { ModelStatusPill } from '@/components/layout/ModelStatus'
+import { useModelState } from '@/hooks/useModelState'
 import { Button } from '@/components/ui/button'
 import { Sheet } from '@/components/ui/overlay'
 import { Badge, Skeleton, Tooltip } from '@/components/ui/primitives'
@@ -41,20 +42,22 @@ export default function ChatPage() {
 
   // Topic deep links (/chat?topic=communication) prefill the composer — never auto-send.
   const starterLanguage = prefs.responseLanguage === 'auto' ? prefs.uiLanguage : prefs.responseLanguage
-  const prefillTopic = useCallback(
-    (topic: TopicId) => {
-      composerRef.current?.setText(TOPIC_STARTERS[starterLanguage][topic])
-      setMobileNav(false)
-    },
+  const fillComposer = useCallback(
+    (topic: TopicId) => composerRef.current?.setText(TOPIC_STARTERS[starterLanguage][topic]),
     [starterLanguage],
   )
+  const prefillTopic = (topic: TopicId) => {
+    fillComposer(topic)
+    setMobileNav(false)
+  }
+  // Syncs from the URL (an external source); the mobile menu is closed on a fresh page load anyway.
   useEffect(() => {
     const topic = searchParams.get('topic') as TopicId | null
     if (topic && (TOPIC_IDS as readonly string[]).includes(topic)) {
-      prefillTopic(topic)
+      fillComposer(topic)
       setSearchParams({}, { replace: true })
     }
-  }, [searchParams, setSearchParams, prefillTopic])
+  }, [searchParams, setSearchParams, fillComposer])
 
   // Keep the newest content in view unless the reader has scrolled up.
   useEffect(() => {

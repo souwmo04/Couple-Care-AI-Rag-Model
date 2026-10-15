@@ -1,5 +1,5 @@
 import { BookOpenText, Cpu, Languages } from 'lucide-react'
-import { useEntrance } from '@/components/landing/Reveal'
+import { useEntrance } from '@/hooks/useEntrance'
 import { motion } from 'motion/react'
 import { LogoMark } from '@/components/layout/Brand'
 import { Badge } from '@/components/ui/primitives'

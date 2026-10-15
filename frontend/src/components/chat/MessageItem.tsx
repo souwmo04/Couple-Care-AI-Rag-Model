@@ -1,5 +1,5 @@
 import { BookOpenText, Check, ChevronDown, Copy, PlugZap, RefreshCw, ThumbsDown, ThumbsUp, TriangleAlert } from 'lucide-react'
-import { useEntrance } from '@/components/landing/Reveal'
+import { useEntrance } from '@/hooks/useEntrance'
 import { AnimatePresence, motion } from 'motion/react'
 import { memo, useMemo, useState, type ReactNode } from 'react'
 import Markdown, { type Components } from 'react-markdown'
