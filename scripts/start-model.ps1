@@ -6,13 +6,20 @@
   scripts\start-model.ps1                 # full GPU offload, 8k context
   scripts\start-model.ps1 -GpuLayers 20   # partial offload if VRAM is tight
   scripts\start-model.ps1 -Cpu            # CPU only (slow, but works without a GPU)
+  scripts\start-model.ps1 -ModelFile Qwen3.5-4B-Q4_K_M.gguf   # another GGUF in models\ (comparisons)
 #>
 [CmdletBinding()]
 param(
     [int]$GpuLayers = 99,
     [int]$Context = 8192,
     [int]$Port = 18080,
-    [switch]$Cpu
+    [switch]$Cpu,
+    # A GGUF file name inside models\ (defaults to the verified model in models\model.json).
+    [string]$ModelFile,
+    # Thinking/reasoning output. 'off' gives direct answers (the app is designed for non-thinking models).
+    [ValidateSet('off', 'on', 'auto')][string]$Reasoning = 'off',
+    # Server-side default presence penalty (0 = off). Some models (e.g. Qwen3.5) recommend 1.5 to curb repetition.
+    [ValidateRange(0.0, 2.0)][double]$PresencePenalty = 0
 )
 $ErrorActionPreference = 'Stop'
 $Root = Split-Path -Parent $PSScriptRoot
@@ -22,7 +29,12 @@ if (-not (Test-Path $configPath)) {
 }
 $cfg = Get-Content $configPath -Raw | ConvertFrom-Json
 if (-not (Test-Path $cfg.server)) { throw "llama-server not found at $($cfg.server)" }
-if (-not (Test-Path $cfg.model)) { throw "Model file not found at $($cfg.model)" }
+$modelPath = $cfg.model
+if ($ModelFile) {
+    if ($ModelFile -notmatch '^[A-Za-z0-9._-]+\.gguf$') { throw '-ModelFile must be a plain .gguf file name inside models' }
+    $modelPath = Join-Path $Root "models\$ModelFile"
+}
+if (-not (Test-Path $modelPath)) { throw "Model file not found at $modelPath" }
 
 # Windows (Hyper-V/WSL) reserves TCP port ranges; binding inside one fails with a confusing error.
 $reserved = netsh interface ipv4 show excludedportrange protocol=tcp | Select-String '^\s*(\d+)\s+(\d+)' | ForEach-Object {
@@ -44,15 +56,18 @@ $logs = Join-Path $Root 'logs'
 New-Item -ItemType Directory -Force -Path $logs | Out-Null
 $ngl = if ($Cpu) { 0 } else { $GpuLayers }
 $serverArgs = @(
-    '-m', ('"{0}"' -f $cfg.model),  # quoted: Start-Process does not quote paths with spaces
+    '-m', ('"{0}"' -f $modelPath),  # quoted: Start-Process does not quote paths with spaces
     '--host', '127.0.0.1', '--port', "$Port",
     '-c', "$Context",
     '-ngl', "$ngl",
     '--jinja',
+    '--reasoning', $Reasoning,
+    '--presence-penalty', ([string]::Format([cultureinfo]::InvariantCulture, '{0}', $PresencePenalty)),
     '--parallel', '1',
     '--no-webui',
     '--api-key-file', ('"{0}"' -f $keyFile)
 )
+Write-Host "Model: $(Split-Path -Leaf $modelPath)"
 Write-Host "Starting llama-server (GPU layers: $ngl, context: $Context) on http://127.0.0.1:$Port ..."
 $proc = Start-Process -FilePath $cfg.server -ArgumentList $serverArgs -PassThru -WindowStyle Hidden `
     -RedirectStandardOutput (Join-Path $logs 'model-server.out.log') `

@@ -10,6 +10,8 @@ language-instruction version and reports, per reply:
   * emoji_count       — emoji characters (should be 0)
   * mixed_register    — reply addresses the user with both apni and tumi forms outside quotes (bn/banglish)
   * register_match    — every address form outside quotes matches the form expected from the user's message
+  * repeated_sentences — sentences (≥4 words) that exactly repeat an earlier sentence in the same reply
+  * hindi_words       — common Romanized Hindi words that are not Bangla (banglish only; small fixed list)
 Detection is heuristic (see core/language.py); treat results as indicative, not definitive.
 Writes artifacts/evaluation_results/language-fidelity-<ts>.json.
 """
@@ -107,6 +109,10 @@ def with_few_shot(build, examples):
     return wrapped
 
 
+# Romanized Hindi words seen in replies that a Bangla speaker would not use (not exhaustive).
+HINDI_WORDS = frozenset(
+    "pehle pehile samajh samajhbo khud hai hain nahi nahin kyun lekin agar bahut accha matlab khushiya kya".split()
+)
 EMOJI_RE = re.compile("[\U0001f300-\U0001faff☀-➿]")
 SENT_RE = re.compile(r"(?<=[.!?।])\s+|\n+")
 ON_LANGUAGE = {"banglish": {"banglish", "mixed"}, "bn": {"bn"}, "en": {"en"}}
@@ -117,6 +123,9 @@ def score(answer: str, language: str, query: str = "") -> dict:
     sentences = [s for s in sentences if len(s.split()) >= 3]
     detected = [analyze_language(s).detected.value for s in sentences]
     on = [d in ON_LANGUAGE[language] for d in detected]
+    long_sentences = [s.lower() for s in sentences if len(s.split()) >= 4]
+    repeated = len(long_sentences) - len(set(long_sentences))
+    hindi = [w for w in re.findall(r"[a-z]+", answer.lower()) if w in HINDI_WORDS] if language == "banglish" else []
     apni, tumi = address_form_counts(answer)
     expected = user_address_form(query) if language == "banglish" else "apni"
     used = apni + tumi
@@ -127,6 +136,8 @@ def score(answer: str, language: str, query: str = "") -> dict:
         "script_leak": len(BENGALI_RE.findall(answer)) if language == "banglish" else 0,
         "emoji_count": len(EMOJI_RE.findall(answer)),
         "sentences": len(sentences),
+        "repeated_sentences": repeated,
+        "hindi_words": hindi,
         "demo_leak": [p for p in LEAK_PHRASES if p in answer.lower()],
     }
 
@@ -165,6 +176,8 @@ async def run(language: str, n: int, versions: list[str]) -> dict:
             "total_script_leak_chars": sum(r["script_leak"] for r in rows),
             "total_emojis": sum(r["emoji_count"] for r in rows),
             "replies_mixed_register": sum(bool(r["mixed_register"]) for r in rows),
+            "replies_with_repetition": sum(r["repeated_sentences"] > 0 for r in rows),
+            "replies_with_hindi_words": sum(bool(r["hindi_words"]) for r in rows),
             "replies_with_demo_leak": sum(bool(r["demo_leak"]) for r in rows),
             "register_match": f"{sum(r['register_match'] is True for r in rows)}/"
             f"{sum(r['register_match'] is not None for r in rows)}",
