@@ -80,7 +80,8 @@ reduced motion, Bangla interface.
 - **Knowledge base is synthetic** (18 project-written documents). Real, permission-cleared sources must be added.
 - **Evaluation data is fictional, single-author and silver-labelled**; no human annotation or inter-annotator
   agreement yet; small subsets (e.g. 5 indirect safety test cases), so intervals are wide (Wilson 95% intervals are now reported).
-- **Banglish generation is the weakest area**: some garbled phrasing, mixed apni/tumi.
+- **Banglish generation is the weakest area**: some garbled phrasing; 13/20 dev replies mix apni and tumi, and an
+  explicit prompt rule did not fix it (see results log).
 - Bangla/Banglish retrieval ranking trails English.
 - Language detection is heuristic (100% on the scenario set, untested on real text).
 - Reranker not configured; generation-model comparison (Gemma 3, Llama 3.2, Qwen3.5) not run.

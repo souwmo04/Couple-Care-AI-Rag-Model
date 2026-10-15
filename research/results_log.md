@@ -219,3 +219,24 @@ runs now emit `<metric>_ci_low` / `<metric>_ci_high` for every rate (Wilson) and
 Reading: the indirect-risk result is compatible with anything from ~40% to ~96% recall — it needs a much
 larger, independently written set before any claim. The clarification improvement is unlikely to be noise
 (intervals barely touch) but n=8 is small.
+
+---
+
+## 2026-10-15 · Banglish register (apni/tumi) — prompt experiment lang_v3, **not adopted**
+
+**Run:** `language-fidelity-banglish-20261015T025232Z.json` · 20 Banglish dev cases (all written neutrally or
+with apni) · config D pipeline · Qwen3-4B-Instruct-2507 Q4_K_M. New automatic metric: a reply is
+*mixed-register* if, outside quotation marks, it addresses the user with both apni and tumi forms
+(`app.core.language.address_form_counts`; quotes may span lines).
+
+| Prompt | On-language rate | Mixed-register replies | Register match | Emojis / Bengali-script leaks |
+|---|---|---|---|---|
+| lang_v2 (production) | 0.973 | 13/20 | 7/20 | 0 / 0 |
+| lang_v3 (explicit "ONLY apni; tumi only inside quotes") | 0.987 | 15/20 | 5/20 | 0 / 0 |
+
+The explicit rule did not help (difference within noise). Reading the replies: tumi appears mostly (a) in
+partner-directed example lines the model paraphrases *without* quotation marks, and (b) in imperatives
+aimed at the user ("Ekta shanto kotha bolo"), often in garbled sentences. This looks like a capability limit
+of the 4B model in Romanized Bangla, not an instruction gap. lang_v2 stays in production. Candidate fixes
+for later: a stronger generator, few-shot assistant turns, or answering Banglish users in Bangla script
+(product decision).

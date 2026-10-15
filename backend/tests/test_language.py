@@ -2,7 +2,15 @@ from __future__ import annotations
 
 import pytest
 
-from app.core.language import analyze_language, expand_query_terms, normalize_text, response_language_for, tokenize
+from app.core.language import (
+    address_form_counts,
+    analyze_language,
+    expand_query_terms,
+    normalize_text,
+    response_language_for,
+    tokenize,
+    user_address_form,
+)
 from app.core.schemas import DetectedLanguage as L
 
 
@@ -114,3 +122,22 @@ def test_common_banglish_sentences_are_detected(text: str) -> None:
 )
 def test_english_sentences_are_not_banglish(text: str) -> None:
     assert analyze_language(text).detected == L.EN
+
+
+@pytest.mark.parametrize(
+    ("text", "expected"),
+    [
+        ("Apni ki bolben, ami ki korbo?", "apni"),
+        ("tumi bolo to ami ki korbo, tomar ki mone hoy?", "tumi"),
+        ('amar partner amake bole "tumi kichu bujho na"', "apni"),  # quoted partner speech ignored
+        ("Amra protidin jhogra kori", "apni"),  # no address form -> respectful default
+        ("তুমি বলো আমি কী করব", "tumi"),
+    ],
+)
+def test_user_address_form(text: str, expected: str) -> None:
+    assert user_address_form(text) == expected
+
+
+def test_address_form_counts_ignore_quotes() -> None:
+    reply = 'Apni ekta shanto somoy bolte paren: "Tumi jokhon phone dekho, amar kharap lage." Apnar feeling valid.'
+    assert address_form_counts(reply) == (2, 0)

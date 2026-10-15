@@ -1,6 +1,6 @@
-"""Measure whether replies stay in the requested language (prompt ablation: lang_v1 vs lang_v2).
+"""Measure whether replies stay in the requested language and register (prompt ablation).
 
-    python scripts/language_fidelity.py --language banglish --n 20
+    python scripts/language_fidelity.py --language banglish --n 20 --versions lang_v2 lang_v3
 
 For each dev case in the language, runs the production pipeline (config D) once per
 language-instruction version and reports, per reply:
@@ -8,6 +8,8 @@ language-instruction version and reports, per reply:
                          (banglish: banglish/mixed; bn: bn; en: en) by app.core.language
   * script_leak       — Bengali characters in a Banglish reply (should be 0)
   * emoji_count       — emoji characters (should be 0)
+  * mixed_register    — reply addresses the user with both apni and tumi forms outside quotes (bn/banglish)
+  * register_match    — every address form outside quotes matches the form expected from the user's message
 Detection is heuristic (see core/language.py); treat results as indicative, not definitive.
 Writes artifacts/evaluation_results/language-fidelity-<ts>.json.
 """
@@ -31,7 +33,7 @@ if hasattr(sys.stdout, "reconfigure"):
 
 from app.config import get_settings  # noqa: E402
 from app.core import prompts  # noqa: E402
-from app.core.language import BENGALI_RE, analyze_language  # noqa: E402
+from app.core.language import BENGALI_RE, address_form_counts, analyze_language, user_address_form  # noqa: E402
 from app.evaluation.dataset import load_cases  # noqa: E402
 
 LANG_V1 = {
@@ -45,25 +47,42 @@ LANG_V1 = {
         "English words naturally (e.g. 'Apni ja feel korchen ta khub swabhabik'). Do not switch to Bengali script."
     ),
 }
+LANG_V2 = dict(prompts.LANGUAGE_INSTRUCTIONS)  # production (lang_v2)
+# lang_v3 (experiment, not adopted — see research/results_log.md): explicit single-register rule. All dev
+# Banglish cases address the assistant neutrally or with apni, so the apni rule is the one exercised.
+LANG_V3 = LANG_V2 | {
+    "banglish": LANG_V2["banglish"].replace(
+        "Use respectful 'apni' unless the user writes with 'tumi'.",
+        "Address the user ONLY with respectful 'apni' forms (apni, apnar, apnake) and matching verbs "
+        "(korchen, bolben, paren). Never address the user as 'tumi'. Wording the user could say to their partner "
+        "may use tumi, but only inside quotation marks.",
+    ),
+}
+VERSIONS = {"lang_v1": LANG_V1, "lang_v2": LANG_V2, "lang_v3": LANG_V3}
 EMOJI_RE = re.compile("[\U0001f300-\U0001faff☀-➿]")
 SENT_RE = re.compile(r"(?<=[.!?।])\s+|\n+")
 ON_LANGUAGE = {"banglish": {"banglish", "mixed"}, "bn": {"bn"}, "en": {"en"}}
 
 
-def score(answer: str, language: str) -> dict:
+def score(answer: str, language: str, query: str = "") -> dict:
     sentences = [s.strip(" *_-\"'") for s in SENT_RE.split(answer)]
     sentences = [s for s in sentences if len(s.split()) >= 3]
     detected = [analyze_language(s).detected.value for s in sentences]
     on = [d in ON_LANGUAGE[language] for d in detected]
+    apni, tumi = address_form_counts(answer)
+    expected = user_address_form(query) if language == "banglish" else "apni"
+    used = apni + tumi
     return {
         "on_language_rate": sum(on) / len(on) if on else None,
+        "mixed_register": bool(apni and tumi) if language != "en" else None,
+        "register_match": (used == (apni if expected == "apni" else tumi)) if language != "en" and used else None,
         "script_leak": len(BENGALI_RE.findall(answer)) if language == "banglish" else 0,
         "emoji_count": len(EMOJI_RE.findall(answer)),
         "sentences": len(sentences),
     }
 
 
-async def run(language: str, n: int) -> dict:
+async def run(language: str, n: int, versions: list[str]) -> dict:
     from app.core.container import Container
     from app.core.orchestrator import Orchestrator
     from app.core.schemas import ChatRequest, LanguageCode, RelationshipStage
@@ -75,17 +94,18 @@ async def run(language: str, n: int) -> dict:
         raise SystemExit("Local model server is not reachable; start scripts\\start-model.ps1.")
     cases = [c for c in load_cases(ROOT / "data/evaluation/scenarios.jsonl", "dev")
              if c.language == language and c.safety_category == "none" and not c.out_of_scope][:n]  # fmt: skip
-    v2 = dict(prompts.LANGUAGE_INSTRUCTIONS)
     results: dict = {}
-    for version, table in (("lang_v1", LANG_V1), ("lang_v2", v2)):
+    for version in versions:
         prompts.LANGUAGE_INSTRUCTIONS.clear()
-        prompts.LANGUAGE_INSTRUCTIONS.update(table)
+        prompts.LANGUAGE_INSTRUCTIONS.update(VERSIONS[version])
         rows = []
         for i, case in enumerate(cases, 1):
             req = ChatRequest(message=case.user_query, language=LanguageCode(language),
                               relationship_stage=RelationshipStage(case.relationship_stage))  # fmt: skip
             resp = await Orchestrator(container).respond(req, owner=f"lf-{version}")
-            rows.append({"case_id": case.case_id, "answer": resp.answer, **score(resp.answer, language)})
+            rows.append(
+                {"case_id": case.case_id, "answer": resp.answer, **score(resp.answer, language, case.user_query)}
+            )
             print(f"  {version} {i}/{len(cases)}", end="\r")
         rates = [r["on_language_rate"] for r in rows if r["on_language_rate"] is not None]
         results[version] = {
@@ -93,6 +113,9 @@ async def run(language: str, n: int) -> dict:
             "replies_fully_on_language": sum(r == 1.0 for r in rates),
             "total_script_leak_chars": sum(r["script_leak"] for r in rows),
             "total_emojis": sum(r["emoji_count"] for r in rows),
+            "replies_mixed_register": sum(bool(r["mixed_register"]) for r in rows),
+            "register_match": f"{sum(r['register_match'] is True for r in rows)}/"
+            f"{sum(r['register_match'] is not None for r in rows)}",
             "n": len(rows),
             "rows": rows,
         }
@@ -104,8 +127,9 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--language", choices=["banglish", "bn", "en"], default="banglish")
     ap.add_argument("--n", type=int, default=20)
+    ap.add_argument("--versions", nargs="+", choices=list(VERSIONS), default=["lang_v2", "lang_v3"])
     args = ap.parse_args()
-    results = asyncio.run(run(args.language, args.n))
+    results = asyncio.run(run(args.language, args.n, args.versions))
     out = (
         ROOT
         / "artifacts"

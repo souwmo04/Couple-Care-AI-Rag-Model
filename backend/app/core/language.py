@@ -232,3 +232,25 @@ def output_token_allowance(language: str, base: int) -> int:
     truncates Bangla replies. Scale the allowance by response language."""
     factor = {"bn": 2.5, "banglish": 1.3}.get(language, 1.0)
     return min(int(base * factor), 2048)
+
+
+# Second-person address forms. Bangla has a respectful (apni) and a familiar (tumi) "you"; replies
+# should use one consistently. Quoted speech is ignored because suggested wording to a partner
+# ("Tumi jokhon…") legitimately uses tumi inside an apni reply.
+APNI_FORMS = frozenset("apni apnar apnake apnara apnader apnio আপনি আপনার আপনাকে আপনারা আপনাদের".split())
+TUMI_FORMS = frozenset("tumi tomar tomake tomay tomra tomader tmi tmr তুমি তোমার তোমাকে তোমায় তোমরা তোমাদের".split())
+# Quotes may span lines (suggested scripts often run over several sentences) but are length-capped so an
+# unmatched quote mark cannot swallow the rest of a reply.
+QUOTED_RE = re.compile(r'"[^"]{0,600}"|“[^”]{0,600}”|‘[^’]{0,600}’|«[^»]{0,600}»')
+
+
+def address_form_counts(text: str) -> tuple[int, int]:
+    """(apni-form count, tumi-form count) outside quoted speech."""
+    tokens = [t.lower() for t in TOKEN_RE.findall(QUOTED_RE.sub(" ", normalize_text(text)))]
+    return sum(t in APNI_FORMS for t in tokens), sum(t in TUMI_FORMS for t in tokens)
+
+
+def user_address_form(text: str) -> str:
+    """'tumi' only when the user clearly writes in the familiar register; otherwise respectful 'apni'."""
+    apni, tumi = address_form_counts(text)
+    return "tumi" if tumi > apni else "apni"
