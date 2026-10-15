@@ -372,6 +372,12 @@ html[data-motion='reduced'] *::after {
 }
 
 /* StretchText — Archivo width/weight axes */
+/* Invisible copy at the widest/heaviest setting reserves each letter's slot, so the animation never reflows. */
+.stretch-ghost {
+  font-family: var(--font-display);
+  font-stretch: 125%;
+  font-weight: 900;
+}
 .stretch-letter {
   font-family: var(--font-display);
   font-stretch: 100%;

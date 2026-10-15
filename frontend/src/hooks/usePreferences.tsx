@@ -17,7 +17,8 @@ export interface Preferences {
 }
 
 export const DEFAULT_PREFERENCES: Preferences = {
-  theme: 'system',
+  // Light by default (the neo-brutalist light theme is the primary design); 'system' and 'dark' stay available.
+  theme: 'light',
   motion: 'system',
   fontScale: 1,
   uiLanguage: 'en',

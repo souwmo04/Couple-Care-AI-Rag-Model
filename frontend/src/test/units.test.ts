@@ -44,7 +44,7 @@ describe('preferences', () => {
 
   it('survives corrupt JSON', () => {
     localStorage.setItem('couplecare.prefs', '{oops')
-    expect(loadPreferences().theme).toBe('system')
+    expect(loadPreferences().theme).toBe('light') // corrupt storage falls back to the default (light)
   })
 })
 
