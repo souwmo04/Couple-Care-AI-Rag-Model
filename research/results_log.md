@@ -333,3 +333,47 @@ the production default was reverted to plain RRF (`ENGLISH_LEXICAL_WEIGHT = 1.0`
 ablation (`C_hybrid_en_dense_rank`). On test, hybrid's benefit over dense is again concentrated in Banglish
 (Recall@10 +0.098 [+0.010, +0.201], p=0.04). This is a reminder that dev-selected settings with p≈0.02 on
 ~100 queries can be noise, and the test split has now been used once for retrieval.
+
+---
+
+## 2026-10-15 · Alternative generator: Qwen3.5-4B (Q4_K_M) vs Qwen3-4B-Instruct-2507 (current)
+
+**Model:** `unsloth/Qwen3.5-4B-GGUF@e87f1764`, `Qwen3.5-4B-Q4_K_M.gguf` (2.74 GB, SHA-256 `00fe7986…` verified,
+Apache-2.0, text weights only — the vision projector was not downloaded). Served by the same llama.cpp b11603
+with `--reasoning off` (direct answers, like the current non-thinking model). Started with
+`scripts\start-model.ps1 -ModelFile Qwen3.5-4B-Q4_K_M.gguf [-PresencePenalty 1.5]`. Same prompts
+(`system_v1+lang_v2+clarify_v2`), retrieval, safety layer and cases; one sample per case, temperature 0.6.
+
+**Banglish fidelity (20 dev cases, `language_fidelity.py`; Qwen3 numbers rescored with the new metrics):**
+
+| Generator | On-language | Mixed apni/tumi | Replies with repeated sentences | Replies with Hindi words |
+|---|---|---|---|---|
+| Qwen3-4B-2507 (current) | 0.973 | 13/20 | 0/20 | 4/20 |
+| Qwen3.5-4B | 0.988 | **2/20** | **13/20** (some loop one sentence 3–4×) | 4/20 |
+| Qwen3.5-4B, presence penalty 1.5 (Qwen's recommended setting) | 0.996 | 4/20 | 6/20 | 5/20 |
+
+**Config D, 80 stratified dev cases (same cases as the clarify_v2 entry; Qwen3.5 with presence penalty 1.5):**
+
+| Generator | Clarification (n=8) | Over-clarification | Out-of-scope ungrounded (n=6) | Risk detection (n=29) | Inappropriate escalation | p50 / p95 |
+|---|---|---|---|---|---|---|
+| Qwen3-4B-2507 | 8/8 | 0.32 | 4/6 | 0.93 | 0.00 | 13.1 s / 31.0 s |
+| Qwen3.5-4B | 8/8 | **0.51** [0.36, 0.67] | 4/6 | 0.93 | 0.00 | **10.7 s** / 23.6 s |
+
+Risk detection/escalation are identical by construction (the safety layer does not depend on the generator).
+VRAM after load: ~3.1 GB (vs ~3.8 GB) at 8k context; ~70 tokens/s.
+
+**Reading (single reader, not blind):** English replies are comparable and good from both. Bangla-script replies
+are mediocre from both (Qwen3.5 somewhat more fluent; both have odd phrasing, and each produced one off-topic
+reply to the out-of-scope weather question). Qwen3.5 keeps "apni" consistently in Banglish but its Banglish is
+not more coherent — Hindi words ("pehile", "samajhbo", "khud") and repetition loops. It ends ordinary answers
+with a question much more often, and once cited [S1] in an out-of-scope refusal.
+
+**Safety-relevant observation affecting both models:** on generated *caution/support* replies (indirect or
+moderate risk), both models apply the system prompt's "offer more than one interpretation" to controlling or
+violent behaviour — e.g. Qwen3.5: "He might believe he is protecting you"; Qwen3.5 (bn) describes being hit
+during anger as "physical contact"; Qwen3 frames hiding marks under long sleeves as a privacy question. This is
+addressed in the next entry.
+
+**Decision:** keep Qwen3-4B-Instruct-2507 as the default. Qwen3.5-4B is faster, lighter and holds the Banglish
+register, but repeats itself, over-asks questions and is not clearly better in Bangla or Banglish quality.
+It remains available for experiments via `-ModelFile`.
