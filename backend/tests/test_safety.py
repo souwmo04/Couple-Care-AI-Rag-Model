@@ -240,3 +240,20 @@ def test_rejections_of_excuses_and_self_statements_kept(sentence: str) -> None:
 def test_excuse_check_not_applied_without_risk() -> None:
     text = "When a plan is forgotten, it can feel dismissive, even if it wasn't intentional."
     assert check_response(text, SafetyLevel.NONE, set()).text == text
+
+
+@pytest.mark.parametrize(
+    ("text", "expected"),
+    [
+        ("I have to wear long sleeves so nobody sees the marks from last weekend.", "support"),
+        ("Last week er dag gulo jate keu na dekhe tai lomba hatar jama pore thaki.", "support"),
+        ("গত সপ্তাহের দাগগুলো যেন কেউ না দেখে তাই লম্বা হাতার জামা পরি।", "support"),
+        ("I got low marks and I hide my report card.", "none"),
+        ("I wear long sleeves because I feel cold.", "none"),
+        ("My shirt had a tea dag so I changed it.", "none"),
+    ],
+)
+def test_hidden_injury_rules(text: str, expected: str) -> None:
+    from app.safety.classifier import RuleClassifier, SafetyEnsemble
+
+    assert decide(SafetyEnsemble([RuleClassifier()]).assess(text), "en").level.value == expected

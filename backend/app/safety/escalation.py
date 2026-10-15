@@ -213,6 +213,15 @@ SEMANTIC_ADDENDA: dict[RiskCategory, str] = {
         "their local emergency number or a crisis line, or someone near them, now. Do not give relationship "
         "advice before acknowledging this. Do not invent phone numbers."
     ),
+    # Added 2026-10-15: indirect injury descriptions were being answered as questions about appearance.
+    C.PHYSICAL_VIOLENCE: (
+        "SAFETY CONTEXT: The message may indirectly describe physical harm — for example hiding marks, bruises or "
+        "injuries. Do not treat it as a question about appearance, privacy or self-confidence. Respond warmly, then "
+        "gently and directly ask whether someone has hurt them and whether they are safe now. Do NOT suggest asking "
+        "or confronting the partner about it, and do not suggest joint counselling. Mention that specialised "
+        "domestic-violence support services and trusted people can help, without inventing names or phone numbers, "
+        "and that in immediate danger they should contact their local emergency number." + _NO_EXCUSES
+    ),
 }
 SEMANTIC_DEFAULT_ADDENDUM = (
     "SAFETY CONTEXT: The message may indirectly describe harm, fear, control, threats or being followed. "

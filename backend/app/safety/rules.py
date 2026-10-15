@@ -122,6 +122,24 @@ RULES: tuple[Rule, ...] = (
     ),
     _r(R.PHYSICAL_VIOLENCE, r"\b(?:hit|slapped|punched|kicked|beat|choked|strangled|shoved|pushed) me\b"),
     _r(R.PHYSICAL_VIOLENCE, r"\b(?:physically (?:abusive|abuses|hurt)|domestic violence)\b"),
+    # Hiding injuries (added 2026-10-15). "marks" alone is not enough in South Asian English (exam marks), so
+    # it needs a concealment cue such as long sleeves or makeup.
+    _r(
+        R.PHYSICAL_VIOLENCE,
+        r"\b(?:long sleeves|full sleeves|makeup|concealer|scarf|sunglasses)\b.{0,50}\b(?:marks|bruises|bruising|injur(?:y|ies))\b"
+        r"|\b(?:hide|hiding|cover|covering)\b.{0,30}\bbruis(?:e|es|ing)\b",
+    ),
+    _r(
+        R.PHYSICAL_VIOLENCE,
+        r"(?:দাগ|কালশিটে|কালশিটা).{0,40}(?:কেউ না দেখে|লুকা|ঢেকে|ঢাকতে)|(?:লম্বা হাতার|ফুল হাতা).{0,40}(?:দাগ|কালশিটে)",
+        language="bn",
+    ),
+    _r(
+        R.PHYSICAL_VIOLENCE,
+        r"\b(?:dag|daag|kalshite|kalsite)\b.{0,40}\b(?:keu na dekhe|lukai|lukiye|lukate|dheke|dhakte)\b"
+        r"|\b(?:lomba hatar|full hatar|full sleeve)\b.{0,40}\b(?:dag|daag|kalshite)\b",
+        language="banglish",
+    ),
     _r(
         R.PHYSICAL_VIOLENCE,
         r"(?:গায়ে হাত (?:তোলে|তুলেছে|তুলল)|মারধর|থাপ্পড় (?:মারে|মেরেছে|দিয়েছে)|আমাকে মারে|আমাকে মেরেছে|গলা চেপে|লাথি (?:মারে|মেরেছে))",
