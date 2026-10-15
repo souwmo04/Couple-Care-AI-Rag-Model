@@ -216,6 +216,86 @@
       "topic": "trust_jealousy",
       "synthetic": true,
       "notes": "Synthetic development document. Not authoritative relationship guidance."
+    },
+    {
+      "id": "syn-en-meeting-approaching",
+      "path": "synthetic/en_meeting_approaching.md",
+      "title": "Meeting Someone and Starting a Conversation",
+      "organization": "CoupleCare AI project (synthetic example)",
+      "license": "CC0-1.0 (project-authored synthetic text)",
+      "permission": "project-authored",
+      "synthetic": true,
+      "language": "en",
+      "topic": "dating_commitment",
+      "audience": [
+        "single",
+        "one_sided"
+      ],
+      "notes": "Synthetic development document. Not authoritative relationship guidance."
+    },
+    {
+      "id": "syn-en-first-dates-texting",
+      "path": "synthetic/en_first_dates_texting.md",
+      "title": "First Dates and Early Texting",
+      "organization": "CoupleCare AI project (synthetic example)",
+      "license": "CC0-1.0 (project-authored synthetic text)",
+      "permission": "project-authored",
+      "synthetic": true,
+      "language": "en",
+      "topic": "dating_commitment",
+      "audience": [
+        "single",
+        "situationship"
+      ],
+      "notes": "Synthetic development document. Not authoritative relationship guidance."
+    },
+    {
+      "id": "syn-en-one-sided-feelings",
+      "path": "synthetic/en_one_sided_feelings.md",
+      "title": "When the Feelings Are One-Sided",
+      "organization": "CoupleCare AI project (synthetic example)",
+      "license": "CC0-1.0 (project-authored synthetic text)",
+      "permission": "project-authored",
+      "synthetic": true,
+      "language": "en",
+      "topic": "dating_commitment",
+      "audience": [
+        "one_sided",
+        "single"
+      ],
+      "notes": "Synthetic development document. Not authoritative relationship guidance."
+    },
+    {
+      "id": "syn-bn-meeting-dating",
+      "path": "synthetic/bn_meeting_dating.md",
+      "title": "কারও সঙ্গে পরিচয়, কথা শুরু আর প্রথম দেখা",
+      "organization": "CoupleCare AI project (synthetic example)",
+      "license": "CC0-1.0 (project-authored synthetic text)",
+      "permission": "project-authored",
+      "synthetic": true,
+      "language": "bn",
+      "topic": "dating_commitment",
+      "audience": [
+        "single",
+        "one_sided"
+      ],
+      "notes": "Synthetic development document. Not authoritative relationship guidance."
+    },
+    {
+      "id": "syn-banglish-meeting-dating",
+      "path": "synthetic/banglish_meeting_dating.md",
+      "title": "Kauke bhalo lage: kotha shuru, propose ar \"na\" shunle ki korben",
+      "organization": "CoupleCare AI project (synthetic example)",
+      "license": "CC0-1.0 (project-authored synthetic text)",
+      "permission": "project-authored",
+      "synthetic": true,
+      "language": "banglish",
+      "topic": "dating_commitment",
+      "audience": [
+        "single",
+        "one_sided"
+      ],
+      "notes": "Synthetic development document. Not authoritative relationship guidance."
     }
   ]
 }

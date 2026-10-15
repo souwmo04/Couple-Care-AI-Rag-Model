@@ -17,7 +17,7 @@ model and retrieval-augmented generation (RAG) with source citations and an inde
 |---|---|
 | ![Chat in Bangla](docs/screenshots/chat-bangla.jpg) | ![Knowledge page](docs/screenshots/knowledge-dark.jpg) |
 
-_Screenshots of the real app (2026-10-16). The chat screenshots were taken in optional cloud mode (Groq `openai/gpt-oss-120b`, note the “Cloud model (Groq)” badge); the default local mode uses Qwen3-4B on the RTX 4060. The knowledge base shown is the bundled synthetic development corpus — which is why the coach-mode example lists loosely related guides: it has no material on meeting someone new yet._
+_Screenshots of the real app (2026-10-16). The chat screenshots were taken in optional cloud mode (Groq `openai/gpt-oss-120b`, note the “Cloud model (Groq)” badge); the default local mode uses Qwen3-4B on the RTX 4060. The knowledge base is the bundled synthetic development corpus. The coach-mode screenshot was taken before the dating guides were added (its side panel lists older guides); replies to that question now draw on the new “Meeting Someone and Starting a Conversation” guide._
 
 ## Status (2026-10-15)
 

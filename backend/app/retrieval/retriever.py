@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 import threading
 import time
 from dataclasses import dataclass, field
@@ -37,6 +38,8 @@ class RetrievalParams:
     english_lexical_weight: float = ENGLISH_LEXICAL_WEIGHT
     language_filter: str | None = None
     topic_filter: str | None = None
+    # The user's relationship stage (ChatRequest.relationship_stage); used to rank audience-tagged documents.
+    stage: str | None = None
 
 
 @dataclass(slots=True)
@@ -158,6 +161,7 @@ class Retriever:
             return not (params.topic_filter and p.topic != params.topic_filter)
 
         candidates = [h for h in fused if _keep(bundle.passages[h.index])]
+        candidates = _apply_audience(candidates, bundle.passages, params.stage, normalized)
 
         items = [RetrievedItem(bundle.passages[h.index], h, h.relevance >= params.threshold) for h in candidates]
 
@@ -198,3 +202,40 @@ def _dedupe(items: list[RetrievedItem]) -> list[RetrievedItem]:
         seen_fingerprints.add(fingerprint)
         kept.append(item)
     return kept
+
+
+# Stages that always mean an established partner. "dating" and "situationship" can still be early days (first
+# dates, getting to know someone), so for them — and for "unspecified" — the message itself decides: a partner
+# word or a couple's "we/our" means the person is already in a relationship.
+PARTNERED_STAGES = {"engaged", "married", "long_distance"}
+PARTNER_RE = re.compile(
+    r"\b(?:my (?:boy|girl)friend|boyfriend|girlfriend|husband|wife|fianc[ée]e?|spouse|my partner|my bf|my gf|we|our)\b"
+    r"|স্বামী|স্ত্রী|বউ|প্রেমিক|প্রেমিকা|বাগদত্ত|আমরা|আমাদের"
+    r"|\b(?:shami|stri|bou|bf|gf|jamai|amra|amader)\b",
+    re.IGNORECASE,
+)
+AUDIENCE_DEMOTE = 0.6
+AUDIENCE_BOOST = 1.3
+
+
+def _apply_audience(hits: list[FusedHit], passages: list[Passage], stage: str | None, query: str) -> list[FusedHit]:
+    """Re-rank documents written for a particular stage (e.g. meeting someone new).
+
+    Demoted (rank and relevance x0.6) when the person is in a relationship — by their chosen stage, or because the
+    message mentions a partner — and the document is not written for that stage. Boosted (rank x1.3) when the chosen
+    stage is one the document is written for. Documents without an audience are unaffected.
+    """
+    partnered = stage in PARTNERED_STAGES or bool(PARTNER_RE.search(query))
+    changed = False
+    for hit in hits:
+        audience = passages[hit.index].extra.get("audience")
+        if not audience:
+            continue
+        if stage in audience:
+            hit.rrf *= AUDIENCE_BOOST
+            changed = True
+        elif partnered:
+            hit.rrf *= AUDIENCE_DEMOTE
+            hit.relevance = round(hit.relevance * AUDIENCE_DEMOTE, 4)
+            changed = True
+    return sorted(hits, key=lambda h: (h.rrf, h.relevance), reverse=True) if changed else hits

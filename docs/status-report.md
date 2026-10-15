@@ -95,7 +95,7 @@ reduced motion, Bangla interface.
 
 ## 8–9. Incomplete / known limitations
 
-- **Knowledge base is synthetic** (18 project-written documents). Real, permission-cleared sources must be added.
+- **Knowledge base is synthetic** (23 project-written documents, incl. dating and approaching guides). Real, permission-cleared sources must be added.
 - **Evaluation data is fictional, single-author and silver-labelled**; no human annotation or inter-annotator
   agreement yet; small subsets (e.g. 5 indirect safety test cases), so intervals are wide (Wilson 95% intervals are now reported).
 - **Banglish generation is the weakest area**: some garbled phrasing; 13/20 dev replies mix apni and tumi, and an

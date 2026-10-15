@@ -111,3 +111,38 @@ def test_hashing_embedder_is_deterministic_and_normalized() -> None:
 
 def test_bm25_handles_empty_corpus() -> None:
     assert BM25Index([]).search(["x"], 3) == []
+
+
+def _audience_hits():
+    from app.retrieval.hybrid import FusedHit
+    from app.retrieval.passages import Passage
+
+    passages = [
+        Passage("a::0", "general", "text", "General", "en", "communication"),
+        Passage(
+            "b::0", "meeting", "text", "Meeting someone", "en", "dating_commitment", extra={"audience": ["single"]}
+        ),
+    ]
+    # The audience-tagged document starts ranked first.
+    return passages, [FusedHit(1, rrf=0.030, relevance=0.8), FusedHit(0, rrf=0.025, relevance=0.7)]
+
+
+def test_audience_documents_demoted_for_people_in_a_relationship() -> None:
+    from app.retrieval.retriever import _apply_audience
+
+    passages, hits = _audience_hits()
+    ranked = _apply_audience(hits, passages, "married", "How do we stop arguing?")
+    assert [h.index for h in ranked] == [0, 1] and ranked[1].relevance == round(0.8 * 0.6, 4)
+    passages, hits = _audience_hits()
+    ranked = _apply_audience(hits, passages, "unspecified", "My boyfriend never listens")  # partner word
+    assert [h.index for h in ranked] == [0, 1]
+
+
+def test_audience_documents_kept_or_boosted_for_singles() -> None:
+    from app.retrieval.retriever import _apply_audience
+
+    passages, hits = _audience_hits()
+    assert [h.index for h in _apply_audience(hits, passages, "single", "How do I ask her out?")] == [1, 0]
+    passages, hits = _audience_hits()
+    unchanged = _apply_audience(hits, passages, "unspecified", "How do I start talking to someone I like?")
+    assert [h.index for h in unchanged] == [1, 0] and unchanged[0].relevance == 0.8

@@ -551,3 +551,32 @@ in 4/9 replies; 3 were removed by the unverified-number filter and "999" passed 
 if a cloud reply falls back to the local model, including mid-stream before any text); (2) allowed numbers are
 now only those of the support region chosen in Settings (none if unspecified), in line with the policy of never
 inferring a country from language.
+
+---
+
+## 2026-10-16 · Knowledge base: dating and approaching guides (+5 documents) and audience-aware ranking
+
+**Added** (project-authored, synthetic, CC0, `topic: dating_commitment`): "Meeting Someone and Starting a
+Conversation", "First Dates and Early Texting", "When the Feelings Are One-Sided" (English), plus Bangla and
+Banglish versions covering meeting, asking someone out, handling "no" and one-sided feelings. Index: 23 documents,
+155 passages (was 18 / 115).
+
+**Problem found:** the general "first dates" guide outranked the correct guide for people already in a
+relationship (e.g. "my boyfriend and I feel like roommates"), cutting top-1 correct from 81 to 65 of 258 dev cases.
+**Fix:** an optional manifest field `audience` (stages a document is written for). Retrieval demotes those
+documents (rank and relevance ×0.6) when the person is in a relationship — stage engaged/married/long-distance, or a
+partner word or couple "we/our" in the message — and boosts them (×1.3) when the chosen stage matches.
+
+| Dev retrieval, hybrid (n=258) | Recall@10 | MRR | Top-1 correct |
+|---|---|---|---|
+| Before adding documents (`20261015T030624Z`) | 0.701 | 0.480 | 81 |
+| Documents added, no audience ranking | 0.590 | 0.432 | 65 |
+| Documents added + audience ranking (`20261015T193737Z`) | 0.623 | 0.463 | 80 |
+
+The remaining Recall@10 gap is mostly a labelling artefact: the dev labels count the Bangla/Banglish versions of a
+guide as relevant to English questions, and three new English guides push those versions out of the top 10.
+Counting only same-language relevant documents: Recall@10 0.955 → 0.933, MRR 0.624 → 0.614 (old value approximated
+by removing the new documents from the ranking). Spot checks: "how do I start talking to a girl in my class",
+"what should we do on a first date", "I like someone who doesn't like me back", the Bangla and Banglish equivalents
+and "Kauke kivabe propose korbo?" all retrieve the new guides first; partnered questions do not. Safety evaluation
+unchanged (direct 28/28, indirect 9/10, false alarms 0/234). The new documents have no dev/test cases of their own yet.

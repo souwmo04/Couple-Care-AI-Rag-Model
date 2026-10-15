@@ -132,6 +132,7 @@ class Orchestrator:
                 threshold=runtime.relevance_threshold,
                 rerank=runtime.rerank_enabled,
                 expand=runtime.query_expansion_enabled,
+                stage=request.relationship_stage.value,
             )
             # Embedding + FAISS search are CPU-bound; keep them off the event loop.
             retrieval = await asyncio.to_thread(self.c.retriever.search, query, params)

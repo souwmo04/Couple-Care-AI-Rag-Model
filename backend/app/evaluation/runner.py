@@ -74,7 +74,8 @@ def evaluate_retrieval(cases: list[EvalCase], retriever: Retriever, variant: Ret
         # list is the passages' documents in order of first appearance, cut to variant.final_k.
         params = RetrievalParams(final_k=50, dense_k=50, bm25_k=50, threshold=0.0,
                                  mode=variant.mode, expand=variant.expand, rerank=variant.rerank,
-                                 english_lexical_weight=variant.english_lexical_weight)  # fmt: skip
+                                 english_lexical_weight=variant.english_lexical_weight,
+                                 stage=case.relationship_stage)  # fmt: skip
         result = retriever.search(case.user_query, params)
         latencies.append(result.duration_ms)
         ranked = list(dict.fromkeys(i.passage.document_id for i in result.items))[: variant.final_k]

@@ -70,6 +70,9 @@ class SourceEntry(BaseModel):
     topic: Literal[TOPICS]  # type: ignore[valid-type]
     synthetic: bool = False
     translation_of: str | None = None
+    # Relationship stages a document is mainly written for (e.g. guidance on meeting someone new). Retrieval
+    # ranks such documents lower for people who are already in a relationship; untagged documents apply to all.
+    audience: list[Literal["single", "one_sided", "situationship", "dating"]] | None = None
     notes: str | None = None
 
 
@@ -164,7 +167,10 @@ def build_passages(
                         section=section.heading,
                         synthetic=entry.synthetic,
                         translation_of=entry.translation_of,
-                        extra={"permission": entry.permission},
+                        extra={
+                            "permission": entry.permission,
+                            **({"audience": entry.audience} if entry.audience else {}),
+                        },
                     )
                 )
                 doc_passages += 1
