@@ -282,3 +282,20 @@ Retrieval intervals: percentile bootstrap over queries (2,000 resamples, seed 13
 
 Note: these are per-system intervals. The hybrid-vs-dense comparison is on the *same* queries, so overlapping
 intervals do not by themselves mean "no difference"; a paired test has not been run.
+
+### Paired comparisons (same run, `scripts/compare_retrieval.py`, paired bootstrap, 2,000 resamples)
+
+Difference = first variant minus second, per query; 95% CI; two-sided bootstrap p.
+
+| Comparison | Group (n) | Recall@10 | MRR | nDCG@10 |
+|---|---|---|---|---|
+| hybrid − dense | all (258) | **+0.045** [+0.010, +0.080] p=0.013 | −0.003 [−0.035, +0.029] | +0.009 [−0.014, +0.033] |
+| | banglish (81) | **+0.136** [+0.064, +0.210] p<0.001 | **+0.028** [+0.002, +0.054] | **+0.073** [+0.041, +0.106] |
+| | bn (76) | +0.031 [−0.033, +0.092] | +0.013 | +0.020 |
+| | en (101) | −0.018 [−0.059, +0.023] | −0.038 [−0.106, +0.029] | **−0.050** [−0.096, −0.008] p=0.019 |
+| expansion on − off (hybrid) | all (258) | **+0.041** [+0.015, +0.069] | −0.003 | **+0.020** [+0.008, +0.032] |
+| dense − BM25 | all (258) | **+0.095** [+0.045, +0.149] | **+0.075** [+0.036, +0.114] | **+0.072** [+0.043, +0.102] |
+
+Reading: hybrid fusion's gain comes from Banglish (where BM25 with curated expansion catches Romanized terms
+the dense model misses); for English it slightly *hurts* ranking. Expansion only affects Bangla/Banglish
+queries (identical for English, as designed). No correction for multiple comparisons.

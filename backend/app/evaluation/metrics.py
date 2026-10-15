@@ -98,6 +98,34 @@ def bootstrap_ci(
     return lo, hi
 
 
+def paired_bootstrap_diff(
+    a: Sequence[float], b: Sequence[float], *, iterations: int = 2000, alpha: float = 0.05, seed: int = 13
+) -> dict[str, float] | None:
+    """Mean of (a − b) over the same items, its percentile bootstrap interval, and a two-sided bootstrap p-value.
+
+    Items are resampled jointly, so the comparison accounts for both systems seeing the same queries.
+    The p-value is 2 × the smaller share of resampled mean differences on either side of zero (capped at 1).
+    """
+    if len(a) != len(b):
+        raise ValueError("paired samples must be the same length")
+    if len(a) < 2:
+        return None
+    diffs = [x - y for x, y in zip(a, b, strict=True)]
+    rng = random.Random(seed)
+    n = len(diffs)
+    means = sorted(statistics.fmean(rng.choices(diffs, k=n)) for _ in range(iterations))
+    lo = means[int((alpha / 2) * iterations)]
+    hi = means[min(iterations - 1, int((1 - alpha / 2) * iterations))]
+    below = sum(m <= 0 for m in means) / iterations
+    above = sum(m >= 0 for m in means) / iterations
+    return {
+        "mean_diff": statistics.fmean(diffs),
+        "ci_low": lo,
+        "ci_high": hi,
+        "p_value": min(1.0, 2 * min(below, above)),
+    }
+
+
 def rate(flags: Sequence[bool]) -> float | None:
     return sum(flags) / len(flags) if flags else None
 

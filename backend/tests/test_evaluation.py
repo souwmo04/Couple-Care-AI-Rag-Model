@@ -13,6 +13,7 @@ from app.evaluation.metrics import (
     bootstrap_ci,
     cohens_kappa,
     ndcg_at_k,
+    paired_bootstrap_diff,
     rate,
     rate_with_ci,
     recall_at_k,
@@ -151,3 +152,15 @@ def test_rate_with_ci_flat_keys() -> None:
     assert set(out) == {"recall", "recall_ci_low", "recall_ci_high"}
     assert out["recall_ci_low"] < out["recall"] < out["recall_ci_high"]
     assert rate_with_ci("x", []) == {"x": None, "x_ci_low": None, "x_ci_high": None}
+
+
+def test_paired_bootstrap_diff() -> None:
+    better = [1.0, 1.0, 0.5, 1.0, 0.0, 1.0, 1.0, 0.5] * 5
+    worse = [0.5, 1.0, 0.0, 0.5, 0.0, 0.5, 1.0, 0.0] * 5
+    res = paired_bootstrap_diff(better, worse)
+    assert res["mean_diff"] > 0 and res["ci_low"] > 0 and res["p_value"] < 0.05
+    same = paired_bootstrap_diff(worse, worse)
+    assert same["mean_diff"] == 0 and same["p_value"] == 1.0
+    assert paired_bootstrap_diff([1.0], [0.0]) is None
+    with pytest.raises(ValueError):
+        paired_bootstrap_diff([1.0, 0.0], [1.0])
