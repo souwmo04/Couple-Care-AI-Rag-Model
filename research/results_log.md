@@ -512,3 +512,15 @@ ki mone koro? amr ekhon ki kora uchit?" was flagged as stalking by the semantic 
 Banglish prototypes about phone use were added; a third candidate ("O amar kotha shune na, ami ki korbo…") was
 rejected because it suppressed a real indirect coercive-control case. Dev after the change: direct 28/28,
 indirect 9/10, false alarms 0/234 (unchanged from before).
+
+### Groq token usage per reply (`scripts/token_usage.py`, 9 dev cases: 3 en, 3 bn, 3 banglish)
+
+| | Prompt tokens | Completion tokens (incl. low-effort reasoning) | Reserved `max_tokens` | Truncated |
+|---|---|---|---|---|
+| Before (allowance sized for the local tokenizer) | 1,280 | 549 | 1,760 (Bangla 2,390) | — |
+| After (cap 800 + 300 reasoning) | 1,266 | 518 | 1,067 | 0/9 (`finish_reason=stop`) |
+
+Groq's free tier counts the requested `max_tokens` against the 8k tokens/minute budget at request time, so the
+reservation (prompt + max_tokens) fell from ~3,040 to ~2,330 per reply (≈3.4 replies/minute instead of ≈2.6).
+Actual consumption is ~1,800 tokens per reply, i.e. roughly 100–110 replies/day against a 200k tokens/day limit
+(the earlier estimate of 50–65/day assumed ~3,500 tokens per reply and was too pessimistic).

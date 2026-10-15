@@ -224,6 +224,9 @@ GROQ_STATUS_TTL_SECONDS = 60.0
 # wait (up to this long) and retry instead of failing the user's message.
 GROQ_MAX_RETRY_WAIT_SECONDS = 30.0
 GROQ_RETRIES = 2
+# Reply budget for Groq (measured 2026-10-15: completions 450–660 tokens incl. low-effort reasoning).
+GROQ_MAX_OUTPUT_TOKENS = 800
+GROQ_REASONING_TOKENS = 300
 _DURATION_RE = re.compile(r"(?:(\d+(?:\.\d+)?)m)?(?:(\d+(?:\.\d+)?)s)?$")
 
 
@@ -274,11 +277,21 @@ class GroqClient(OpenAICompatibleClient):
         return {"Authorization": f"Bearer {self._api_key}"} if self._api_key else {}
 
     def _payload(self, messages: list[ChatMessage], params: GenerationParams, stream: bool) -> dict:
+        # The output allowance is sized for the local model's tokenizer (~1 token per Bangla character). Groq's
+        # tokenizers are far more efficient (measured: Bangla replies ~600 tokens), and the free tier reserves
+        # max_tokens against the per-minute quota up front, so cap it to avoid needless waits.
+        params = GenerationParams(
+            params.temperature, min(params.max_tokens, GROQ_MAX_OUTPUT_TOKENS), params.top_p, params.stop
+        )
         payload = super()._payload(messages, params, stream)
         if self.model_id.startswith("openai/gpt-oss"):
             # Reasoning models: keep the hidden reasoning out of the reply, keep it short, and leave room
             # for it in the token budget (reasoning tokens count towards max_tokens).
-            payload |= {"include_reasoning": False, "reasoning_effort": "low", "max_tokens": params.max_tokens + 640}
+            payload |= {
+                "include_reasoning": False,
+                "reasoning_effort": "low",
+                "max_tokens": params.max_tokens + GROQ_REASONING_TOKENS,
+            }
         return payload
 
     @staticmethod

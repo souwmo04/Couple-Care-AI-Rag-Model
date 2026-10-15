@@ -43,7 +43,7 @@ async def test_sends_key_to_fixed_groq_endpoint_and_hides_reasoning() -> None:
     body = seen["body"]
     assert body["model"] == "openai/gpt-oss-120b"
     assert body["include_reasoning"] is False and body["reasoning_effort"] == "low"
-    assert body["max_tokens"] == 500 + 640
+    assert body["max_tokens"] == 500 + 300
 
 
 async def test_non_reasoning_model_gets_plain_payload() -> None:
@@ -152,3 +152,15 @@ def test_retry_wait_parsing() -> None:
     assert llm_client._retry_wait_seconds(httpx.Response(429, headers={"retry-after": "7"})) == 7
     assert llm_client._retry_wait_seconds(httpx.Response(429, headers={"x-ratelimit-reset-tokens": "1m2.5s"})) == 62.5
     assert llm_client._retry_wait_seconds(httpx.Response(429)) is None
+
+
+async def test_output_reservation_is_capped_for_the_free_tier() -> None:
+    seen: dict = {}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen.update(json.loads(request.content))
+        return httpx.Response(200, json={"choices": [{"message": {"content": "ok"}}]})
+
+    # A Bangla allowance sized for the local tokenizer (e.g. 1750) must not be reserved in full.
+    await groq(handler).complete(MESSAGES, GenerationParams(max_tokens=1750))
+    assert seen["max_tokens"] == llm_client.GROQ_MAX_OUTPUT_TOKENS + llm_client.GROQ_REASONING_TOKENS
