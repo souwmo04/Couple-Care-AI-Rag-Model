@@ -22,6 +22,12 @@ from app.retrieval.retriever import RetrievedItem
 # Accept [S1], [S1, S2], [S1][S2] and the common model variant "[Source 1]".
 MARKER_RE = re.compile(r"\[(?:S|Source\s*)(\d{1,2})(?:\s*[,;]\s*(?:S|Source\s*)?\d{1,2})*\]", re.IGNORECASE)
 INNER_RE = re.compile(r"(\d{1,2})")
+# Bare labels some models write in running text ("this is S2's method", "এটি S2-এর পদ্ধতি"). They are bracketed
+# first so they are validated like any other marker (and become clickable in the UI). Uppercase "S" only, not
+# part of a Latin word or number, and not already inside brackets.
+BARE_RE = re.compile(r"(?<![A-Za-z0-9\[])S(\d{1,2})(?![A-Za-z0-9\]])")
+# Full-width brackets used by some models (gpt-oss): 【S1】, 【S1†L3-L5】.
+FULLWIDTH_RE = re.compile(r"【\s*S(\d{1,2})[^】]{0,24}】")
 EXCERPT_CHARS = 320
 
 
@@ -64,7 +70,7 @@ def validate_citations(answer: str, available: int) -> CitationCheck:
                 cited.append(cid)
         return "".join(f"[{citation_id(n)}]" for n in valid)
 
-    text = MARKER_RE.sub(_replace, answer)
+    text = MARKER_RE.sub(_replace, BARE_RE.sub(r"[S\1]", FULLWIDTH_RE.sub(r"[S\1]", answer)))
     text = re.sub(r"[ \t]+([.,;:!?।])", r"\1", text)
     return CitationCheck(text=text, cited_ids=cited, removed_markers=removed)
 

@@ -56,3 +56,20 @@ def test_context_labels_match_card_ids(container) -> None:
     for card in build_source_cards(result.items, []):
         assert f"[{card.citation_id}]" in context
     assert "synthetic example" in context
+
+
+def test_bare_labels_in_running_text_are_validated() -> None:
+    check = validate_citations("এটি S2-এর পদ্ধতি। Try this (S1). Also S9 says so.", available=3)
+    assert check.text == "এটি [S2]-এর পদ্ধতি। Try this ([S1]). Also  says so."
+    assert check.cited_ids == ["S2", "S1"] and check.removed_markers == 1
+
+
+def test_bare_label_lookalikes_are_left_alone() -> None:
+    text = "Use LS2 cables, see [S1], model GPT-S2X and size s2."
+    assert validate_citations(text, available=3).text == text
+
+
+def test_fullwidth_bracket_citations_are_normalised() -> None:
+    check = validate_citations("দোষারোপ নেই 【S1】। Also 【S2†L3-L5】 and 【S7】.", available=3)
+    assert check.text == "দোষারোপ নেই [S1]। Also [S2] and."
+    assert check.cited_ids == ["S1", "S2"] and check.removed_markers == 1

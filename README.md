@@ -9,11 +9,11 @@ model and retrieval-augmented generation (RAG) with source citations and an inde
 
 ![CoupleCare AI landing page (light theme)](docs/screenshots/landing-light.jpg)
 
-| Grounded answer with citations (English) | Bangla answer with sources | Knowledge base (dark theme) |
+| English answer — source S1 highlighted | Bangla answer with clickable sources | Knowledge base (dark theme) |
 |---|---|---|
 | ![Chat in English](docs/screenshots/chat-english.jpg) | ![Chat in Bangla](docs/screenshots/chat-bangla.jpg) | ![Knowledge page](docs/screenshots/knowledge-dark.jpg) |
 
-_Screenshots of the real app running locally with Qwen3-4B on an RTX 4060; the knowledge base shown is the bundled synthetic development corpus. **They show the earlier design** — the interface was redesigned on 2026-10-15 (neo-brutalist, kinetic typography); new screenshots are pending._
+_Screenshots of the real app (redesigned 2026-10-15). The chat screenshots were taken in optional cloud mode (Groq `openai/gpt-oss-120b`, note the “Cloud model (Groq)” badge); the default local mode uses Qwen3-4B on the RTX 4060. The knowledge base shown is the bundled synthetic development corpus._
 
 ## Status (2026-10-15)
 
