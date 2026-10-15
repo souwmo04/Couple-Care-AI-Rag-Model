@@ -377,3 +377,37 @@ addressed in the next entry.
 **Decision:** keep Qwen3-4B-Instruct-2507 as the default. Qwen3.5-4B is faster, lighter and holds the Banglish
 register, but repeats itself, over-asks questions and is not clearly better in Bangla or Banglish quality.
 It remains available for experiments via `-ModelFile`.
+
+---
+
+## 2026-10-15 · Excusing/softening controlling or violent behaviour — prompt rule + output filter
+
+**Problem** (found in the generator comparison above): generated caution/support replies offered explanations
+that excuse the behaviour ("he might believe he is protecting you", "even if your boyfriend didn't intend to
+cause harm", "your ex is still emotionally invested").
+
+**Change:** (1) `system_v2` limits "offer several interpretations" so it never excuses control, threats,
+monitoring, isolation or harm; (2) `safety_v2` adds an explicit "no excuses" rule to every risk addendum;
+(3) a deterministic output filter removes excusing sentences at caution and above (`output_check.py`,
+negation- and first-person-aware). Prompt version now `system_v2+lang_v2+clarify_v2+safety_v2`.
+
+**Prompt rule alone** (`scripts/safety_reply_check.py`, 26 dev cases routed to generated caution/support
+replies, Qwen3-4B-2507, one sample each, run `safety-replies-20261015T053622Z`): read by one reader, the English
+replies improved in some cases (stalking, coercive control, threats) but *new* softening appeared in others
+("even if your boyfriend didn't intend to cause harm"; "may have been meant to be playful"). Not sufficient on
+its own.
+
+**Output filter, offline check** on all 90 saved caution/support replies from today's runs (both generators):
+8 sentences removed, all judged to be genuine excuses/softening (0 false removals by this reader). On 839
+non-risk replies (where the filter is *not* applied) the patterns would match 14 sentences, many legitimate
+(e.g. the user's own repair line "I didn't mean to…"), which is why it only runs when a risk was detected.
+
+**End-to-end with the full fix** (run `safety-replies-20261015T054459Z`): no excusing sentences of the types above
+remained in the English replies; one reply still names "insecurity" as a possible cause after calling the
+behaviour unacceptable (borderline, kept). **Unresolved:** for the indirect "long sleeves to hide the marks" case
+the model still does not recognise possible injury and suggests asking the partner why; paraphrased
+minimisation in Bangla is not caught by the lexical filter.
+
+**No regression on the 80-case dev set** (config D, run `20261015T054507Z-dev`): clarification 8/8,
+over-clarification 0.32, out-of-scope ungrounded 4/6, risk detection 0.93, inappropriate escalation 0.00 —
+identical to the previous prompt version; p50 10.6 s.

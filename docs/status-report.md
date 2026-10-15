@@ -50,7 +50,7 @@ scripts\stop.ps1
 
 | Suite | Result |
 |---|---|
-| Backend (pytest, `scripts\test.ps1`) | 238 passed |
+| Backend (pytest, `scripts\test.ps1`) | 253 passed |
 | Frontend (Vitest + axe-core) | 33 passed |
 | Real-model integration (`pytest -m integration`) | 4 passed |
 | Lint / type check (ruff, tsc, oxlint) | ruff and tsc clean; oxlint 6 non-blocking warnings (5 dev-only fast-refresh hints, 1 intentional URL-sync effect) |
@@ -79,6 +79,10 @@ reduced motion, Bangla interface.
   (apni/tumi) mixing in 13/20 replies; explicit rules and few-shot demonstrations did not fix it without the model
   copying the demonstration (logged, not adopted).
 - Vague openers: clarifying question 2/8 → 8/8 after clarify_v2.
+- Alternative generator Qwen3.5-4B compared: faster and lighter, consistent "apni" in Banglish, but repeats
+  itself and over-asks questions; default unchanged (`scripts\start-model.ps1 -ModelFile …` to try it).
+- Both generators softened controlling/violent behaviour in some risk replies ("he might be protecting you");
+  fixed with a stricter prompt plus a deterministic filter that removes excusing sentences at caution and above.
 
 ## 8–9. Incomplete / known limitations
 
@@ -100,4 +104,7 @@ reduced motion, Bangla interface.
 3. Independent, larger indirect-safety test set written by people who have not seen the rules.
 4. Banglish: few-shot examples, transliteration to Bangla script, or a stronger model; re-measure fidelity.
 5. Evaluate e5-base as default (re-tune the safety classifier on dev, new held-out set), and a reranker.
-6. Compare at least one alternative generator on the same dev sample.
+6. ~~Compare an alternative generator.~~ Done (Qwen3.5-4B). Gemma 3 / Llama 3.2 need their licences accepted
+   by the operator first.
+7. Safety replies to indirect injury descriptions ("marks", "bruises") still need work; consider a dedicated
+   addendum and native-speaker review of Bangla minimisation.
