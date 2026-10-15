@@ -334,11 +334,11 @@ export default function SettingsPage() {
 
           {/* ------------------------------------------------ About */}
           <Section id="about" title={t.settings.about}>
-            <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-3 py-5 text-sm">
+            <dl className="grid grid-cols-1 gap-x-6 gap-y-1 py-5 text-sm sm:grid-cols-[auto_minmax(0,1fr)] sm:gap-y-3 [&_dd]:mb-2 [&_dd]:min-w-0 [&_dd]:break-words sm:[&_dd]:mb-0">
               <dt className="text-muted-foreground">{t.settings.appVersion}</dt>
               <dd>{settings.data?.about.app_version ?? __APP_VERSION__}</dd>
               <dt className="text-muted-foreground">{t.settings.promptVersion}</dt>
-              <dd>{settings.data?.about.prompt_version ?? t.common.unknown}</dd>
+              <dd className="break-all">{settings.data?.about.prompt_version ?? t.common.unknown}</dd>
               <dt className="text-muted-foreground">{t.settings.kbVersion}</dt>
               <dd className="break-all">{settings.data?.about.knowledge_base_version ?? t.common.unknown}</dd>
               <dt className="text-muted-foreground">{t.settings.currentModel}</dt>
