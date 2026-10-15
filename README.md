@@ -20,11 +20,11 @@ _Screenshots of the real app running locally with Qwen3-4B on an RTX 4060; the k
 | Area | State |
 |---|---|
 | Landing, chat, settings, knowledge, about/privacy/safety pages | Implemented; tested with Vitest + axe-core; checked in the browser at desktop and phone widths, light and dark |
-| FastAPI backend, hybrid RAG, citations, safety layer, storage | Implemented; 228 backend + 33 frontend tests passing (+4 real-model integration tests); CI on GitHub (Linux) green |
+| FastAPI backend, hybrid RAG, citations, safety layer, storage | Implemented; 268 backend + 33 frontend tests passing (+4 real-model integration tests); CI on GitHub (Linux) green |
 | Local generation | **Running on the RTX 4060**: Qwen3-4B-Instruct-2507 Q4_K_M via llama.cpp b11603 (CUDA), ~80 tokens/s, ~3.8 GB VRAM at 8k context |
 | End-to-end in English, Bangla, Banglish | Verified in the UI with streaming, citations and safety routing |
-| Safety | Rules + cues + semantic (E5) classifier; held-out test: direct 15/15, indirect 4/5, false alarms 1/94 |
-| Evaluation | 386 fictional scenarios (silver labels); retrieval, safety, A–D generation and prompt ablations measured — see [research/results_log.md](research/results_log.md) |
+| Safety | Rules + cues + semantic (E5) classifier; output filters (invented numbers, diagnoses, excusing abuse); pre-written support replies in Bangla/Banglish; held-out test: direct 15/15, indirect 5/5, false alarms 1/94 |
+| Evaluation | 386 fictional scenarios (silver labels); retrieval, safety, A–D generation, prompt ablations and a second generator (Qwen3.5-4B) measured with 95% intervals — see [research/results_log.md](research/results_log.md). Blind human-annotation pack ready; no human labels yet |
 
 Full report: [docs/status-report.md](docs/status-report.md).
 
@@ -79,6 +79,7 @@ The bundled knowledge base contains **synthetic example documents** written for 
 scripts\start-all.ps1                   # model server + backend + frontend
 # or individually:
 scripts\start-model.ps1                 # 127.0.0.1:18080  (-GpuLayers 20 / -Context 2048 / -Cpu)
+#   another GGUF in models\: -ModelFile Qwen3.5-4B-Q4_K_M.gguf -PresencePenalty 1.5
 scripts\start-backend.ps1               # 127.0.0.1:8000  (API docs: /api/docs)
 scripts\start-frontend.ps1              # 127.0.0.1:5173
 scripts\stop.ps1                        # stop everything
@@ -105,6 +106,10 @@ a small synthetic corpus.
 .venv\Scripts\python scripts\run_evaluation.py --split dev --suites ablation
 .venv\Scripts\python scripts\run_evaluation.py --split dev --suites generation --configs A,B,C,D   # needs the model
 ```
+
+Other tools: `scripts/compare_retrieval.py` (paired bootstrap between retrieval variants),
+`scripts/language_fidelity.py` (reply language/register), `scripts/safety_reply_check.py` (excusing language in
+risk replies), `scripts/annotation_pack.py` (blind human-rating sheets and κ).
 
 Results (JSON + CSV + manifest) go to `artifacts/evaluation_results/`. The held-out test split
 requires `--final`. See [research/experimental_protocol.md](research/experimental_protocol.md).
