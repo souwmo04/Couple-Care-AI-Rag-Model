@@ -414,9 +414,9 @@ html[data-motion='reduced'] .flip-char::before, html[data-motion='reduced'] .fli
 :root {
   --heart-pink: oklch(0.8 0.14 2);
   --heart-red: oklch(0.63 0.22 22);
-  --heart-opacity: 0.32;
+  --heart-opacity: 0.5;
 }
-.dark { --heart-opacity: 0.22; }
+.dark { --heart-opacity: 0.32; }
 .heart { transform: rotate(var(--heart-rotate)); opacity: var(--heart-opacity); }
 .heart-pink path { fill: var(--heart-pink); stroke: var(--ink); stroke-width: 1.2; }
 .heart-red path { fill: var(--heart-red); stroke: var(--ink); stroke-width: 1.2; }

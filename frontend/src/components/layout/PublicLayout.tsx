@@ -16,7 +16,7 @@ export function PublicLayout() {
       </a>
       <SiteHeader />
       <main id="main" className="relative isolate flex-1 overflow-x-clip">
-        <HeartsBackdrop count={42} seed={11} />
+        <HeartsBackdrop count={22} seed={11} className="fixed" />
         <Outlet />
       </main>
       <SiteFooter />

@@ -51,9 +51,6 @@ export function ChatPreview() {
           >
             <p className="rounded-md border-2 border-ink bg-surface-solid px-4 py-3 text-sm leading-relaxed text-foreground shadow-soft dark:border-foreground">
               {t.hero.previewAssistant}
-              <span className="ml-1 inline-flex translate-y-[-1px] items-center rounded-sm border-2 border-ink bg-mint px-1 font-mono text-[0.65rem] font-bold text-ink">
-                S1
-              </span>
             </p>
             <motion.div
               initial={enter({ opacity: 0, y: 8 })}

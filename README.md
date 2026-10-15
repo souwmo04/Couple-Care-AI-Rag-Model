@@ -9,11 +9,15 @@ model and retrieval-augmented generation (RAG) with source citations and an inde
 
 ![CoupleCare AI landing page (light theme)](docs/screenshots/landing-light.jpg)
 
-| English answer — source S1 highlighted | Bangla answer with clickable sources | Knowledge base (dark theme) |
-|---|---|---|
-| ![Chat in English](docs/screenshots/chat-english.jpg) | ![Chat in Bangla](docs/screenshots/chat-bangla.jpg) | ![Knowledge page](docs/screenshots/knowledge-dark.jpg) |
+| Normal reply — sources in the side panel | Coach mode — what to say next (stage: Single) |
+|---|---|
+| ![Chat in English](docs/screenshots/chat-english.jpg) | ![Coach mode](docs/screenshots/chat-coach.jpg) |
 
-_Screenshots of the real app (redesigned 2026-10-15). The chat screenshots were taken in optional cloud mode (Groq `openai/gpt-oss-120b`, note the “Cloud model (Groq)” badge); the default local mode uses Qwen3-4B on the RTX 4060. The knowledge base shown is the bundled synthetic development corpus._
+| Bangla reply | Knowledge base (dark theme) |
+|---|---|
+| ![Chat in Bangla](docs/screenshots/chat-bangla.jpg) | ![Knowledge page](docs/screenshots/knowledge-dark.jpg) |
+
+_Screenshots of the real app (2026-10-16). The chat screenshots were taken in optional cloud mode (Groq `openai/gpt-oss-120b`, note the “Cloud model (Groq)” badge); the default local mode uses Qwen3-4B on the RTX 4060. The knowledge base shown is the bundled synthetic development corpus — which is why the coach-mode example lists loosely related guides: it has no material on meeting someone new yet._
 
 ## Status (2026-10-15)
 
