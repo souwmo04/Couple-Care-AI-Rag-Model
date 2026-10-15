@@ -17,6 +17,7 @@ has only been inspected informally; a native-speaker review is still required.
 |---|---|---|---|---|
 | **Qwen3-4B-Instruct-2507** (default) | `Qwen/Qwen3-4B-Instruct-2507` @ `cdbee75f17c0` | `unsloth/Qwen3-4B-Instruct-2507-GGUF` @ `a06e946bb6b6` (community conversion) | Apache-2.0 | 2.50 GB |
 | Qwen3-4B (hybrid thinking) | `Qwen/Qwen3-4B` | `Qwen/Qwen3-4B-GGUF` @ `bc640142c66e` (**official** Qwen GGUF) | Apache-2.0 | 2.50 GB |
+| Qwen3.5-4B (compared, not default) | `Qwen/Qwen3.5-4B` @ `851bf6e8` | `unsloth/Qwen3.5-4B-GGUF` @ `e87f1764` (community conversion; text weights only) | Apache-2.0 | 2.74 GB |
 | Gemma 3 4B Instruct | — | — | Gemma Terms of Use (must be reviewed and accepted) | not evaluated |
 | Llama 3.2 3B Instruct | — | — | Llama 3.2 Community License (must be reviewed and accepted) | not evaluated |
 
@@ -28,7 +29,9 @@ Notes:
   If you prefer an official artefact, use `Qwen/Qwen3-4B-GGUF`; its "thinking" output is
   stripped by the backend (`strip_reasoning`) and never shown to users.
 - Qwen3-4B-Instruct-2507 is a non-thinking instruct model, which suits short, warm replies.
-- A newer `Qwen/Qwen3.5-4B` also exists; it has not been reviewed.
+- `Qwen3.5-4B` was compared on 2026-10-15 (see below and `research/results_log.md`). It is served with
+  `--reasoning off`; Qwen recommends a presence penalty of 1.5, available as
+  `scripts\start-model.ps1 -ModelFile Qwen3.5-4B-Q4_K_M.gguf -PresencePenalty 1.5`.
 - llama.cpp applies the chat template embedded in the GGUF (`--jinja`), so the backend does
   not hard-code any model family's template.
 
@@ -75,4 +78,8 @@ generation — to be tested as ablations.
 2. ~~Measure tokens/s and VRAM.~~ Done; time-to-first-token not yet measured separately.
 3. Run the evaluation dev split in English, Bangla and Banglish (A–D runs in `research/results_log.md`);
    have native Bangla speakers review fluency.
-4. Repeat for at least one alternative candidate (e.g. Qwen3.5-4B, Gemma 3 4B) — especially for Banglish quality.
+4. ~~Repeat for at least one alternative candidate.~~ Qwen3.5-4B compared 2026-10-15: faster (p50 10.7 s vs
+   13.1 s), lighter (~3.1 GB vs ~3.8 GB VRAM) and keeps "apni" consistently in Banglish (2–4/20 mixed vs 13/20),
+   but repeats sentences (6–13/20 replies), asks questions in half of ordinary answers (0.51 vs 0.32) and is not
+   clearly better in Bangla/Banglish quality. **Default unchanged.** Gemma 3 / Llama 3.2 need their licences
+   reviewed and accepted by the operator before download.
