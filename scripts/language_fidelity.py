@@ -58,7 +58,55 @@ LANG_V3 = LANG_V2 | {
         "may use tumi, but only inside quotation marks.",
     ),
 }
-VERSIONS = {"lang_v1": LANG_V1, "lang_v2": LANG_V2, "lang_v3": LANG_V3}
+# lang_v4 (experiment): lang_v2 instructions plus one demonstration exchange for Banglish replies, inserted
+# after the system message. The demonstration keeps apni throughout and quotes partner-directed wording.
+FEW_SHOT_BANGLISH = [
+    ("user", "Amar wife er sathe choto bishoy niye proti raate jhogra hoy. Ki korbo bujhte parchi na."),
+    ("assistant",
+     "Proti raate jhogra hole klanto ar hotash lagata khub swabhabik. Apni ekta shanto shomoy bechhe nite paren, "
+     "jokhon duijon-i klanto na. Tokhon dosh na diye nijer onubhuti bolte paren, jemon: \"Raate jhogra hole amar "
+     "khub kharap lage. Ami chai amra eta niye shanto bhabe kotha boli.\" Apnar wife ki bolen, seta-o mon diye "
+     "shunben. Ekta ekta kore shuru korle bishoy ta shohoj hoye ashe."),
+]  # fmt: skip
+# lang_v5: gender-neutral demonstration, explicitly labelled as a style-only example (lang_v4 leaked its
+# content — "wife", "raate jhogra" — into unrelated replies).
+FEW_SHOT_BANGLISH_NEUTRAL = [
+    ("user", "[Style example only — not the real conversation] Kaj er chap e amader majhe kotha onek kome geche."),
+    ("assistant",
+     "[Style example] Kaj er chap e dure shore jawar onubhuti khub swabhabik. Apni chaile din e choto ekta "
+     "shomoy rakhte paren shudhu nijeder kotha bolar jonno. Apni bolte paren: \"Amar mone hoy amra kom kotha "
+     "boli, ami tomake miss kori.\" Apnar partner er uttor-o dhoirjo niye shunben."),
+]  # fmt: skip
+# lang_v6: like lang_v5 but with no tumi form anywhere (lang_v4, the only variant that reduced mixing, had none).
+FEW_SHOT_BANGLISH_NO_TUMI = [
+    ("user", "[Style example only — not the real conversation] Kaj er chap e amader majhe kotha onek kome geche."),
+    ("assistant",
+     "[Style example] Kaj er chap e dure shore jawar onubhuti khub swabhabik. Apni chaile din e choto ekta "
+     "shomoy rakhte paren shudhu nijeder kotha bolar jonno. Apni bolte paren: \"Amar mone hoy amra kom kotha "
+     "boli, ami amader shomoy ta miss kori.\" Apnar partner er uttor-o dhoirjo niye shunben."),
+]  # fmt: skip
+VERSIONS = {"lang_v1": LANG_V1, "lang_v2": LANG_V2, "lang_v3": LANG_V3} | dict.fromkeys(
+    ("lang_v4", "lang_v5", "lang_v6"), LANG_V2
+)
+FEW_SHOT = {"lang_v4": FEW_SHOT_BANGLISH, "lang_v5": FEW_SHOT_BANGLISH_NEUTRAL, "lang_v6": FEW_SHOT_BANGLISH_NO_TUMI}
+# Distinctive demonstration phrases; their appearance in a reply counts as leakage.
+LEAK_PHRASES = ["wife", "raate jhogra", "ekta ekta kore", "kaj er chap", "miss kori", "style example", "dhoirjo niye"]
+
+
+def with_few_shot(build, examples):
+    """Wrap prompts.build_messages so Banglish replies get the demonstration turns after the system message."""
+
+    def wrapped(**kwargs):
+        messages = build(**kwargs)
+        if not examples or kwargs.get("response_language") != "banglish":
+            return messages
+        from app.generation.llm_client import ChatMessage
+
+        return [messages[0], *(ChatMessage(r, c) for r, c in examples), *messages[1:]]
+
+    return wrapped
+
+
 EMOJI_RE = re.compile("[\U0001f300-\U0001faff☀-➿]")
 SENT_RE = re.compile(r"(?<=[.!?।])\s+|\n+")
 ON_LANGUAGE = {"banglish": {"banglish", "mixed"}, "bn": {"bn"}, "en": {"en"}}
@@ -79,10 +127,12 @@ def score(answer: str, language: str, query: str = "") -> dict:
         "script_leak": len(BENGALI_RE.findall(answer)) if language == "banglish" else 0,
         "emoji_count": len(EMOJI_RE.findall(answer)),
         "sentences": len(sentences),
+        "demo_leak": [p for p in LEAK_PHRASES if p in answer.lower()],
     }
 
 
 async def run(language: str, n: int, versions: list[str]) -> dict:
+    from app.core import orchestrator
     from app.core.container import Container
     from app.core.orchestrator import Orchestrator
     from app.core.schemas import ChatRequest, LanguageCode, RelationshipStage
@@ -98,6 +148,7 @@ async def run(language: str, n: int, versions: list[str]) -> dict:
     for version in versions:
         prompts.LANGUAGE_INSTRUCTIONS.clear()
         prompts.LANGUAGE_INSTRUCTIONS.update(VERSIONS[version])
+        orchestrator.build_messages = with_few_shot(prompts.build_messages, FEW_SHOT.get(version))
         rows = []
         for i, case in enumerate(cases, 1):
             req = ChatRequest(message=case.user_query, language=LanguageCode(language),
@@ -114,6 +165,7 @@ async def run(language: str, n: int, versions: list[str]) -> dict:
             "total_script_leak_chars": sum(r["script_leak"] for r in rows),
             "total_emojis": sum(r["emoji_count"] for r in rows),
             "replies_mixed_register": sum(bool(r["mixed_register"]) for r in rows),
+            "replies_with_demo_leak": sum(bool(r["demo_leak"]) for r in rows),
             "register_match": f"{sum(r['register_match'] is True for r in rows)}/"
             f"{sum(r['register_match'] is not None for r in rows)}",
             "n": len(rows),

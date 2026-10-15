@@ -240,3 +240,22 @@ aimed at the user ("Ekta shanto kotha bolo"), often in garbled sentences. This l
 of the 4B model in Romanized Bangla, not an instruction gap. lang_v2 stays in production. Candidate fixes
 for later: a stronger generator, few-shot assistant turns, or answering Banglish users in Bangla script
 (product decision).
+
+### Follow-up: few-shot demonstrations (same 20 cases, not adopted)
+
+One demonstration exchange (user + assistant turn, Banglish, apni throughout) inserted after the system
+message. *Demo leak* = reply contains a distinctive phrase from the demonstration.
+
+| Variant | Mixed-register | Demo leak | On-language |
+|---|---|---|---|
+| lang_v2 (production, from above) | 13/20 | — | 0.973 |
+| lang_v4: demo about nightly fights with a *wife*, no tumi | **3/20** | **11/20** (e.g. "Amar wife ki bolen…" in unrelated cases) | 0.969 |
+| lang_v5: gender-neutral, labelled "style example", tumi inside the quote | 14/20 | 3/20 | 0.976 |
+| lang_v6: as v5 but no tumi anywhere | 12/20 | 0/20 | 0.988 |
+
+The only variant that reduced mixing did so by having the model copy the demonstration — including an
+assumption about the partner's gender, which is unacceptable. Variants that avoid leakage do not reduce
+mixing. Single sample per case at temperature 0.6; run-to-run variance was not measured, so differences of a
+few replies are within noise. Conclusion unchanged: Banglish register needs a stronger model or a product
+change, not prompt tweaks. All variants are reproducible with
+`scripts/language_fidelity.py --versions lang_v2 lang_v3 lang_v4 lang_v5 lang_v6`.
