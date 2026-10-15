@@ -24,6 +24,7 @@ async def health(c: Container = Depends(get_container)) -> HealthResponse:
         status="degraded" if degraded else "ok",
         version=__version__,
         model_server="online" if info.reachable else "offline",
+        provider=c.settings.llm_provider,
         index=index,  # type: ignore[arg-type]
         embeddings=embeddings,  # type: ignore[arg-type]
     )
@@ -31,9 +32,23 @@ async def health(c: Container = Depends(get_container)) -> HealthResponse:
 
 @router.get("/model/status", response_model=ModelStatus)
 async def model_status(c: Container = Depends(get_container)) -> ModelStatus:
+    info = await c.llm().server_info()
+    if c.settings.llm_provider == "groq":
+        return ModelStatus(
+            configured=c.settings.groq_api_key is not None,
+            reachable=info.reachable,
+            model_id=c.settings.groq_model,
+            display_name=f"{c.settings.groq_model} via Groq (cloud)",
+            server_model=info.model,
+            context_length=info.context_length,
+            license=None,
+            revision=None,
+            detail=info.detail,
+            checked_at=datetime.now(UTC),
+            provider="groq",
+        )
     runtime = c.settings_store.get()
     profile = c.settings.get_model(runtime.model_id)
-    info = await c.llm().server_info()
     return ModelStatus(
         configured=profile is not None,
         reachable=info.reachable,

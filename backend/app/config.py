@@ -19,7 +19,7 @@ from pathlib import Path
 from typing import Literal
 from urllib.parse import urlparse
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -94,6 +94,14 @@ class Settings(BaseSettings):
     llm_connect_timeout_seconds: float = 3.0
     models: list[ModelProfile] = DEFAULT_MODELS
     default_model_id: str = "qwen3-4b-instruct-2507"
+
+    # Optional cloud generation (opt-in). "local" keeps every conversation on this computer. "groq" sends the
+    # prompt (system prompt, retrieved passages, recent history, message) to Groq's API; the UI says so.
+    # The Groq endpoint is fixed in code; only the key and model are configurable, and the key is never
+    # returned by any API endpoint.
+    llm_provider: Literal["local", "groq"] = "local"
+    groq_api_key: SecretStr | None = None
+    groq_model: str = Field(default="openai/gpt-oss-120b", pattern=r"^[A-Za-z0-9._/:-]{1,100}$")
 
     # Retrieval
     embedding_model: str = "intfloat/multilingual-e5-small"

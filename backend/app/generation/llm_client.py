@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import json
 import re
+import time
 from collections.abc import AsyncIterator
 from dataclasses import dataclass
 from pathlib import Path
@@ -212,3 +213,112 @@ class OpenAICompatibleClient:
                 return ServerInfo(True, model=model_name, context_length=context)
         except httpx.HTTPError:
             return ServerInfo(False, detail="Model server is not running or not reachable.")
+
+
+# ----------------------------------------------------------------------------- cloud (opt-in)
+
+GROQ_BASE_URL = "https://api.groq.com/openai"  # fixed: cloud mode can only ever talk to Groq
+GROQ_STATUS_TTL_SECONDS = 60.0
+_groq_status_cache: dict[str, tuple[float, ServerInfo]] = {}
+
+
+class GroqClient(OpenAICompatibleClient):
+    """Groq's OpenAI-compatible API. Only used when the operator sets ``COUPLECARE_LLM_PROVIDER=groq``;
+    conversations then leave this computer, which the UI states plainly. The safety layer, retrieval and
+    output checks still run locally before and after every call."""
+
+    def __init__(
+        self,
+        api_key: str | None,
+        model_id: str,
+        *,
+        timeout: float,
+        connect_timeout: float,
+        transport: httpx.AsyncBaseTransport | None = None,
+    ) -> None:
+        super().__init__(GROQ_BASE_URL, model_id, timeout=timeout, connect_timeout=connect_timeout, transport=transport)
+        self._api_key = (api_key or "").strip()
+
+    def _headers(self) -> dict[str, str]:
+        return {"Authorization": f"Bearer {self._api_key}"} if self._api_key else {}
+
+    def _payload(self, messages: list[ChatMessage], params: GenerationParams, stream: bool) -> dict:
+        payload = super()._payload(messages, params, stream)
+        if self.model_id.startswith("openai/gpt-oss"):
+            # Reasoning models: keep the hidden reasoning out of the reply, keep it short, and leave room
+            # for it in the token budget (reasoning tokens count towards max_tokens).
+            payload |= {"include_reasoning": False, "reasoning_effort": "low", "max_tokens": params.max_tokens + 1024}
+        return payload
+
+    @staticmethod
+    def _raise_for(response: httpx.Response) -> None:
+        if response.status_code < 400:
+            return
+        if response.status_code == 401:
+            raise ModelOfflineError(
+                "The Groq API key was rejected. Check COUPLECARE_GROQ_API_KEY in the .env file.", code="model_auth"
+            )
+        if response.status_code == 429:
+            raise ModelOfflineError(
+                "The free Groq limit has been reached for now. Wait a minute and try again, or switch back to the "
+                "local model (COUPLECARE_LLM_PROVIDER=local).",
+                code="model_rate_limited",
+            )
+        if response.status_code in {400, 404, 422}:
+            raise ModelResponseError(
+                f"Groq rejected the request (HTTP {response.status_code}); check COUPLECARE_GROQ_MODEL."
+            )
+        raise ModelResponseError(f"The Groq service returned an error (HTTP {response.status_code}).")
+
+    async def complete(self, messages: list[ChatMessage], params: GenerationParams) -> str:
+        self._require_key()
+        return await super().complete(messages, params)
+
+    async def stream(self, messages: list[ChatMessage], params: GenerationParams) -> AsyncIterator[str]:
+        self._require_key()
+        async for delta in super().stream(messages, params):
+            yield delta
+
+    def _require_key(self) -> None:
+        if not self._api_key:
+            raise ModelOfflineError(
+                "Cloud mode is on but no Groq API key is set. Add COUPLECARE_GROQ_API_KEY to the .env file.",
+                code="model_auth",
+            )
+
+    async def server_info(self) -> ServerInfo:
+        if not self._api_key:
+            return ServerInfo(
+                False, model=self.model_id, detail="No Groq API key configured (COUPLECARE_GROQ_API_KEY)."
+            )
+        # Cached so the UI's status polling does not spend the free-tier request quota.
+        cache_key = f"{hash(self._api_key)}|{self.model_id}"
+        cached = _groq_status_cache.get(cache_key)
+        now = time.monotonic()
+        if cached and now - cached[0] < GROQ_STATUS_TTL_SECONDS:
+            return cached[1]
+        info = await self._fetch_status()
+        _groq_status_cache[cache_key] = (now, info)
+        return info
+
+    async def _fetch_status(self) -> ServerInfo:
+        try:
+            async with self._client(httpx.Timeout(5.0, connect=3.0)) as client:
+                response = await client.get(f"/v1/models/{self.model_id}")
+        except httpx.HTTPError:
+            return ServerInfo(
+                False, model=self.model_id, detail="Groq is not reachable (check the internet connection)."
+            )
+        if response.status_code == 401:
+            return ServerInfo(False, model=self.model_id, detail="The Groq API key was rejected.")
+        if response.status_code == 404:
+            return ServerInfo(False, model=self.model_id, detail=f"Groq has no model named {self.model_id}.")
+        if response.status_code >= 400:
+            return ServerInfo(
+                False, model=self.model_id, detail=f"Groq status check failed (HTTP {response.status_code})."
+            )
+        try:
+            context = response.json().get("context_window")
+        except ValueError:
+            context = None
+        return ServerInfo(True, model=self.model_id, context_length=context)

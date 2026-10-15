@@ -292,7 +292,7 @@ class Orchestrator:
             grounded=plan.grounded and generated,
             safety=safety,
             needs_clarification=needs_clarification,
-            model_id=self.c.settings_store.get().model_id if generated else None,
+            model_id=self.c.active_model_id() if generated else None,
             generated=generated,
             duration_ms=duration_ms,
         )

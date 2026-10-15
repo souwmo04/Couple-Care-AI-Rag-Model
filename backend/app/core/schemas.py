@@ -170,12 +170,15 @@ class ModelStatus(BaseModel):
     revision: str | None = None
     detail: str | None = None
     checked_at: datetime
+    # "groq" = cloud mode: messages leave this computer.
+    provider: Literal["local", "groq"] = "local"
 
 
 class HealthResponse(BaseModel):
     status: Literal["ok", "degraded"]
     version: str
     model_server: Literal["online", "offline"]
+    provider: Literal["local", "groq"] = "local"
     index: Literal["ready", "missing", "building", "error"]
     embeddings: Literal["ready", "loading", "unavailable", "fallback"]
 
