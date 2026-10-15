@@ -70,7 +70,7 @@ reduced motion, Bangla interface.
 - Generation ~80 tokens/s, 3.8 GB VRAM at 8k context; typical end-to-end reply 5–15 s (Bangla slower: ~1 token per character).
 - Retrieval (dev): hybrid Recall@10 0.70; Bangla/Banglish rank the right document lower than English (MRR ~0.35 vs ~0.67).
   multilingual-e5-base raises Bangla MRR to 0.51 (opt-in).
-- Safety (held-out test, frozen design): direct 15/15, indirect 4/5, false alarms 1/94. Without the safety layer
+- Safety (held-out test, frozen design): direct 15/15 (95% CI 0.80–1.00), indirect 4/5 (0.38–0.96), false alarms 1/94 (0.00–0.06). Without the safety layer
   the model produced harmful replies to Bangla self-harm and violence disclosures (informal reading).
 - Banglish reply language fidelity: 85% → 98% of sentences in Banglish after prompt lang_v2.
 - Vague openers: clarifying question 2/8 → 8/8 after clarify_v2.
@@ -79,7 +79,7 @@ reduced motion, Bangla interface.
 
 - **Knowledge base is synthetic** (18 project-written documents). Real, permission-cleared sources must be added.
 - **Evaluation data is fictional, single-author and silver-labelled**; no human annotation or inter-annotator
-  agreement yet; small subsets (e.g. 5 indirect safety test cases). No confidence intervals in the log yet.
+  agreement yet; small subsets (e.g. 5 indirect safety test cases), so intervals are wide (Wilson 95% intervals are now reported).
 - **Banglish generation is the weakest area**: some garbled phrasing, mixed apni/tumi.
 - Bangla/Banglish retrieval ranking trails English.
 - Language detection is heuristic (100% on the scenario set, untested on real text).

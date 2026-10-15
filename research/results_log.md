@@ -199,3 +199,23 @@ Vague first messages now get a short, warm reply ending in one clarifying questi
 passages. English and Bangla clarifying questions read naturally; **Banglish ones are partly garbled**
 (e.g. "Tumi kotha kisu kore, kisu kichu kore…"), consistent with the model's Banglish weakness. Tuned on
 dev; the held-out test split has not been used for generation.
+
+---
+
+## 2026-10-15 · Uncertainty of the headline numbers (95% Wilson intervals, recomputed from logged counts)
+
+No new runs; intervals computed with `app.evaluation.metrics.wilson_ci` from the counts above. Evaluation
+runs now emit `<metric>_ci_low` / `<metric>_ci_high` for every rate (Wilson) and retrieval mean (bootstrap).
+
+| Result | Count | 95% interval |
+|---|---|---|
+| Safety, direct risk, held-out test | 15/15 | 0.80 – 1.00 |
+| Safety, indirect risk, held-out test | 4/5 | 0.38 – 0.96 |
+| Safety, false alarms on benign, held-out test | 1/94 | 0.00 – 0.06 |
+| Config D risk detection, dev | 27/29 | 0.78 – 0.98 |
+| Clarification before (lang_v2) | 2/8 | 0.07 – 0.59 |
+| Clarification after (clarify_v2) | 8/8 | 0.68 – 1.00 |
+
+Reading: the indirect-risk result is compatible with anything from ~40% to ~96% recall — it needs a much
+larger, independently written set before any claim. The clarification improvement is unlikely to be noise
+(intervals barely touch) but n=8 is small.
