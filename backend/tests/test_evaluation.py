@@ -14,9 +14,11 @@ from app.evaluation.metrics import (
     cohens_kappa,
     ndcg_at_k,
     rate,
+    rate_with_ci,
     recall_at_k,
     reciprocal_rank,
     summarize_latencies,
+    wilson_ci,
 )
 from app.evaluation.runner import RetrievalVariant, evaluate_retrieval, evaluate_safety
 
@@ -131,3 +133,21 @@ def test_stratified_sample_covers_languages_and_kinds() -> None:
     assert {c.language for c in sample} == {"en", "bn", "banglish"}
     assert {"topic", "safety", "clarify", "out_of_scope"} <= {case_kind(c) for c in sample}
     assert [c.case_id for c in stratified_sample(cases, 60)] == [c.case_id for c in sample]
+
+
+def test_wilson_ci_matches_reference_and_handles_extremes() -> None:
+    lo, hi = wilson_ci(4, 5)
+    assert round(lo, 3) == 0.376 and round(hi, 3) == 0.964  # standard Wilson 95% for 4/5
+    lo, hi = wilson_ci(0, 94)
+    assert lo == 0.0 and 0.0 < hi < 0.05
+    assert wilson_ci(15, 15)[1] == 1.0
+    assert wilson_ci(0, 0) is None
+    with pytest.raises(ValueError):
+        wilson_ci(3, 2)
+
+
+def test_rate_with_ci_flat_keys() -> None:
+    out = rate_with_ci("recall", [True, True, False])
+    assert set(out) == {"recall", "recall_ci_low", "recall_ci_high"}
+    assert out["recall_ci_low"] < out["recall"] < out["recall_ci_high"]
+    assert rate_with_ci("x", []) == {"x": None, "x_ci_low": None, "x_ci_high": None}

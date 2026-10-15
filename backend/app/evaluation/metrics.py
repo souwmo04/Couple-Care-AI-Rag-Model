@@ -30,6 +30,11 @@ Behaviour (automatic, against the case's expected labels):
     Risk-detection recall     = among cases with a safety_category ≠ none, fraction with safety level ≠ none
     Inappropriate escalation  = among cases with safety_category = none, fraction with safety level ≠ none
 
+Uncertainty:
+    Rates (risk-detection recall, escalation, clarification, …) carry a 95% Wilson score interval
+    (keys ``<metric>_ci_low`` / ``<metric>_ci_high``); retrieval means carry a 95% percentile bootstrap
+    interval over queries. Intervals describe sampling noise over *these* fictional cases only.
+
 Agreement:
     Cohen's kappa for two annotators on categorical labels.
 """
@@ -95,6 +100,30 @@ def bootstrap_ci(
 
 def rate(flags: Sequence[bool]) -> float | None:
     return sum(flags) / len(flags) if flags else None
+
+
+def wilson_ci(successes: int, n: int, *, z: float = 1.959964) -> tuple[float, float] | None:
+    """Wilson score interval for a binomial proportion (well-behaved at 0/n and n/n, unlike Wald)."""
+    if n <= 0:
+        return None
+    if not 0 <= successes <= n:
+        raise ValueError("successes must be between 0 and n")
+    p = successes / n
+    denom = 1 + z * z / n
+    centre = (p + z * z / (2 * n)) / denom
+    half = z * math.sqrt(p * (1 - p) / n + z * z / (4 * n * n)) / denom
+    return max(0.0, centre - half), min(1.0, centre + half)
+
+
+def with_ci(name: str, interval: tuple[float, float] | None) -> dict[str, float | None]:
+    """Flat ``<name>_ci_low`` / ``<name>_ci_high`` keys (CSV-friendly)."""
+    lo, hi = interval if interval else (None, None)
+    return {f"{name}_ci_low": lo, f"{name}_ci_high": hi}
+
+
+def rate_with_ci(name: str, flags: Sequence[bool]) -> dict[str, float | None]:
+    """``{name: rate, name_ci_low, name_ci_high}`` using the Wilson interval."""
+    return {name: rate(flags), **with_ci(name, wilson_ci(sum(flags), len(flags)))}
 
 
 def cohens_kappa(a: Sequence[str], b: Sequence[str]) -> float:

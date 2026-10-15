@@ -24,7 +24,17 @@ from dataclasses import dataclass, field
 
 from app.core.prompts import PROMPT_VERSION, build_messages
 from app.evaluation.dataset import EvalCase
-from app.evaluation.metrics import mean, ndcg_at_k, rate, recall_at_k, reciprocal_rank, summarize_latencies
+from app.evaluation.metrics import (
+    bootstrap_ci,
+    mean,
+    ndcg_at_k,
+    rate,
+    rate_with_ci,
+    recall_at_k,
+    reciprocal_rank,
+    summarize_latencies,
+    with_ci,
+)
 from app.retrieval.citations import format_context, validate_citations
 from app.retrieval.retriever import RetrievalParams, Retriever
 from app.safety.classifier import SafetyEnsemble
@@ -80,7 +90,11 @@ def evaluate_retrieval(cases: list[EvalCase], retriever: Retriever, variant: Ret
         by_language[case.language].append(row)
 
     def agg(rows: list[dict]) -> dict:
-        return {m: mean([r[m] for r in rows]) for m in ("recall@5", "recall@10", "mrr", "ndcg@10")} | {"n": len(rows)}
+        out: dict = {}
+        for m in ("recall@5", "recall@10", "mrr", "ndcg@10"):
+            values = [r[m] for r in rows]
+            out |= {m: mean(values), **with_ci(m, bootstrap_ci(values))}
+        return out | {"n": len(rows)}
 
     return {
         "variant": variant.name,
@@ -117,9 +131,9 @@ def evaluate_safety(cases: list[EvalCase], ensemble: SafetyEnsemble | None = Non
         risky = [r for r in rows if r["expected"] != "none"]
         benign = [r for r in rows if r["expected"] == "none"]
         return {
-            "risk_detection_recall": rate([r["flagged"] for r in risky]),
-            "category_recall": rate([r["category_match"] for r in risky]),
-            "inappropriate_escalation": rate([r["flagged"] for r in benign]),
+            **rate_with_ci("risk_detection_recall", [r["flagged"] for r in risky]),
+            **rate_with_ci("category_recall", [r["category_match"] for r in risky]),
+            **rate_with_ci("inappropriate_escalation", [r["flagged"] for r in benign]),
             "n_risky": len(risky),
             "n_benign": len(benign),
         }
@@ -214,11 +228,11 @@ def summarize_generation(rows: list[dict], cases: dict[str, EvalCase]) -> dict:
     benign = pick(lambda c: c.safety_category == "none")
     return {
         "n": len(rows),
-        "appropriate_clarification": rate([r["needs_clarification"] for r in clar]),
-        "over_clarification": rate([r["needs_clarification"] for r in no_clar]),
-        "appropriate_abstention": rate([not r["grounded"] for r in oos]),
-        "risk_detection_recall": rate([r["safety_level"] not in {"none", "not_applied"} for r in risky]),
-        "inappropriate_escalation": rate([r["safety_level"] not in {"none", "not_applied"} for r in benign]),
+        **rate_with_ci("appropriate_clarification", [r["needs_clarification"] for r in clar]),
+        **rate_with_ci("over_clarification", [r["needs_clarification"] for r in no_clar]),
+        **rate_with_ci("appropriate_abstention", [not r["grounded"] for r in oos]),
+        **rate_with_ci("risk_detection_recall", [r["safety_level"] not in {"none", "not_applied"} for r in risky]),
+        **rate_with_ci("inappropriate_escalation", [r["safety_level"] not in {"none", "not_applied"} for r in benign]),
         "fabricated_citations_removed": sum(r["citations_removed"] or 0 for r in rows),
         "latency": summarize_latencies([r["latency_ms"] for r in rows]),
         "prompt_version": PROMPT_VERSION,
