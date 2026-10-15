@@ -50,7 +50,7 @@ scripts\stop.ps1
 
 | Suite | Result |
 |---|---|
-| Backend (pytest, `scripts\test.ps1`) | 268 passed |
+| Backend (pytest, `scripts\test.ps1`) | 283 passed |
 | Frontend (Vitest + axe-core) | 33 passed |
 | Real-model integration (`pytest -m integration`) | 4 passed |
 | Lint / type check (ruff, tsc, oxlint) | clean (0 warnings) |
@@ -80,6 +80,8 @@ reduced motion, Bangla interface.
   (apni/tumi) mixing in 13/20 replies; explicit rules and few-shot demonstrations did not fix it without the model
   copying the demonstration (logged, not adopted).
 - Vague openers: clarifying question 2/8 → 8/8 after clarify_v2.
+- Optional cloud mode (Groq gpt-oss-120b, free tier): Banglish with 0/20 mixed register, 0 repetition, 0 Hindi
+  words (local: 13/20 mixed). Messages leave the computer in this mode; the UI says so.
 - Alternative generator Qwen3.5-4B compared: faster and lighter, consistent "apni" in Banglish, but repeats
   itself and over-asks questions; default unchanged (`scripts\start-model.ps1 -ModelFile …` to try it).
 - Both generators softened controlling/violent behaviour in some risk replies ("he might be protecting you");

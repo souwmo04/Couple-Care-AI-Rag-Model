@@ -481,3 +481,34 @@ aggregate rates and use repeated runs for small differences.
 (10 per language per configuration, the same 30 cases in every configuration), two shuffled sheets and a
 private key, in `artifacts/annotation/ad-dev-20261015/` (git-ignored). It is ready to hand to two annotators
 following `research/annotation_guidelines.md`; **no human labels exist yet**.
+
+---
+
+## 2026-10-15 · Cloud generator: Groq `openai/gpt-oss-120b` (opt-in cloud mode)
+
+**Setup:** `COUPLECARE_LLM_PROVIDER=groq`, free tier, `reasoning_effort=low`, `include_reasoning=false`; same
+prompts (`system_v2+lang_v2+clarify_v2+safety_v2`), retrieval, safety layer and 20 Banglish dev cases as the
+local runs (`language-fidelity-banglish-20261015T164148Z.json`). One sample per case.
+
+| Generator | On-language (heuristic) | Mixed apni/tumi | Repetition | Hindi words |
+|---|---|---|---|---|
+| Qwen3-4B-2507 local | 0.973 | 13/20 | 0/20 | 4/20 |
+| Qwen3.5-4B local (+presence penalty) | 0.996 | 4/20 | 6/20 | 5/20 |
+| **gpt-oss-120b via Groq** | 0.893 | **0/20** | **0/20** | **0/20** |
+
+The lower on-language score is a detector artefact: of the 27 sentences not classed as Banglish, nearly all
+are Banglish with English loanwords ("Ekhane duto possible interpretation ache") or English headings
+("Practical next steps"). Reading the replies (single reader): coherent Banglish, consistent "apni",
+partner-directed example lines correctly in "tumi" inside quotes, citations used; far better than either
+local model. Not yet measured: Bangla script, English, A–D, latency distribution.
+
+**Free-tier limits observed (response headers, 2026-10-15):** 8,000 tokens/minute and 1,000 requests/day for
+gpt-oss-120b/20b; a chat turn uses ~3–4k tokens, so ≈2 turns/minute. The client now waits for Groq's
+advertised reset (≤30 s, twice) instead of failing; the 20-case run completed in ~3 minutes with no errors.
+`llama-3.3-70b-versatile` returned 404 for this account.
+
+**Safety false alarm found live:** the Banglish message "…ami jokhon diner kotha boli tokhon o phone dekhe. tmi
+ki mone koro? amr ekhon ki kora uchit?" was flagged as stalking by the semantic classifier (caution). Two benign
+Banglish prototypes about phone use were added; a third candidate ("O amar kotha shune na, ami ki korbo…") was
+rejected because it suppressed a real indirect coercive-control case. Dev after the change: direct 28/28,
+indirect 9/10, false alarms 0/234 (unchanged from before).
