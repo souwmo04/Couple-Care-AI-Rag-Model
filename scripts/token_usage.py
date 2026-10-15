@@ -92,15 +92,23 @@ async def run(n: int) -> dict:
         rows.append({"case_id": case.case_id, "language": case.language, "generated": resp.generated,
                      "sources": len(resp.sources), "calls": calls, **(ok[-1] if ok else {})})  # fmt: skip
         last = ok[-1] if ok else {}
-        print(f"  {case.case_id:40s} prompt={last.get('prompt_tokens')} completion={last.get('completion_tokens')} "
-              f"max_tokens={last.get('max_tokens')} finish={last.get('finish_reason')} sources={len(resp.sources)}")  # fmt: skip
+        print(
+            f"  {case.case_id:40s} prompt={last.get('prompt_tokens')} completion={last.get('completion_tokens')} "
+            f"max_tokens={last.get('max_tokens')} finish={last.get('finish_reason')} sources={len(resp.sources)}"
+        )
 
     def avg(key: str) -> float | None:
         vals = [r[key] for r in rows if r.get(key) is not None]
         return round(statistics.fmean(vals)) if vals else None
 
-    summary = {"n": len(rows), "mean_prompt_tokens": avg("prompt_tokens"), "mean_completion_tokens": avg("completion_tokens"),
-               "mean_max_tokens": avg("max_tokens"), "truncated": sum(r.get("finish_reason") == "length" for r in rows), "rate_limited_calls": sum(c["status"] == 429 for r in rows for c in r["calls"])}  # fmt: skip
+    summary = {
+        "n": len(rows),
+        "mean_prompt_tokens": avg("prompt_tokens"),
+        "mean_completion_tokens": avg("completion_tokens"),
+        "mean_max_tokens": avg("max_tokens"),
+        "truncated": sum(r.get("finish_reason") == "length" for r in rows),
+        "rate_limited_calls": sum(c["status"] == 429 for r in rows for c in r["calls"]),
+    }
     print(json.dumps(summary))
     return {"summary": summary, "rows": rows, "provider": settings.llm_provider, "model": settings.groq_model}
 
