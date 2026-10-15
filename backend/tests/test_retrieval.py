@@ -73,6 +73,15 @@ def test_rrf_orders_by_combined_rank() -> None:
     assert {h.index for h in fused} == {1, 2, 3}
 
 
+def test_weighted_rrf_can_rank_by_dense_alone() -> None:
+    dense = [(1, 0.9), (2, 0.8)]
+    lexical = [(2, 9.0), (3, 7.0)]
+    plain = [h.index for h in reciprocal_rank_fusion(dense, lexical)]
+    dense_first = [h.index for h in reciprocal_rank_fusion(dense, lexical, lexical_weight=0.0)]
+    assert plain[0] == 2  # in both lists
+    assert dense_first == [1, 2, 3]  # dense order; lexical-only candidate kept, ranked last
+
+
 def test_lexical_relevance_is_absolute_not_relative() -> None:
     cal = Calibration()
     weak = reciprocal_rank_fusion([], [(0, 0.5)], calibration=cal)

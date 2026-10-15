@@ -18,6 +18,12 @@ from app.retrieval.reranker import Reranker
 Mode = Literal["hybrid", "dense", "bm25"]
 
 
+# BM25's weight in the fused ranking for English queries. 0.0 = rank English by the dense model alone (BM25
+# still adds candidates and still counts toward relevance). Chosen on dev: plain RRF lowered English nDCG@10
+# by 0.050 (paired p=0.02) while helping Banglish; see research/results_log.md (2026-10-15).
+ENGLISH_LEXICAL_WEIGHT = 0.0
+
+
 @dataclass(slots=True)
 class RetrievalParams:
     final_k: int = 4
@@ -27,6 +33,8 @@ class RetrievalParams:
     rerank: bool = False
     expand: bool = True
     mode: Mode = "hybrid"
+    # Weight of BM25 in the fused ranking for queries detected as English (1.0 = plain RRF).
+    english_lexical_weight: float = ENGLISH_LEXICAL_WEIGHT
     language_filter: str | None = None
     topic_filter: str | None = None
 
@@ -140,6 +148,7 @@ class Retriever:
             calibration=self.calibration,
             dense_lookup=dense_lookup,
             lexical_active=mode in {"hybrid", "bm25"},
+            lexical_weight=params.english_lexical_weight if analysis.detected.value == "en" else 1.0,
         )
 
         # Optional metadata filters (used by the retrieval-test UI).

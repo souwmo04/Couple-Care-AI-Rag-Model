@@ -36,7 +36,7 @@ from app.evaluation.metrics import (
     with_ci,
 )
 from app.retrieval.citations import format_context, validate_citations
-from app.retrieval.retriever import RetrievalParams, Retriever
+from app.retrieval.retriever import ENGLISH_LEXICAL_WEIGHT, RetrievalParams, Retriever
 from app.safety.classifier import SafetyEnsemble
 from app.safety.escalation import decide
 
@@ -55,6 +55,7 @@ class RetrievalVariant:
     expand: bool = True
     rerank: bool = False
     final_k: int = 10
+    english_lexical_weight: float = ENGLISH_LEXICAL_WEIGHT
     notes: dict = field(default_factory=dict)
 
 
@@ -72,7 +73,8 @@ def evaluate_retrieval(cases: list[EvalCase], retriever: Retriever, variant: Ret
         # Retrieve a deep passage list, then evaluate at the *document* level: the ranked document
         # list is the passages' documents in order of first appearance, cut to variant.final_k.
         params = RetrievalParams(final_k=50, dense_k=50, bm25_k=50, threshold=0.0,
-                                 mode=variant.mode, expand=variant.expand, rerank=variant.rerank)  # fmt: skip
+                                 mode=variant.mode, expand=variant.expand, rerank=variant.rerank,
+                                 english_lexical_weight=variant.english_lexical_weight)  # fmt: skip
         result = retriever.search(case.user_query, params)
         latencies.append(result.duration_ms)
         ranked = list(dict.fromkeys(i.passage.document_id for i in result.items))[: variant.final_k]
@@ -98,7 +100,13 @@ def evaluate_retrieval(cases: list[EvalCase], retriever: Retriever, variant: Ret
 
     return {
         "variant": variant.name,
-        "settings": {"mode": variant.mode, "expand": variant.expand, "rerank": variant.rerank, **variant.notes},
+        "settings": {
+            "mode": variant.mode,
+            "expand": variant.expand,
+            "rerank": variant.rerank,
+            "english_lexical_weight": variant.english_lexical_weight,
+            **variant.notes,
+        },
         "overall": agg(per_case),
         "by_language": {lang: agg(rows) for lang, rows in sorted(by_language.items())},
         "latency": summarize_latencies(latencies),

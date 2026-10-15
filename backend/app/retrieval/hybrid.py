@@ -65,10 +65,13 @@ def reciprocal_rank_fusion(
     calibration: Calibration | None = None,
     dense_lookup: Callable[[list[int]], dict[int, float]] | None = None,
     lexical_active: bool = True,
+    lexical_weight: float = 1.0,
 ) -> list[FusedHit]:
     """Fuse rankings. ``dense_lookup`` (optional) supplies exact cosine scores for lexical-only
     candidates so every candidate is judged on both signals when dense retrieval is active.
-    ``lexical_active`` says whether BM25 was run (an empty BM25 result then counts as 0)."""
+    ``lexical_active`` says whether BM25 was run (an empty BM25 result then counts as 0).
+    ``lexical_weight`` scales BM25's contribution to the fused *ranking* (weighted RRF); relevance
+    scores are unaffected."""
     calibration = calibration or Calibration()
     hits: dict[int, FusedHit] = {}
     for rank, (idx, score) in enumerate(dense, start=1):
@@ -77,7 +80,7 @@ def reciprocal_rank_fusion(
         hit.dense_rank, hit.dense_score = rank, score
     for rank, (idx, score) in enumerate(lexical, start=1):
         hit = hits.setdefault(idx, FusedHit(idx, 0.0, 0.0))
-        hit.rrf += 1.0 / (k + rank)
+        hit.rrf += lexical_weight / (k + rank)
         hit.bm25_rank, hit.bm25_score = rank, score
 
     dense_active = bool(dense) or dense_lookup is not None

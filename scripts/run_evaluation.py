@@ -119,6 +119,7 @@ def retrieval_suite(cases, settings, embedder) -> tuple[dict, list[dict]]:
         RetrievalVariant("bm25_only", mode="bm25", expand=True),
         RetrievalVariant("C_hybrid", mode="hybrid", expand=True),
         RetrievalVariant("C_hybrid_no_expansion", mode="hybrid", expand=False),
+        RetrievalVariant("C_hybrid_plain_rrf", mode="hybrid", expand=True, english_lexical_weight=1.0),
     ]
     out, rows = {}, []
     for v in variants:
