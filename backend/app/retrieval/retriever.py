@@ -18,10 +18,10 @@ from app.retrieval.reranker import Reranker
 Mode = Literal["hybrid", "dense", "bm25"]
 
 
-# BM25's weight in the fused ranking for English queries. 0.0 = rank English by the dense model alone (BM25
-# still adds candidates and still counts toward relevance). Chosen on dev: plain RRF lowered English nDCG@10
-# by 0.050 (paired p=0.02) while helping Banglish; see research/results_log.md (2026-10-15).
-ENGLISH_LEXICAL_WEIGHT = 0.0
+# BM25's weight in the fused ranking for English queries (1.0 = plain RRF; 0.0 = rank English by the dense
+# model alone, BM25 still adding candidates and relevance). 0.0 looked better on dev (English nDCG@10 +0.050)
+# but did not replicate on the held-out test split, so plain RRF is kept; see research/results_log.md.
+ENGLISH_LEXICAL_WEIGHT = 1.0
 
 
 @dataclass(slots=True)

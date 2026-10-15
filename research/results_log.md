@@ -299,3 +299,37 @@ Difference = first variant minus second, per query; 95% CI; two-sided bootstrap 
 Reading: hybrid fusion's gain comes from Banglish (where BM25 with curated expansion catches Romanized terms
 the dense model misses); for English it slightly *hurts* ranking. Expansion only affects Bangla/Banglish
 queries (identical for English, as designed). No correction for multiple comparisons.
+
+---
+
+## 2026-10-15 · Weighted fusion for English queries — dev-chosen, **failed to replicate on test, reverted**
+
+**Motivation:** the paired comparison above showed plain RRF hurting English ranking on dev.
+**Dev sweep** (BM25 weight in the fused ranking for English queries only; 258 dev queries):
+
+| English BM25 weight | en Recall@10 | en MRR | en nDCG@10 | Δ en nDCG@10 vs 1.0 (paired) | all nDCG@10 |
+|---|---|---|---|---|---|
+| 1.0 (plain RRF) | 0.683 | 0.668 | 0.536 | — | 0.455 |
+| 0.75 | 0.677 | 0.668 | 0.536 | +0.000 | 0.455 |
+| 0.5 | 0.686 | 0.658 | 0.538 | +0.002 (p=0.92) | 0.455 |
+| 0.25 | 0.701 | 0.653 | 0.544 | +0.008 (p=0.53) | 0.458 |
+| 0.0 (dense ranking) | 0.701 | 0.706 | 0.585 | +0.050 (p=0.02) | 0.474 |
+
+**Frozen** at commit `3d49db6` with weight 0.0, then the held-out test split was run **once**
+(`run_evaluation.py --split test --final --suites retrieval`, run `20261015T030959Z-test`; first use of the test
+split for retrieval):
+
+| Test (n=111; en n=38) | Recall@10 | MRR | nDCG@10 |
+|---|---|---|---|
+| B dense | 0.647 [0.589, 0.707] | 0.476 [0.401, 0.548] | 0.432 [0.381, 0.481] |
+| BM25 only | 0.497 [0.432, 0.562] | 0.415 [0.344, 0.489] | 0.346 [0.300, 0.393] |
+| C hybrid, plain RRF | 0.643 [0.580, 0.706] | 0.525 [0.451, 0.602] | 0.454 [0.405, 0.504] |
+| C hybrid, English ranked by dense (frozen candidate) | 0.647 [0.586, 0.710] | 0.506 [0.432, 0.580] | 0.449 [0.399, 0.498] |
+| C hybrid, no expansion | 0.614 [0.556, 0.671] | 0.511 [0.436, 0.584] | 0.435 [0.387, 0.482] |
+
+Paired, candidate − plain RRF, English only: MRR −0.058 [−0.149, +0.034] p=0.25; nDCG@10 −0.015
+[−0.080, +0.051] p=0.64. **The dev improvement did not replicate** (point estimates are slightly negative), so
+the production default was reverted to plain RRF (`ENGLISH_LEXICAL_WEIGHT = 1.0`); the option remains for
+ablation (`C_hybrid_en_dense_rank`). On test, hybrid's benefit over dense is again concentrated in Banglish
+(Recall@10 +0.098 [+0.010, +0.201], p=0.04). This is a reminder that dev-selected settings with p≈0.02 on
+~100 queries can be noise, and the test split has now been used once for retrieval.
