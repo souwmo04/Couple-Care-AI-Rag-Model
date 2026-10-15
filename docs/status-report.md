@@ -50,7 +50,7 @@ scripts\stop.ps1
 
 | Suite | Result |
 |---|---|
-| Backend (pytest, `scripts\test.ps1`) | 283 passed |
+| Backend (pytest, `scripts\test.ps1`) | 294 passed |
 | Frontend (Vitest + axe-core) | 33 passed |
 | Real-model integration (`pytest -m integration`) | 4 passed |
 | Lint / type check (ruff, tsc, oxlint) | clean (0 warnings) |
@@ -82,6 +82,9 @@ reduced motion, Bangla interface.
 - Vague openers: clarifying question 2/8 → 8/8 after clarify_v2.
 - Optional cloud mode (Groq gpt-oss-120b, free tier): Banglish with 0/20 mixed register, 0 repetition, 0 Hindi
   words (local: 13/20 mixed). Messages leave the computer in this mode; the UI says so.
+  Replies take ~3.7 s (local ~10 s); Bangla is fluent. In cloud mode Groq also writes Bangla/Banglish support
+  replies (measured safe); if Groq is rate-limited or down, the local model answers (labelled) and those support
+  cases fall back to the pre-written template.
 - Alternative generator Qwen3.5-4B compared: faster and lighter, consistent "apni" in Banglish, but repeats
   itself and over-asks questions; default unchanged (`scripts\start-model.ps1 -ModelFile …` to try it).
 - Both generators softened controlling/violent behaviour in some risk replies ("he might be protecting you");

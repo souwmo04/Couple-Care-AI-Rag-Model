@@ -22,7 +22,7 @@
 | self-harm | urgent | Pre-written supportive message; crisis/emergency contact; invitation to keep talking. No generation. |
 | surveillance request | declined | Pre-written decline + redirect to the underlying worry. No generation. |
 | manipulation / threat / blackmail request | declined | Pre-written decline + redirect. No generation. |
-| physical violence, sexual coercion, threats, stalking | support | **Bangla/Banglish:** pre-written, labelled support message (the local model did not follow safety instructions reliably in these languages). **English:** generation with a safety addendum: believe, prioritise safety, no confrontation, **no couples counselling**, specialised support. Output filter removes confrontation/joint-counselling sentences. |
+| physical violence, sexual coercion, threats, stalking | support | **Bangla/Banglish with the local model:** pre-written, labelled support message (the local model did not follow safety instructions reliably in these languages). **Cloud mode (Groq):** generated with the safety addendum (measured to follow it); if that reply would come from the local fallback, the template is used instead. **English:** generation with a safety addendum: believe, prioritise safety, no confrontation, **no couples counselling**, specialised support. Output filter removes confrontation/joint-counselling sentences. |
 | coercive control, repeated humiliation | caution | Generation with a careful addendum: take seriously without labelling; gently ask whether the user feels safe. |
 
 Pre-written templates exist in English, Bangla and Banglish and are labelled in the UI as
@@ -50,6 +50,10 @@ confirmed by the rules follows the table above. The classifier is inactive if no
 Removed sentence-by-sentence (and before streaming display): unverified phone numbers,
 diagnostic labels applied to a partner, deterministic relationship predictions, instructions for
 covert monitoring, and — when violence was disclosed — confrontation or joint-counselling advice.
+
+Phone numbers in generated text are allowed only if they belong to the support region chosen in Settings; with
+no region chosen, no number is allowed (the app never infers a country from the user's language, so e.g. a
+model writing "call 999" to a Bangla speaker has that sentence removed while the safety banner remains).
 
 When any risk was detected (caution and above), sentences that **excuse or soften the behaviour** are
 also removed: denying intent ("even if he didn't mean to hurt you"), framing it as love, protection,

@@ -274,3 +274,23 @@ def test_support_level_uses_template_in_bangla_and_banglish(text: str, lang: str
     assert decision.level == SafetyLevel.SUPPORT
     assert decision.skip_generation is templated
     assert (decision.template == TEMPLATES["support"][lang]) is templated
+
+
+def test_allowed_numbers_follow_the_selected_region(settings) -> None:
+    from app.safety.escalation import allowed_numbers
+
+    directory = load_directory(settings.support_directory_path)
+    assert {"999", "109"} <= allowed_numbers(directory, "BD")
+    assert "911" not in allowed_numbers(directory, "BD")
+    assert allowed_numbers(directory, "unspecified") == set()  # never guessed from the user's language
+    assert {"999", "911", "112"} <= allowed_numbers(directory)  # no region given: whole directory (tools)
+
+
+def test_cloud_mode_generates_bangla_support_replies() -> None:
+    from app.safety.classifier import RuleClassifier, SafetyEnsemble
+
+    assessment = SafetyEnsemble([RuleClassifier()]).assess("Amar shami amake mare.")
+    local = decide(assessment, "banglish")
+    cloud = decide(assessment, "banglish", support_templates=frozenset())
+    assert local.skip_generation and local.template == TEMPLATES["support"]["banglish"]
+    assert cloud.level == SafetyLevel.SUPPORT and not cloud.skip_generation and cloud.prompt_addendum

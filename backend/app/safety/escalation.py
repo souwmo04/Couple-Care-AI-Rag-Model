@@ -202,6 +202,9 @@ TEMPLATES: dict[str, dict[str, str]] = {
 # reply. Measured 2026-10-15 (research/results_log.md): the local 4B models ignored the safety instructions in
 # Banglish (repeating unrelated knowledge-base advice) and gave unsafe advice in Bangla ("resist him"), while
 # English generated replies followed them. Later turns in the conversation are still generated.
+# With the cloud generator (Groq gpt-oss-120b) generated Bangla/Banglish support replies followed the safety
+# addendum (scripts/support_generation_check.py), so the orchestrator passes an empty set in cloud mode and
+# falls back to these templates if the reply would come from the local model.
 TEMPLATE_SUPPORT_LANGUAGES = frozenset({"bn", "banglish"})
 
 BANNERS: dict[SafetyLevel, dict[str, str]] = {
@@ -277,7 +280,7 @@ SEMANTIC_DEFAULT_ADDENDUM = (
 )
 
 
-def decide(assessment: Assessment, language: str) -> SafetyDecision:
+def decide(assessment: Assessment, language: str, *, support_templates: frozenset[str] | None = None) -> SafetyDecision:
     lang = language if language in {"en", "bn", "banglish"} else "en"
     categories = [c for c, _ in PRIORITY if c in assessment.categories]
     if not categories:
@@ -292,7 +295,8 @@ def decide(assessment: Assessment, language: str) -> SafetyDecision:
     level = dict(PRIORITY)[primary]
     template = TEMPLATES.get(primary.value, {}).get(lang)
     skip = level in {SafetyLevel.URGENT, SafetyLevel.DECLINED}
-    if level == SafetyLevel.SUPPORT and lang in TEMPLATE_SUPPORT_LANGUAGES:
+    templated = TEMPLATE_SUPPORT_LANGUAGES if support_templates is None else support_templates
+    if level == SafetyLevel.SUPPORT and lang in templated:
         template, skip = TEMPLATES["support"][lang], True
     banner = BANNERS.get(level, {}).get(lang)
     return SafetyDecision(level, primary, categories, skip, template if skip else None, banner, ADDENDA.get(level))
@@ -347,10 +351,17 @@ def resources_for(directory: dict, region: str | None, categories: list[RiskCate
     return out
 
 
-def allowed_numbers(directory: dict) -> set[str]:
-    numbers = set()
-    for region in directory.get("regions", {}).values():
-        for entry in region.get("resources", []):
+def allowed_numbers(directory: dict, region: str | None = None) -> set[str]:
+    """Verified numbers a reply may contain. With ``region`` given, only that region's numbers ("unspecified"
+    → none): the app never guesses the user's country from their language, so a model writing e.g. "call 999"
+    for a Bangla speaker who has not chosen a region has that sentence removed (the safety banner still tells
+    them to contact their local emergency number)."""
+    numbers: set[str] = set()
+    regions = directory.get("regions", {})
+    if region is not None:
+        regions = {region: regions[region]} if region in regions else {}
+    for region_entry in regions.values():
+        for entry in region_entry.get("resources", []):
             if entry.get("contact"):
                 numbers.add("".join(ch for ch in entry["contact"] if ch.isdigit()))
     return numbers

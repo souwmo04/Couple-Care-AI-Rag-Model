@@ -42,7 +42,15 @@ from app.errors import AppError, NotFoundError
 from app.generation.llm_client import GenerationParams
 from app.retrieval.citations import build_source_cards, format_context, validate_citations
 from app.retrieval.retriever import RetrievalParams, RetrievalResult, RetrievedItem
-from app.safety.escalation import SafetyDecision, decide, merge_levels, resources_for
+from app.safety.escalation import (
+    TEMPLATE_SUPPORT_LANGUAGES,
+    TEMPLATES,
+    SafetyDecision,
+    allowed_numbers,
+    decide,
+    merge_levels,
+    resources_for,
+)
 from app.safety.output_check import check_response
 from app.storage.sessions import Conversation, new_id
 
@@ -100,7 +108,11 @@ class Orchestrator:
             conversation = store.create(owner, message, request.relationship_stage, response_language)
 
         # Safety pre-check runs on the raw user text, independent of retrieval and generation.
-        decision = decide(self.c.safety.assess(message), response_language)
+        # In cloud mode the (stronger) cloud model writes Bangla/Banglish support replies; locally they are templated.
+        cloud = self.c.settings.llm_provider != "local"
+        decision = decide(
+            self.c.safety.assess(message), response_language, support_templates=frozenset() if cloud else None
+        )
         decision = merge_levels(decision, SafetyLevel(conversation.safety_level) if conversation.safety_level else None)
 
         retrieval: RetrievalResult | None = None
@@ -243,7 +255,7 @@ class Orchestrator:
             answer = citation.text
             if citation.removed_markers:
                 flags.append("fabricated_citation_removed")
-            checked = check_response(answer, plan.decision.level, self.c.allowed_numbers)
+            checked = check_response(answer, plan.decision.level, self._allowed_numbers())
             answer = checked.text
             flags.extend(checked.flags)
             sources = build_source_cards(plan.context_items, citation.cited_ids)
@@ -310,7 +322,10 @@ class Orchestrator:
             return self._finalize(plan, plan.decision.template or "", generated=False)
         llm = self.c.llm()
         answer = await llm.complete(self._messages(plan), self._generation_params(plan))
-        return self._finalize(plan, answer, generated=True, fallback_reason=getattr(llm, "fallback_reason", None))
+        fallback_reason = getattr(llm, "fallback_reason", None)
+        if fallback_reason and (template := self._local_template(plan)):
+            return self._finalize(plan, template, generated=False)
+        return self._finalize(plan, answer, generated=True, fallback_reason=fallback_reason)
 
     async def stream(self, request: ChatRequest, owner: str) -> AsyncIterator[dict]:
         """Yield events: ``meta`` → ``delta``* → ``done`` (or ``error``).
@@ -339,6 +354,12 @@ class Orchestrator:
         llm = self.c.llm()
         try:
             async for token in llm.stream(self._messages(plan), self._generation_params(plan)):
+                if not raw and getattr(llm, "fallback_reason", None) and (template := self._local_template(plan)):
+                    # The local model must not write Bangla/Banglish support replies; use the template instead.
+                    final = self._finalize(plan, template, generated=False)
+                    yield {"event": "delta", "text": final.answer}
+                    yield {"event": "done", "response": final.model_dump(mode="json")}
+                    return
                 raw += token
                 buffer += token
                 ready, buffer = _split_complete(buffer)
@@ -361,12 +382,22 @@ class Orchestrator:
         final = self._finalize(plan, raw, generated=True, fallback_reason=getattr(llm, "fallback_reason", None))
         yield {"event": "done", "response": final.model_dump(mode="json")}
 
+    def _allowed_numbers(self) -> set[str]:
+        return allowed_numbers(self.c.support_directory, self.c.settings_store.get().support_region)
+
+    @staticmethod
+    def _local_template(plan: TurnPlan) -> str | None:
+        """Template to use when a cloud reply fell back to the local model for a Bangla/Banglish support case."""
+        if plan.decision.level == SafetyLevel.SUPPORT and plan.response_language in TEMPLATE_SUPPORT_LANGUAGES:
+            return TEMPLATES["support"][plan.response_language]
+        return None
+
     def _check_fragment(self, fragment: str, plan: TurnPlan) -> str:
         from app.generation.llm_client import strip_reasoning
 
         fragment = strip_reasoning(fragment) if "<think>" in fragment.lower() else fragment
         cited = validate_citations(fragment, len(plan.context_items)).text
-        checked = check_response(cited, plan.decision.level, self.c.allowed_numbers).text
+        checked = check_response(cited, plan.decision.level, self._allowed_numbers()).text
         # check_response trims whitespace; restore the separator the model produced.
         trailing = fragment[len(fragment.rstrip()) :]
         return checked + trailing if checked else ""

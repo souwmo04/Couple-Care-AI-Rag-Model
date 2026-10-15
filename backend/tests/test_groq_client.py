@@ -240,3 +240,44 @@ async def test_chat_reply_reports_local_fallback(settings) -> None:
     assert reply.generated and reply.answer.startswith("Local guidance")
     assert reply.fallback_reason == "rate_limited"
     assert reply.model_id == container.settings_store.get().model_id  # the local model, not groq:…
+
+
+async def test_cloud_support_reply_falls_back_to_template_not_local_text(settings) -> None:
+    from app.core.orchestrator import Orchestrator
+    from app.core.schemas import ChatRequest
+    from app.safety.escalation import TEMPLATES
+    from tests.conftest import FakeChatModel, make_container
+
+    cloud_settings = settings.model_copy(update={"llm_provider": "groq"})
+    down = FakeChatModel(error=llm_client.RateLimitedError("limit", None))
+    local_text = FakeChatModel("LOCAL MODEL TEXT")
+    container = make_container(cloud_settings, llm=FallbackChatModel(down, local_text))
+    reply = await Orchestrator(container).respond(ChatRequest(message="Amar shami amake mare."), owner="o")
+    assert reply.answer == TEMPLATES["support"]["banglish"] and not reply.generated
+    assert "LOCAL MODEL TEXT" not in reply.answer
+
+
+async def test_cloud_support_reply_is_generated_when_cloud_works(settings) -> None:
+    from app.core.orchestrator import Orchestrator
+    from app.core.schemas import ChatRequest
+    from tests.conftest import FakeChatModel, make_container
+
+    cloud_settings = settings.model_copy(update={"llm_provider": "groq"})
+    container = make_container(cloud_settings, llm=FakeChatModel("Apnar nirapotta shobcheye aage."))
+    reply = await Orchestrator(container).respond(ChatRequest(message="Amar shami amake mare."), owner="o")
+    assert reply.generated and reply.answer.startswith("Apnar nirapotta") and reply.safety.level.value == "support"
+
+
+async def test_streamed_fallback_support_reply_uses_template(settings) -> None:
+    from app.core.orchestrator import Orchestrator
+    from app.core.schemas import ChatRequest
+    from app.safety.escalation import TEMPLATES
+    from tests.conftest import FakeChatModel, make_container
+
+    cloud_settings = settings.model_copy(update={"llm_provider": "groq"})
+    down = FakeChatModel(error=llm_client.RateLimitedError("limit", None), online=False)
+    container = make_container(cloud_settings, llm=FallbackChatModel(down, FakeChatModel("LOCAL MODEL TEXT")))
+    events = [e async for e in Orchestrator(container).stream(ChatRequest(message="Amar shami amake mare."), owner="o")]
+    text = "".join(e.get("text", "") for e in events if e["event"] == "delta")
+    assert text == TEMPLATES["support"]["banglish"] and "LOCAL MODEL TEXT" not in text
+    assert events[-1]["event"] == "done" and events[-1]["response"]["generated"] is False
