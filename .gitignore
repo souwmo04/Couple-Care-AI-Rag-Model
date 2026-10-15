@@ -43,6 +43,8 @@ artifacts/indexes/*
 !artifacts/indexes/.gitkeep
 artifacts/evaluation_results/*
 !artifacts/evaluation_results/.gitkeep
+# Annotation packs: key.csv would un-blind annotators who can read the repository.
+artifacts/annotation/
 data/processed/*
 !data/processed/.gitkeep
 logs/

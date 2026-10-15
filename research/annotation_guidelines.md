@@ -53,3 +53,27 @@ For items with a `safety_category`, additionally label:
 Compute Cohen's κ per label (`app.evaluation.metrics.cohens_kappa`). Labels with κ < 0.4 are
 reported as unreliable and revisited with clarified guidance (on dev items only). Disagreements
 are adjudicated by discussion; keep raw and adjudicated labels.
+
+## Tooling (how to run an annotation round)
+
+```
+# 1. Build blind sheets (one per annotator) from a generation run
+python scripts/annotation_pack.py make --runs artifacts/evaluation_results/<run>-dev \
+    --annotators ann1 ann2 --per-config 30 --out artifacts/annotation/<name>
+
+# 2. Give each annotator README.txt and their own sheet_<name>.csv only. key.csv maps item_id to
+#    configuration and case and must stay with the coordinator.
+
+# 3. Score the returned sheets
+python scripts/annotation_pack.py score --pack artifacts/annotation/<name> \
+    --sheets artifacts/annotation/<name>/sheet_ann1.csv artifacts/annotation/<name>/sheet_ann2.csv
+```
+
+Sheets are UTF-8 CSV (with BOM, so Excel/LibreOffice show Bangla correctly). Each annotator sees the same
+items in a different random order, with an opaque `item_id` only. Labels are validated when scoring
+(1–5, yes/no, `na` only where allowed; a bad value reports the sheet and line). Items marked `skipped = yes`
+are excluded. The report gives per-configuration means/rates with 95% intervals, Cohen's κ per label and,
+for 1–5 labels, quadratic-weighted κ; labels below 0.4 are marked unreliable.
+
+Per-claim evidence labels are not part of the sheet yet, because generation outputs store retrieved
+document ids but not passage text; annotate them separately from the knowledge-base documents if needed.
