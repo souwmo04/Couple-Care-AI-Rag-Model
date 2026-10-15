@@ -453,3 +453,31 @@ used for safety at `d9b1442`; since then the semantic addenda, output filter and
 The new hidden-injury rule fires on one held-out indirect case (rules-only 0/5 → 1/5). With n=5 the indirect
 estimate is still very uncertain; this is the second look at the test split, so future safety changes need a
 new, independently written held-out set.
+
+---
+
+## 2026-10-15 · A–D with the current pipeline, run-to-run variance, and a human-annotation pack
+
+**Run:** `20261015T131057Z-dev` · 80 stratified dev cases × A–D · Qwen3-4B-2507 · prompt
+`system_v2+lang_v2+clarify_v2+safety_v2` (applies to D; A–C use the base prompt without safety addenda).
+
+| Config | Clarification (n=8) | Over-clarification (n=37) | Out-of-scope ungrounded (n=6) | Risk detection (n=29) | Inappropriate escalation | p50 |
+|---|---|---|---|---|---|---|
+| A base LLM | 0/8 | 0.08 | 6/6 | 0 (no safety layer) | 0 | 7.3 s |
+| B dense RAG | 3/8 | 0.38 | 2/6 | 0 | 0 | 11.0 s |
+| C hybrid RAG | 4/8 | 0.32 | 3/6 | 0 | 0 | 11.4 s |
+| **D hybrid RAG + safety** | **8/8** | 0.32 | 4/6 | **28/29** | 0 | 10.1 s |
+
+(A is "ungrounded" on out-of-scope cases by construction — it never retrieves.) No fabricated citations were
+removed in any configuration.
+
+**Run-to-run variance (config D, identical code, runs `20261015T061159Z` vs `20261015T131057Z`):** safety level,
+grounding and template use agree on 80/80 cases (deterministic). Whether the reply ends with a question
+flips on **17/80** cases, while the aggregate over-clarification rate barely moves (0.35 vs 0.32). Only 15/80
+replies are word-for-word identical. Per-case comparisons of generated behaviour are therefore noisy; compare
+aggregate rates and use repeated runs for small differences.
+
+**Human annotation pack prepared** (`scripts/annotation_pack.py`): 30 dev cases × A–D = 120 blind items
+(10 per language per configuration, the same 30 cases in every configuration), two shuffled sheets and a
+private key, in `artifacts/annotation/ad-dev-20261015/` (git-ignored). It is ready to hand to two annotators
+following `research/annotation_guidelines.md`; **no human labels exist yet**.
