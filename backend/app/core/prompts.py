@@ -11,14 +11,18 @@ from functools import lru_cache
 from pathlib import Path
 
 from app.generation.llm_client import ChatMessage
+from app.safety.escalation import SAFETY_ADDENDA_VERSION
 
-SYSTEM_PROMPT_FILE = "system_v1"
+# system_v2 (2026-10-15): no interpretations that excuse control, threats or violence.
+SYSTEM_PROMPT_FILE = "system_v2"
 # lang_v2 (2026-10-15): stricter Banglish rules after the local model drifted into English,
 # misread Romanized words, and added emojis/slang (see docs/model-selection.md).
 LANGUAGE_INSTRUCTIONS_VERSION = "lang_v2"
 # clarify_v2 (2026-10-15): vague openers get no retrieved passages and must end with one question.
 CLARIFICATION_VERSION = "clarify_v2"
-PROMPT_VERSION = f"{SYSTEM_PROMPT_FILE}+{LANGUAGE_INSTRUCTIONS_VERSION}+{CLARIFICATION_VERSION}"
+PROMPT_VERSION = (
+    f"{SYSTEM_PROMPT_FILE}+{LANGUAGE_INSTRUCTIONS_VERSION}+{CLARIFICATION_VERSION}+{SAFETY_ADDENDA_VERSION}"
+)
 TEMPLATE_DIR = Path(__file__).parent / "prompt_templates"
 
 _NO_EMOJI = "Do not use emojis or slang terms of address (such as 'bro')."
@@ -49,8 +53,9 @@ STAGE_CONTEXT = {
 
 
 @lru_cache(maxsize=4)
-def load_system_prompt(version: str = SYSTEM_PROMPT_FILE) -> str:
-    path = TEMPLATE_DIR / f"{version}.md"
+def load_system_prompt(version: str | None = None) -> str:
+    # Resolved at call time so evaluation scripts can switch SYSTEM_PROMPT_FILE for ablations.
+    path = TEMPLATE_DIR / f"{version or SYSTEM_PROMPT_FILE}.md"
     return path.read_text(encoding="utf-8").strip()
 
 

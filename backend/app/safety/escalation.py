@@ -176,6 +176,14 @@ BANNERS: dict[SafetyLevel, dict[str, str]] = {
     },
 }
 
+# Recorded in PROMPT_VERSION. safety_v2 (2026-10-15): forbid explanations that excuse or soften the behaviour,
+# after both local models offered "he may be protecting you"-style interpretations at caution/support level.
+SAFETY_ADDENDA_VERSION = "safety_v2"
+_NO_EXCUSES = (
+    " Do NOT offer explanations that excuse, justify or soften the partner's behaviour (such as love, worry, "
+    "protection, insecurity, stress or anger); the usual 'offer several interpretations' guidance does not apply here."
+)
+
 ADDENDA: dict[SafetyLevel, str] = {
     SafetyLevel.SUPPORT: (
         "SAFETY CONTEXT: The user has described possible violence, sexual coercion, threats, or stalking. "
@@ -183,13 +191,13 @@ ADDENDA: dict[SafetyLevel, str] = {
         "do NOT suggest couples counselling or joint sessions, and do NOT encourage reconciliation. Do not diagnose anyone. "
         "Mention that specialised domestic-violence support services can help with safety planning, without inventing "
         "names or phone numbers. Keep any practical steps discreet and safe (e.g. a trusted person, a safe place). "
-        "If they are in immediate danger they should contact their local emergency number."
+        "If they are in immediate danger they should contact their local emergency number." + _NO_EXCUSES
     ),
     SafetyLevel.CAUTION: (
         "SAFETY CONTEXT: The user described behaviour that may be part of a controlling or demeaning pattern, but the "
         "context is incomplete. Take it seriously without labelling the relationship as abusive. Gently ask one clarifying "
         "question about whether they feel afraid or unsafe. Do not suggest confronting the partner in a way that could "
-        "increase risk, and do not recommend couples counselling until safety is clear."
+        "increase risk, and do not recommend couples counselling until safety is clear." + _NO_EXCUSES
     ),
 }
 
@@ -210,7 +218,7 @@ SEMANTIC_DEFAULT_ADDENDUM = (
     "SAFETY CONTEXT: The message may indirectly describe harm, fear, control, threats or being followed. "
     "Do not assume it is ordinary conflict and do not label the relationship. Take it seriously, gently ask "
     "whether they feel safe, and avoid advice to confront the partner or attend joint counselling until "
-    "safety is clear."
+    "safety is clear." + _NO_EXCUSES
 )
 
 

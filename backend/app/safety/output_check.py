@@ -9,7 +9,10 @@ recorded for evaluation. Checks:
 * deterministic predictions about the relationship ("he will never change"),
 * instructions for surveilling a partner,
 * when safety level is ``support``: suggestions to confront the partner or attend couples
-  counselling/joint sessions.
+  counselling/joint sessions,
+* when any risk was detected (``caution`` and above): sentences that excuse or soften the
+  behaviour ("he didn[’']t mean to hurt you", "it may come from love", "it was in the heat of the
+  moment"). Both local models produced such sentences despite prompt instructions.
 """
 
 from __future__ import annotations
@@ -47,6 +50,38 @@ CONFRONT_RE = re.compile(
     r"|কাপল (?:কাউন্সেলিং|থেরাপি)|মুখোমুখি হোন",
     re.IGNORECASE,
 )
+
+# Excuses that are removed unless negated ("this is not out of love" is kept).
+EXCUSE_RE = re.compile(
+    r"\bout of (?:love|concern|worry|care|fear)\b|\bshows? (?:how much )?(?:he|she|they) (?:loves?|cares?)\b"
+    r"|\b(?:he|she|they)(?:[’']s| is| are)? (?:only |just )?(?:trying to )?protect(?:ing)? you\b"
+    r"|\bstems? from (?:his |her |their )?(?:love|insecurity|jealousy|stress|worry|fear)\b"
+    r"|\b(?:emotionally invested|struggling to let go|heat of the moment)\b"
+    r"|\b(?:meant|intended) (?:to be |as )?(?:playful|a joke|joking|teasing)\b|\b(?:playful|joking|teasing)\b[^.!?]{0,20}\bmeant\b"
+    r"|ভালোবাসা থেকে|ভালোবাসার কারণে|আপনাকে রক্ষা কর|রাগের মাথায়|নিরাপত্তাহীনতা থেকে"
+    r"|\bbhalobasha theke\b|\bbhalobashar karone\b|\bra(?:a)?ger? mathay\b|\binsecurity theke\b|\bapnake protect\b",
+    re.IGNORECASE,
+)
+NEGATION_RE = re.compile(r"\bnot\b|n[’']t\b|\bnever\b|নয়|না\b|\bna\b|\bnoy\b|\bnoi\b", re.IGNORECASE)
+# Denying or minimising intent is a softening move on its own ("even if he didn't mean to hurt you").
+INTENT_DENIAL_RE = re.compile(
+    # Not after "I": wording the user might say about themselves ("I didn't mean to…") is fine.
+    r"(?<!\bI )\b(?:didn[’']t|did not|doesn[’']t|does not|may not have|might not have)\s+(?:mean(?:t)? to|intend(?:ed)?)\b"
+    r"|\b(?:wasn[’']t|was not|isn[’']t|is not)\s+(?:intentional|deliberate|on purpose)\b|\beven if (?:it was )?unintentional\b"
+    r"|\b(?:even if|although|though) (?:the )?intention (?:isn[’']t|wasn[’']t|is not|was not)\b"
+    r"|ইচ্ছাকৃত (?:নয়|ছিল না)|ইচ্ছা করে (?:করেনি|নয়)|\bicche kore (?:kore )?ni\b",
+    re.IGNORECASE,
+)
+
+
+def _excuses(sentence: str) -> bool:
+    if INTENT_DENIAL_RE.search(sentence):
+        return True
+    for match in EXCUSE_RE.finditer(sentence):
+        window = sentence[max(0, match.start() - 25) : match.end() + 12]
+        if not NEGATION_RE.search(window):
+            return True
+    return False
 
 
 @dataclass(slots=True)
@@ -101,6 +136,8 @@ def _violation(sentence: str, level: SafetyLevel, allowed_numbers: set[str]) -> 
         return "surveillance_advice"
     if level in {SafetyLevel.SUPPORT, SafetyLevel.URGENT} and CONFRONT_RE.search(sentence):
         return "unsafe_confrontation_or_joint_counselling"
+    if level in {SafetyLevel.CAUTION, SafetyLevel.SUPPORT, SafetyLevel.URGENT} and _excuses(sentence):
+        return "excuses_harmful_behaviour"
     return None
 
 

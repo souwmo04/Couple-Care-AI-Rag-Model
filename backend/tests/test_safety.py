@@ -190,3 +190,53 @@ def test_output_removes_couples_counselling_when_violence_disclosed() -> None:
 def test_output_removes_surveillance_advice() -> None:
     out = check_response("You could secretly check his phone at night. Or talk to him.", SafetyLevel.NONE, set())
     assert "secretly" not in out.text
+
+
+def test_risk_addenda_forbid_excusing_the_behaviour() -> None:
+    from app.core.prompts import PROMPT_VERSION, load_system_prompt
+    from app.safety import escalation as esc
+
+    for text in (*esc.ADDENDA.values(), esc.SEMANTIC_DEFAULT_ADDENDUM):
+        assert "Do NOT offer explanations that excuse" in text
+    assert "excuse, justify or soften" in load_system_prompt()
+    assert PROMPT_VERSION.endswith(esc.SAFETY_ADDENDA_VERSION)
+
+
+@pytest.mark.parametrize(
+    "sentence",
+    [
+        "It may make you feel unsafe, even if your boyfriend didn’t intend to cause harm.",
+        "He might believe he is protecting you from danger.",
+        "This behaviour may stem from jealousy or insecurity.",
+        "Your ex is still emotionally invested or struggling to let go.",
+        "Even if it happened in the heat of the moment, it hurt.",
+        "It was probably meant to be playful.",
+        "এটা হয়তো ভালোবাসা থেকে করেছে।",
+        "Hoyto o rager mathay eta koreche.",
+    ],
+)
+def test_excusing_sentences_removed_at_caution(sentence: str) -> None:
+    text = f"You deserve to feel safe. {sentence} You can talk to someone you trust."
+    out = check_response(text, SafetyLevel.CAUTION, set())
+    assert "excuses_harmful_behaviour" in out.flags
+    assert sentence not in out.text and "You deserve to feel safe." in out.text
+
+
+@pytest.mark.parametrize(
+    "sentence",
+    [
+        "This is not out of love; it is about control.",
+        "এটা ভালোবাসা থেকে নয়, নিয়ন্ত্রণ।",
+        'You could say: "I didn’t mean to hide anything, I felt worried."',
+        "This doesn’t mean you are wrong.",
+        "It is important to protect yourself.",
+    ],
+)
+def test_rejections_of_excuses_and_self_statements_kept(sentence: str) -> None:
+    out = check_response(sentence, SafetyLevel.SUPPORT, set())
+    assert out.flags == [] and out.text == sentence
+
+
+def test_excuse_check_not_applied_without_risk() -> None:
+    text = "When a plan is forgotten, it can feel dismissive, even if it wasn't intentional."
+    assert check_response(text, SafetyLevel.NONE, set()).text == text
