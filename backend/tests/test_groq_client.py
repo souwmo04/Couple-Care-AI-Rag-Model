@@ -43,7 +43,7 @@ async def test_sends_key_to_fixed_groq_endpoint_and_hides_reasoning() -> None:
     body = seen["body"]
     assert body["model"] == "openai/gpt-oss-120b"
     assert body["include_reasoning"] is False and body["reasoning_effort"] == "low"
-    assert body["max_tokens"] == 500 + 1024
+    assert body["max_tokens"] == 500 + 640
 
 
 async def test_non_reasoning_model_gets_plain_payload() -> None:
@@ -105,19 +105,50 @@ async def test_bad_key_status() -> None:
 
 def test_container_uses_groq_only_when_opted_in(tmp_path) -> None:
     base = {"user_dir": tmp_path, "embedding_backend": "hashing"}
-    local = Container(Settings(**base), load_embedder=False)
+    local = Container(Settings(_env_file=None, **base), load_embedder=False)
     assert not isinstance(local.llm(), GroqClient)
-    cloud = Container(Settings(**base, llm_provider="groq", groq_api_key="k", groq_model="llama-3.3-70b-versatile"),
+    cloud = Container(Settings(_env_file=None, **base, llm_provider="groq", groq_api_key="k", groq_model="llama-3.3-70b-versatile"),
                       load_embedder=False)  # fmt: skip
     assert isinstance(cloud.llm(), GroqClient)
     assert cloud.active_model_id() == "groq:llama-3.3-70b-versatile"
 
 
 def test_groq_key_is_secret() -> None:
-    settings = Settings(llm_provider="groq", groq_api_key="super-secret")
+    settings = Settings(_env_file=None, llm_provider="groq", groq_api_key="super-secret")
     assert "super-secret" not in repr(settings) and "super-secret" not in settings.model_dump_json()
 
 
 def test_groq_model_name_is_validated() -> None:
     with pytest.raises(ValueError):
-        Settings(groq_model="bad model; rm -rf")
+        Settings(_env_file=None, groq_model="bad model; rm -rf")
+
+
+async def test_rate_limit_waits_and_retries(monkeypatch) -> None:
+    waits: list[float] = []
+
+    async def fake_sleep(seconds: float) -> None:
+        waits.append(seconds)
+
+    monkeypatch.setattr(llm_client.asyncio, "sleep", fake_sleep)
+    calls = iter([
+        httpx.Response(429, headers={"x-ratelimit-reset-tokens": "2.5s"}),
+        httpx.Response(200, json={"choices": [{"message": {"content": "after waiting"}}]}),
+    ])  # fmt: skip
+    out = await groq(lambda _: next(calls)).complete(MESSAGES, GenerationParams())
+    assert out == "after waiting" and waits == [3.0]
+
+
+async def test_rate_limit_with_long_wait_is_reported(monkeypatch) -> None:
+    async def fake_sleep(_: float) -> None:  # pragma: no cover - must not wait
+        raise AssertionError("should not wait")
+
+    monkeypatch.setattr(llm_client.asyncio, "sleep", fake_sleep)
+    with pytest.raises(ModelOfflineError) as exc:
+        await groq(lambda _: httpx.Response(429, headers={"retry-after": "120"})).complete(MESSAGES, GenerationParams())
+    assert exc.value.code == "model_rate_limited"
+
+
+def test_retry_wait_parsing() -> None:
+    assert llm_client._retry_wait_seconds(httpx.Response(429, headers={"retry-after": "7"})) == 7
+    assert llm_client._retry_wait_seconds(httpx.Response(429, headers={"x-ratelimit-reset-tokens": "1m2.5s"})) == 62.5
+    assert llm_client._retry_wait_seconds(httpx.Response(429)) is None

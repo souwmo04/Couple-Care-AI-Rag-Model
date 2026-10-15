@@ -12,6 +12,7 @@ Error mapping:
 
 from __future__ import annotations
 
+import asyncio
 import json
 import re
 import time
@@ -219,6 +220,36 @@ class OpenAICompatibleClient:
 
 GROQ_BASE_URL = "https://api.groq.com/openai"  # fixed: cloud mode can only ever talk to Groq
 GROQ_STATUS_TTL_SECONDS = 60.0
+# The free tier allows ~8k tokens/minute for gpt-oss-120b (≈2 chat turns). When Groq says how long to wait,
+# wait (up to this long) and retry instead of failing the user's message.
+GROQ_MAX_RETRY_WAIT_SECONDS = 30.0
+GROQ_RETRIES = 2
+_DURATION_RE = re.compile(r"(?:(\d+(?:\.\d+)?)m)?(?:(\d+(?:\.\d+)?)s)?$")
+
+
+def _retry_wait_seconds(response: httpx.Response) -> float | None:
+    """Seconds to wait from ``retry-after`` (seconds) or ``x-ratelimit-reset-tokens`` ("48.2s", "1m2s")."""
+    value = response.headers.get("retry-after")
+    if value:
+        try:
+            return float(value)
+        except ValueError:
+            pass
+    reset = response.headers.get("x-ratelimit-reset-tokens") or ""
+    match = _DURATION_RE.match(reset.strip()) if reset else None
+    if match and (match.group(1) or match.group(2)):
+        return float(match.group(1) or 0) * 60 + float(match.group(2) or 0)
+    return None
+
+
+class RateLimitedError(ModelOfflineError):
+    code = "model_rate_limited"
+
+    def __init__(self, message: str, wait_seconds: float | None) -> None:
+        super().__init__(message, code="model_rate_limited")
+        self.wait_seconds = wait_seconds
+
+
 _groq_status_cache: dict[str, tuple[float, ServerInfo]] = {}
 
 
@@ -247,7 +278,7 @@ class GroqClient(OpenAICompatibleClient):
         if self.model_id.startswith("openai/gpt-oss"):
             # Reasoning models: keep the hidden reasoning out of the reply, keep it short, and leave room
             # for it in the token budget (reasoning tokens count towards max_tokens).
-            payload |= {"include_reasoning": False, "reasoning_effort": "low", "max_tokens": params.max_tokens + 1024}
+            payload |= {"include_reasoning": False, "reasoning_effort": "low", "max_tokens": params.max_tokens + 640}
         return payload
 
     @staticmethod
@@ -259,10 +290,10 @@ class GroqClient(OpenAICompatibleClient):
                 "The Groq API key was rejected. Check COUPLECARE_GROQ_API_KEY in the .env file.", code="model_auth"
             )
         if response.status_code == 429:
-            raise ModelOfflineError(
+            raise RateLimitedError(
                 "The free Groq limit has been reached for now. Wait a minute and try again, or switch back to the "
                 "local model (COUPLECARE_LLM_PROVIDER=local).",
-                code="model_rate_limited",
+                _retry_wait_seconds(response),
             )
         if response.status_code in {400, 404, 422}:
             raise ModelResponseError(
@@ -272,12 +303,35 @@ class GroqClient(OpenAICompatibleClient):
 
     async def complete(self, messages: list[ChatMessage], params: GenerationParams) -> str:
         self._require_key()
-        return await super().complete(messages, params)
+        for attempt in range(GROQ_RETRIES + 1):
+            try:
+                return await super().complete(messages, params)
+            except RateLimitedError as exc:
+                if not await self._wait_for_quota(exc, attempt):
+                    raise
+        raise AssertionError("unreachable")  # pragma: no cover
 
     async def stream(self, messages: list[ChatMessage], params: GenerationParams) -> AsyncIterator[str]:
         self._require_key()
-        async for delta in super().stream(messages, params):
-            yield delta
+        for attempt in range(GROQ_RETRIES + 1):
+            started = False
+            try:
+                async for delta in super().stream(messages, params):
+                    started = True
+                    yield delta
+                return
+            except RateLimitedError as exc:
+                # Only retry before any text was sent; a half-streamed reply must not be restarted.
+                if started or not await self._wait_for_quota(exc, attempt):
+                    raise
+
+    @staticmethod
+    async def _wait_for_quota(exc: RateLimitedError, attempt: int) -> bool:
+        wait = exc.wait_seconds
+        if attempt >= GROQ_RETRIES or wait is None or wait > GROQ_MAX_RETRY_WAIT_SECONDS:
+            return False
+        await asyncio.sleep(wait + 0.5)
+        return True
 
     def _require_key(self) -> None:
         if not self._api_key:

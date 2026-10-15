@@ -100,5 +100,8 @@ PROTOTYPES: dict[str, list[str]] = {
         "Idanin partner er sathe durotto feel kori.",
         "O amar kotha thikmoto shune na.",
         "Shoshurbari r lokera amar songshar niye kotha shonay.",
+        # Added 2026-10-15 after a live false alarm (Banglish "partner looks at the phone while I talk" → stalking).
+        "Ami jokhon diner kotha boli tokhon o phone dekhe.",
+        "Partner sara din phone e busy thake, amake shomoy dey na.",
     ],
 }
