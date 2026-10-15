@@ -51,8 +51,17 @@ Removed sentence-by-sentence (and before streaming display): unverified phone nu
 diagnostic labels applied to a partner, deterministic relationship predictions, instructions for
 covert monitoring, and — when violence was disclosed — confrontation or joint-counselling advice.
 
+When any risk was detected (caution and above), sentences that **excuse or soften the behaviour** are
+also removed: denying intent ("even if he didn't mean to hurt you"), framing it as love, protection,
+worry, insecurity or "the heat of the moment", or as a joke. Negated forms ("this is not out of love") and
+first-person wording the user might say ("I didn't mean to…") are kept. Added on 2026-10-15 after both
+local models produced such sentences despite the prompt rule (system_v2 / safety_v2); see
+`research/results_log.md`.
+
 ## Known limitations
 
+- The excuse filter is lexical (EN, plus a few Bangla/Banglish phrases); paraphrased minimisation — e.g. calling
+  being hit "physical contact" — is not caught.
 - Pattern coverage is finite; the semantic classifier recovers many indirect descriptions but not all,
   and it occasionally flags ordinary messages (handled with a gentle check-in).
 - All safety evaluation data is fictional and single-author; the indirect held-out set has only 5 cases.
