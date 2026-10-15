@@ -1,3 +1,4 @@
+import { StaggerText } from '@/components/kinetic/StaggerText'
 import {
   AppWindow,
   ArrowRight,
@@ -29,10 +30,10 @@ function SectionHeading({ eyebrow, title, lead, align = 'left' }: { eyebrow: str
   return (
     <Reveal className={cn('max-w-2xl', align === 'center' && 'mx-auto text-center')}>
       <SectionEyebrow>{eyebrow}</SectionEyebrow>
-      <h2 className="mt-4 text-balance font-display text-[clamp(2rem,4.2vw,3.25rem)] leading-[1.05] tracking-[-0.015em]">
-        {title}
+      <h2 className="mt-5 text-balance font-wide text-[clamp(2rem,4.6vw,3.6rem)] font-black uppercase leading-[0.98]">
+        <StaggerText>{title}</StaggerText>
       </h2>
-      {lead && <p className="mt-5 text-lg leading-relaxed text-muted-foreground">{lead}</p>}
+      {lead && <p className="mt-5 text-lg leading-relaxed text-foreground/80">{lead}</p>}
     </Reveal>
   )
 }
@@ -53,7 +54,7 @@ export function ProblemSection() {
     <Container className="border-t border-border">
       <div className="grid gap-14 lg:grid-cols-[1.1fr_1fr] lg:gap-20">
         <SectionHeading eyebrow={t.problem.eyebrow} title={t.problem.title} lead={t.problem.lead} />
-        <div className="space-y-px overflow-hidden rounded-2xl border border-border bg-border">
+        <div className="space-y-px overflow-hidden rounded-lg border border-border bg-border">
           {t.problem.points.map((p, i) => (
             <Reveal key={p.title} delay={i * 0.08} className="flex gap-5 bg-background p-6 sm:p-7">
               <span className="font-display text-3xl italic leading-none text-accent">0{i + 1}</span>
@@ -79,7 +80,7 @@ export function FeaturesSection() {
       <SectionHeading eyebrow={t.features.eyebrow} title={t.features.title} />
       <div className="mt-14 grid gap-4 md:grid-cols-6">
         {/* Grounded: mini stacked source cards */}
-        <Reveal className="group relative overflow-hidden rounded-2xl border border-border bg-surface-solid p-7 md:col-span-4">
+        <Reveal className="group relative overflow-hidden rounded-lg border border-border bg-surface-solid p-7 md:col-span-4">
           <FeatureIcon icon={BookOpenText} />
           <h3 className="mt-5 font-display text-2xl">{f.grounded.title}</h3>
           <p className="mt-2 max-w-md text-sm leading-relaxed text-muted-foreground">{f.grounded.body}</p>
@@ -87,10 +88,10 @@ export function FeaturesSection() {
             {['S1', 'S2', 'S3'].map((id, i) => (
               <div
                 key={id}
-                className="flex items-center gap-3 rounded-xl border border-border bg-surface-sunken px-3 py-2.5 transition-transform duration-500 ease-out-soft group-hover:-translate-x-1"
+                className="flex items-center gap-3 rounded-md border border-border bg-surface-sunken px-3 py-2.5 transition-transform duration-500 ease-out-soft group-hover:-translate-x-1"
                 style={{ transitionDelay: `${i * 60}ms`, opacity: 1 - i * 0.22 }}
               >
-                <span className="rounded-md bg-lavender-soft px-1.5 text-[0.7rem] font-semibold text-lavender">{id}</span>
+                <span className="rounded-sm border-2 border-ink bg-mint px-1 font-mono text-[0.65rem] font-bold text-ink">{id}</span>
                 <span className="h-1.5 flex-1 rounded-full bg-border-strong" />
                 <span className="h-1.5 w-8 rounded-full bg-border" />
               </div>
@@ -98,7 +99,7 @@ export function FeaturesSection() {
           </div>
         </Reveal>
         {/* Language */}
-        <Reveal delay={0.06} className="rounded-2xl border border-border bg-surface-solid p-7 md:col-span-2">
+        <Reveal delay={0.06} className="rounded-lg border border-border bg-surface-solid p-7 md:col-span-2">
           <FeatureIcon icon={Languages} />
           <h3 className="mt-5 font-display text-2xl">{f.language.title}</h3>
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{f.language.body}</p>
@@ -111,21 +112,21 @@ export function FeaturesSection() {
           </div>
         </Reveal>
         {/* Private */}
-        <Reveal delay={0.04} className="rounded-2xl border border-border bg-primary p-7 text-primary-foreground md:col-span-2">
-          <span className="flex size-10 items-center justify-center rounded-xl bg-[color-mix(in_oklch,var(--primary-foreground)_12%,transparent)]">
+        <Reveal delay={0.04} className="rounded-lg border border-border bg-primary p-7 text-primary-foreground md:col-span-2">
+          <span className="flex size-10 items-center justify-center rounded-md bg-[color-mix(in_oklch,var(--primary-foreground)_12%,transparent)]">
             <LockKeyhole className="size-5" />
           </span>
           <h3 className="mt-5 font-display text-2xl">{f.private.title}</h3>
           <p className="mt-2 text-sm leading-relaxed opacity-75">{f.private.body}</p>
         </Reveal>
         {/* Safety */}
-        <Reveal delay={0.08} className="rounded-2xl border border-border bg-surface-solid p-7 md:col-span-2">
+        <Reveal delay={0.08} className="rounded-lg border border-border bg-surface-solid p-7 md:col-span-2">
           <FeatureIcon icon={ShieldCheck} tone="coral" />
           <h3 className="mt-5 font-display text-2xl">{f.safety.title}</h3>
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{f.safety.body}</p>
         </Reveal>
         {/* Balanced */}
-        <Reveal delay={0.12} className="rounded-2xl border border-border bg-surface-solid p-7 md:col-span-2">
+        <Reveal delay={0.12} className="rounded-lg border border-border bg-surface-solid p-7 md:col-span-2">
           <FeatureIcon icon={Scale} />
           <h3 className="mt-5 font-display text-2xl">{f.balanced.title}</h3>
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{f.balanced.body}</p>
@@ -139,8 +140,8 @@ function FeatureIcon({ icon: Icon, tone = 'lavender' }: { icon: typeof BookOpenT
   return (
     <span
       className={cn(
-        'flex size-10 items-center justify-center rounded-xl',
-        tone === 'lavender' ? 'bg-lavender-soft text-lavender' : 'bg-accent-soft text-accent',
+        'flex size-10 items-center justify-center rounded-md',
+        tone === 'lavender' ? 'border-2 border-ink bg-lavender-soft text-ink' : 'border-2 border-ink bg-accent text-ink',
       )}
     >
       <Icon className="size-5" />
@@ -192,9 +193,9 @@ export function TopicsSection() {
             <Reveal key={id} delay={(i % 4) * 0.05}>
               <Link
                 to={`/chat?topic=${id}`}
-                className="group flex h-full flex-col justify-between gap-8 rounded-2xl border border-border bg-surface-solid p-5 transition-[transform,box-shadow,border-color] duration-300 ease-out-soft hover:-translate-y-0.5 hover:border-border-strong hover:shadow-lift"
+                className="group flex h-full flex-col justify-between gap-8 rounded-lg border border-border bg-surface-solid p-5 transition-[transform,box-shadow,border-color] duration-300 ease-out-soft hover:-translate-y-0.5 hover:border-border-strong hover:shadow-lift"
               >
-                <span className={cn('flex size-10 items-center justify-center rounded-xl', TOPIC_TONES[id])}>
+                <span className={cn('flex size-10 items-center justify-center rounded-md', TOPIC_TONES[id])}>
                   <Icon className="size-5" />
                 </span>
                 <span>
@@ -225,7 +226,7 @@ export function BilingualSection() {
           <SectionHeading eyebrow={t.bilingual.eyebrow} title={t.bilingual.title} lead={t.bilingual.lead} />
           <p className="mt-6 max-w-xl text-sm text-muted-foreground">{t.bilingual.note}</p>
         </div>
-        <Reveal className="rounded-3xl border border-border bg-surface-solid p-6 shadow-soft sm:p-10">
+        <Reveal className="rounded-lg border border-border bg-surface-solid p-6 shadow-soft sm:p-10">
           <Segmented
             label={t.bilingual.eyebrow}
             value={lang}
@@ -274,7 +275,7 @@ export function PrivacySection() {
       <div className="grid items-center gap-14 lg:grid-cols-[1fr_1.1fr]">
         <div>
           <SectionHeading eyebrow={t.privacySection.eyebrow} title={t.privacySection.title} lead={t.privacySection.lead} />
-          <Reveal className="mt-8 rounded-xl border border-border bg-surface-sunken p-4 text-sm leading-relaxed text-muted-foreground">
+          <Reveal className="mt-8 rounded-md border border-border bg-surface-sunken p-4 text-sm leading-relaxed text-muted-foreground">
             {t.privacySection.caveat}
           </Reveal>
           <Button asChild variant="link" className="mt-4 px-0">
@@ -284,13 +285,13 @@ export function PrivacySection() {
           </Button>
         </div>
         <Reveal delay={0.1}>
-          <div className="relative rounded-[2rem] border-2 border-dashed border-border-strong p-6 sm:p-10">
+          <div className="relative rounded-lg border-2 border-dashed border-border-strong p-6 sm:p-10">
             <span className="absolute -top-3 left-8 bg-background px-3 text-xs font-semibold uppercase tracking-[0.18em] text-lavender">
               {t.privacySection.boundary}
             </span>
             <div className="grid grid-cols-2 gap-4">
               {nodes.map(({ icon: Icon, label }) => (
-                <div key={label} className="flex flex-col items-center gap-3 rounded-2xl border border-border bg-surface-solid px-3 py-6 text-center shadow-soft">
+                <div key={label} className="flex flex-col items-center gap-3 rounded-lg border border-border bg-surface-solid px-3 py-6 text-center shadow-soft">
                   <Icon className="size-6 text-lavender" />
                   <span className="text-sm font-medium">{label}</span>
                 </div>
@@ -315,12 +316,12 @@ export function EvidenceSection() {
     <Container className="border-t border-border">
       <div className="grid items-center gap-14 lg:grid-cols-2">
         <SectionHeading eyebrow={t.evidence.eyebrow} title={t.evidence.title} lead={t.evidence.lead} />
-        <Reveal className="rounded-3xl border border-border bg-surface-solid p-6 shadow-soft sm:p-8">
+        <Reveal className="rounded-lg border border-border bg-surface-solid p-6 shadow-soft sm:p-8">
           <p className="text-base leading-relaxed text-foreground">
             {t.evidence.sampleAnswer}{' '}
-            <span className="rounded-md bg-lavender-soft px-1.5 py-0.5 text-xs font-semibold text-lavender">S1</span>.
+            <span className="rounded-sm border-2 border-ink bg-mint px-1 py-0.5 font-mono text-xs font-bold text-ink">S1</span>.
           </p>
-          <div className="mt-6 rounded-2xl border border-border bg-surface-sunken p-5">
+          <div className="mt-6 rounded-lg border border-border bg-surface-sunken p-5">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="text-xs font-semibold text-lavender">S1</p>
@@ -352,7 +353,7 @@ export function LimitsSection() {
           { title: t.limits.canTitle, items: t.limits.can, icon: Check, tone: 'text-success' },
           { title: t.limits.cantTitle, items: t.limits.cant, icon: X, tone: 'text-accent' },
         ].map((col, i) => (
-          <Reveal key={col.title} delay={i * 0.08} className="rounded-2xl border border-border bg-surface-solid p-7">
+          <Reveal key={col.title} delay={i * 0.08} className="rounded-lg border border-border bg-surface-solid p-7">
             <h3 className="font-display text-2xl">{col.title}</h3>
             <ul className="mt-5 space-y-3.5">
               {col.items.map((item) => (
@@ -365,9 +366,9 @@ export function LimitsSection() {
           </Reveal>
         ))}
       </div>
-      <Reveal className="mt-6 flex flex-col items-start justify-between gap-4 rounded-2xl border border-[color-mix(in_oklch,var(--accent)_35%,transparent)] bg-accent-soft p-5 sm:flex-row sm:items-center">
-        <p className="flex items-center gap-3 text-sm font-medium text-foreground">
-          <ShieldCheck className="size-5 shrink-0 text-accent" aria-hidden />
+      <Reveal className="mt-6 flex flex-col items-start justify-between gap-4 rounded-lg border-2 border-ink bg-highlight text-ink shadow-soft p-5 sm:flex-row sm:items-center">
+        <p className="flex items-center gap-3 text-sm font-bold text-ink">
+          <ShieldCheck className="size-5 shrink-0" aria-hidden />
           {t.limits.emergency}
         </p>
         <Button asChild variant="secondary" size="sm">
@@ -400,24 +401,24 @@ export function FinalCta() {
   const t = useCopy()
   return (
     <section className="px-4 pb-24 sm:px-6 lg:px-8">
-      <Reveal className="relative isolate mx-auto max-w-7xl overflow-hidden rounded-[2rem] bg-[oklch(0.21_0.045_268)] px-6 py-16 text-center text-[oklch(0.965_0.014_82)] sm:px-12 sm:py-24">
-        <div aria-hidden className="absolute inset-0 -z-10">
-          <div className="absolute -left-20 -top-24 h-80 w-80 rounded-full bg-[radial-gradient(closest-side,oklch(0.69_0.13_35/0.35),transparent)]" />
-          <div className="absolute -bottom-32 right-0 h-96 w-96 rounded-full bg-[radial-gradient(closest-side,oklch(0.72_0.075_295/0.4),transparent)]" />
-        </div>
-        <Feather className="mx-auto size-7 text-[oklch(0.82_0.08_35)]" aria-hidden />
-        <h2 className="mx-auto mt-6 max-w-2xl text-balance font-display text-[clamp(2rem,4.5vw,3.5rem)] leading-[1.05]">
-          {t.cta.title}
+      <Reveal className="relative isolate mx-auto max-w-7xl overflow-hidden rounded-lg border-[3px] border-ink bg-accent px-6 py-16 text-center text-ink shadow-[10px_10px_0_0_var(--ink)] sm:px-12 sm:py-24 dark:border-foreground dark:shadow-[10px_10px_0_0_var(--foreground)]">
+        <div
+          aria-hidden
+          className="absolute inset-0 -z-10 opacity-25 [background-image:radial-gradient(var(--ink)_1.2px,transparent_1.4px)] [background-size:18px_18px]"
+        />
+        <Feather className="mx-auto size-8 rotate-[-8deg]" aria-hidden />
+        <h2 className="mx-auto mt-6 max-w-3xl text-balance font-wide text-[clamp(2rem,5vw,4rem)] font-black uppercase leading-[0.95]">
+          <StaggerText>{t.cta.title}</StaggerText>
         </h2>
-        <p className="mx-auto mt-5 max-w-lg text-base opacity-75">{t.cta.body}</p>
-        <div className="mt-10 flex flex-wrap justify-center gap-3">
-          <Button asChild size="lg" className="bg-[oklch(0.965_0.014_82)] text-[oklch(0.17_0.035_268)]">
+        <p className="mx-auto mt-6 max-w-lg text-base font-medium">{t.cta.body}</p>
+        <div className="mt-10 flex flex-wrap justify-center gap-4">
+          <Button asChild size="lg" variant="primary" className="dark:bg-ink dark:text-[var(--paper-50)]">
             <Link to="/chat">
               {t.cta.primary}
               <ArrowRight />
             </Link>
           </Button>
-          <Button asChild size="lg" variant="ghost" className="text-[oklch(0.965_0.014_82)] hover:bg-white/10">
+          <Button asChild size="lg" variant="secondary" className="text-ink dark:bg-white">
             <Link to="/about">{t.cta.secondary}</Link>
           </Button>
         </div>

@@ -1,4 +1,5 @@
 import { useModelState } from '@/hooks/useModelState'
+import { useCloudMode } from '@/hooks/useProvider'
 import { useCopy } from '@/i18n'
 import { cn } from '@/lib/utils'
 
@@ -7,8 +8,9 @@ import { cn } from '@/lib/utils'
 export function ModelStatusPill({ className, showLabel = true }: { className?: string; showLabel?: boolean }) {
   const t = useCopy()
   const state = useModelState()
+  const cloud = useCloudMode()
   const label = {
-    online: t.status.modelOnline,
+    online: cloud ? t.status.cloudOnline : t.status.modelOnline,
     offline: t.status.modelOffline,
     'backend-down': t.status.backendDown,
     checking: t.status.modelChecking,
@@ -24,7 +26,8 @@ export function ModelStatusPill({ className, showLabel = true }: { className?: s
       role="status"
       aria-live="polite"
       className={cn(
-        'inline-flex items-center gap-2 rounded-full border border-border bg-surface px-2.5 py-1 text-xs font-medium text-muted-foreground',
+        'inline-flex items-center gap-2 rounded-sm border-2 border-ink px-2.5 py-0.5 text-xs font-bold dark:border-foreground',
+        cloud && state === 'online' ? 'bg-accent text-ink dark:border-ink' : 'bg-surface-solid text-foreground',
         className,
       )}
       title={label}
@@ -33,7 +36,7 @@ export function ModelStatusPill({ className, showLabel = true }: { className?: s
         {state === 'online' && (
           <span className="absolute inline-flex size-full animate-ping rounded-full bg-success opacity-40 [animation-iteration-count:3]" />
         )}
-        <span className={cn('relative inline-flex size-2 rounded-full', dot)} />
+        <span className={cn('relative inline-flex size-2 rounded-full ring-1 ring-ink', dot)} />
       </span>
       {showLabel ? label : <span className="sr-only">{label}</span>}
     </span>

@@ -35,8 +35,8 @@ export function SiteHeader() {
   return (
     <header
       className={cn(
-        'sticky top-0 z-40 transition-[background-color,border-color,backdrop-filter] duration-300',
-        scrolled || open ? 'glass border-x-0 border-t-0' : 'border-b border-transparent',
+        'sticky top-0 z-40 border-b-[3px] transition-[background-color,border-color] duration-200',
+        scrolled || open ? 'border-ink bg-background dark:border-foreground' : 'border-transparent bg-background/0',
       )}
     >
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:px-6 lg:px-8">
@@ -46,7 +46,7 @@ export function SiteHeader() {
             <NavLink
               key={l.to}
               to={l.to}
-              className="rounded-full px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+              className="rounded-sm border-2 border-transparent px-3 py-1 text-sm font-semibold text-foreground transition-colors hover:border-ink hover:bg-highlight hover:text-ink dark:hover:border-foreground"
             >
               {l.label}
             </NavLink>
@@ -55,7 +55,7 @@ export function SiteHeader() {
         <div className="ml-auto flex items-center gap-1">
           <LanguageSwitcher className="hidden sm:inline-flex" />
           <ThemeToggle />
-          <Button asChild size="sm" className="ml-2 hidden sm:inline-flex">
+          <Button asChild size="sm" variant="accent" className="ml-2 hidden sm:inline-flex">
             <Link to="/chat">{t.nav.start}</Link>
           </Button>
           <Button
@@ -80,11 +80,11 @@ export function SiteHeader() {
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-            className="overflow-hidden border-t border-border lg:hidden"
+            className="overflow-hidden border-t-2 border-ink lg:hidden dark:border-foreground"
           >
             <div className="flex flex-col gap-1 px-4 py-4">
               {links.map((l) => (
-                <Link key={l.to} to={l.to} className="rounded-lg px-3 py-2.5 text-base text-foreground hover:bg-muted">
+                <Link key={l.to} to={l.to} className="rounded-sm border-2 border-transparent px-3 py-2.5 font-wide text-lg font-extrabold uppercase text-foreground hover:border-ink hover:bg-highlight hover:text-ink">
                   {l.label}
                 </Link>
               ))}

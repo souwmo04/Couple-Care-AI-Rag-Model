@@ -1,6 +1,7 @@
 import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Composer } from '@/components/chat/Composer'
+import { ContextPanel } from '@/components/chat/ContextPanel'
 import { SafetyNotice } from '@/components/chat/SafetyNotice'
 import { SourceCardView } from '@/components/chat/SourceCardView'
 import { ModelStatusPill } from '@/components/layout/ModelStatus'
@@ -65,8 +66,10 @@ describe('SourceCardView', () => {
   it('shows provenance and marks synthetic sources', () => {
     renderWithProviders(<SourceCardView source={source} />)
     expect(screen.getByText('Feeling Unheard')).toBeInTheDocument()
-    expect(screen.getByText('Synthetic example')).toBeInTheDocument()
-    expect(screen.getByText('CC0-1.0')).toBeInTheDocument()
+    // Technical details (licence, relevance, document id) stay available but out of the way.
+    expect(screen.getByText('CC0-1.0').closest('details')).not.toBeNull()
+    expect(screen.queryByText('Synthetic example')).toBeNull() // shown once per panel, not on every card
+    expect(screen.getByRole('button', { name: 'Read more' })).toBeInTheDocument()
     expect(screen.queryByText('View original')).toBeNull() // no URL → no link
   })
 
@@ -76,6 +79,24 @@ describe('SourceCardView', () => {
     unmount()
     renderWithProviders(<SourceCardView source={{ ...source, url: 'https://example.org/a' }} />)
     expect(screen.getByText('View original').closest('a')).toHaveAttribute('href', 'https://example.org/a')
+  })
+})
+
+describe('ContextPanel', () => {
+  it('merges passages from the same guide and explains synthetic material once', () => {
+    const second = { ...source, citation_id: 'S2', chunk_id: 'syn-en-communication::001-000' }
+    const other = { ...source, citation_id: 'S3', document_id: 'syn-en-trust', chunk_id: 'syn-en-trust::000-000', title: 'Trust' }
+    renderWithProviders(
+      <ContextPanel
+        message={{ key: 'a', role: 'assistant', content: 'x', status: 'done', sources: [source, second, other] }}
+        activeCitation={null}
+      />,
+    )
+    expect(screen.getAllByText('Feeling Unheard')).toHaveLength(1)
+    expect(screen.getByText('S1')).toBeInTheDocument()
+    expect(screen.getByText('S2')).toBeInTheDocument()
+    expect(screen.getByText('Trust')).toBeInTheDocument()
+    expect(screen.getAllByText(/example material written for this project/)).toHaveLength(1)
   })
 })
 

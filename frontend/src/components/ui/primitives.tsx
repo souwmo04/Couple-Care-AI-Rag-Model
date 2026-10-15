@@ -6,13 +6,13 @@ import { cn } from '@/lib/utils'
 // ------------------------------------------------------------------ Badge
 
 const badgeTones = {
-  neutral: 'bg-muted text-muted-foreground',
-  lavender: 'bg-lavender-soft text-lavender',
-  coral: 'bg-accent-soft text-accent',
-  success: 'bg-[color-mix(in_oklch,var(--success)_15%,transparent)] text-success',
-  warning: 'bg-[color-mix(in_oklch,var(--warning)_18%,transparent)] text-[color-mix(in_oklch,var(--warning)_70%,var(--foreground))]',
-  danger: 'bg-[color-mix(in_oklch,var(--danger)_14%,transparent)] text-danger',
-  outline: 'border border-border-strong text-muted-foreground',
+  neutral: 'bg-surface-solid text-foreground',
+  lavender: 'bg-lavender-soft text-ink dark:text-foreground',
+  coral: 'bg-highlight text-ink',
+  success: 'bg-mint text-ink',
+  warning: 'bg-highlight text-ink',
+  danger: 'bg-accent text-ink',
+  outline: 'bg-transparent text-foreground',
 } as const
 
 export function Badge({
@@ -24,7 +24,7 @@ export function Badge({
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium leading-5 [&_svg]:size-3',
+        'inline-flex items-center gap-1 rounded-sm border-2 border-ink px-2 py-0.5 font-mono text-[0.68rem] font-semibold uppercase leading-5 tracking-wide dark:border-foreground [&_svg]:size-3',
         badgeTones[tone],
         className,
       )}
@@ -44,7 +44,7 @@ export function Skeleton({ className, ...props }: HTMLAttributes<HTMLDivElement>
 // ------------------------------------------------------------------ Card
 
 export const Card = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn('rounded-xl border border-border bg-surface-solid shadow-soft', className)} {...props} />
+  <div ref={ref} className={cn('rounded-lg border bg-surface-solid shadow-lift', className)} {...props} />
 ))
 Card.displayName = 'Card'
 
@@ -70,9 +70,9 @@ export function Switch({
       onCheckedChange={onCheckedChange}
       disabled={disabled}
       aria-label={label}
-      className="peer relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border border-transparent bg-border-strong transition-colors data-[state=checked]:bg-lavender disabled:cursor-not-allowed disabled:opacity-50"
+      className="peer relative inline-flex h-7 w-12 shrink-0 cursor-pointer items-center rounded-full border-2 border-ink bg-muted transition-colors data-[state=checked]:bg-accent disabled:cursor-not-allowed disabled:opacity-50 dark:border-foreground"
     >
-      <SwitchPrimitive.Thumb className="pointer-events-none block size-5 translate-x-0.5 rounded-full bg-surface-solid shadow-soft transition-transform duration-200 ease-out-soft data-[state=checked]:translate-x-[1.3rem]" />
+      <SwitchPrimitive.Thumb className="pointer-events-none block size-5 translate-x-0.5 rounded-full border-2 border-ink bg-surface-solid transition-transform duration-200 ease-out-soft data-[state=checked]:translate-x-[1.25rem] dark:border-foreground" />
     </SwitchPrimitive.Root>
   )
 }
@@ -100,14 +100,14 @@ export function Segmented<T extends string>({
       value={value}
       onValueChange={(v) => v && onValueChange(v as T)}
       aria-label={label}
-      className={cn('inline-flex flex-wrap gap-1 rounded-full border border-border bg-surface-sunken p-1', className)}
+      className={cn('inline-flex flex-wrap gap-1 rounded-md border bg-surface-solid p-1', className)}
     >
       {options.map((o) => (
         <ToggleGroup.Item
           key={o.value}
           value={o.value}
           className={cn(
-            'inline-flex items-center gap-1.5 rounded-full font-medium text-muted-foreground transition-colors hover:text-foreground data-[state=on]:bg-surface-solid data-[state=on]:text-foreground data-[state=on]:shadow-soft [&_svg]:size-3.5',
+            'inline-flex items-center gap-1.5 rounded-sm border-2 border-transparent font-semibold text-muted-foreground transition-colors hover:text-foreground data-[state=on]:border-ink data-[state=on]:bg-highlight data-[state=on]:text-ink [&_svg]:size-3.5',
             size === 'sm' ? 'h-7 px-2.5 text-xs' : 'h-8 px-3.5 text-sm',
           )}
         >
@@ -152,12 +152,12 @@ export function Slider({
       aria-label={label}
       className="relative flex h-5 w-full touch-none select-none items-center"
     >
-      <SliderPrimitive.Track className="relative h-1.5 grow overflow-hidden rounded-full bg-border-strong">
-        <SliderPrimitive.Range className="absolute h-full bg-lavender" />
+      <SliderPrimitive.Track className="relative h-2.5 grow overflow-hidden rounded-sm border-2 border-ink bg-muted dark:border-foreground">
+        <SliderPrimitive.Range className="absolute h-full bg-accent" />
       </SliderPrimitive.Track>
       <SliderPrimitive.Thumb
         aria-label={label}
-        className="block size-4 rounded-full border-2 border-lavender bg-surface-solid shadow-soft transition-transform hover:scale-110"
+        className="block size-5 rounded-sm border-2 border-ink bg-highlight shadow-soft transition-transform hover:scale-110 dark:border-foreground"
       />
     </SliderPrimitive.Root>
   )
@@ -173,7 +173,7 @@ export function Tooltip({ content, children, side = 'top' }: { content: ReactNod
         <TooltipPrimitive.Content
           side={side}
           sideOffset={6}
-          className="z-50 max-w-xs rounded-md bg-primary px-2.5 py-1.5 text-xs text-primary-foreground shadow-lift animate-fade-up"
+          className="z-50 max-w-xs rounded-sm border-2 border-ink bg-primary px-2.5 py-1.5 text-xs font-semibold text-primary-foreground shadow-soft animate-fade-up"
         >
           {content}
         </TooltipPrimitive.Content>
@@ -188,17 +188,17 @@ export const TooltipProvider = TooltipPrimitive.Provider
 
 export function Accordion({ items }: { items: { q: string; a: string }[] }) {
   return (
-    <AccordionPrimitive.Root type="single" collapsible className="divide-y divide-border border-y border-border">
+    <AccordionPrimitive.Root type="single" collapsible className="divide-y-2 divide-ink border-y-2 border-ink dark:divide-foreground dark:border-foreground">
       {items.map((item, i) => (
         <AccordionPrimitive.Item key={i} value={`item-${i}`}>
           <AccordionPrimitive.Header>
-            <AccordionPrimitive.Trigger className="group flex w-full items-center justify-between gap-6 py-5 text-left font-display text-lg leading-snug text-foreground transition-colors hover:text-lavender sm:text-xl">
+            <AccordionPrimitive.Trigger className="group flex w-full items-center justify-between gap-6 px-2 py-5 text-left font-wide text-lg font-extrabold leading-snug text-foreground transition-colors hover:bg-highlight hover:text-ink sm:text-xl">
               {item.q}
-              <ChevronDown className="size-5 shrink-0 text-muted-foreground transition-transform duration-300 group-data-[state=open]:rotate-180" />
+              <ChevronDown className="size-6 shrink-0 rounded-sm border-2 border-current transition-transform duration-300 group-data-[state=open]:rotate-180" />
             </AccordionPrimitive.Trigger>
           </AccordionPrimitive.Header>
           <AccordionPrimitive.Content className="overflow-hidden data-[state=closed]:animate-[collapse_200ms_ease-out] data-[state=open]:animate-[expand_250ms_ease-out]">
-            <p className="max-w-3xl pb-6 text-base leading-relaxed text-muted-foreground">{item.a}</p>
+            <p className="max-w-3xl px-2 pb-6 text-base leading-relaxed text-foreground/80">{item.a}</p>
           </AccordionPrimitive.Content>
         </AccordionPrimitive.Item>
       ))}
@@ -239,6 +239,6 @@ export function Field({
 
 export function SectionEyebrow({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <p className={cn('text-xs font-semibold uppercase tracking-[0.22em] text-lavender', className)}>{children}</p>
+    <p className={cn('kicker inline-block rotate-[-1deg] border-2 border-ink bg-highlight px-2.5 py-1 text-ink', className)}>{children}</p>
   )
 }

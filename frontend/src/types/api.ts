@@ -97,6 +97,8 @@ export interface HealthResponse {
   status: 'ok' | 'degraded'
   version: string
   model_server: 'online' | 'offline'
+  /** 'groq' = cloud mode: messages are sent to Groq. */
+  provider?: 'local' | 'groq'
   index: 'ready' | 'missing' | 'building' | 'error'
   embeddings: 'ready' | 'loading' | 'unavailable' | 'fallback'
 }
@@ -112,6 +114,7 @@ export interface ModelStatus {
   revision: string | null
   detail: string | null
   checked_at: string
+  provider?: 'local' | 'groq'
 }
 
 export interface RuntimeSettings {

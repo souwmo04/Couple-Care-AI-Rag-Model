@@ -7,7 +7,7 @@ import { useCopy } from '@/i18n'
 import { cn } from '@/lib/utils'
 
 const menuContent =
-  'z-50 min-w-40 rounded-xl border border-border bg-surface-solid p-1 shadow-lift animate-fade-up'
+  'z-50 min-w-40 rounded-md border border-border bg-surface-solid p-1 shadow-lift animate-fade-up'
 const menuItem =
   'flex cursor-pointer select-none items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm text-foreground outline-none data-[highlighted]:bg-muted [&_svg]:size-4'
 

@@ -48,7 +48,7 @@ function ThemedShell({ children }: { children: ReactNode }) {
         <Toaster
           theme={resolvedTheme}
           position="bottom-right"
-          toastOptions={{ className: 'font-sans !rounded-xl !border-border !bg-surface-solid !text-foreground !shadow-lift' }}
+          toastOptions={{ className: 'font-sans !rounded-md !border-border !bg-surface-solid !text-foreground !shadow-lift' }}
         />
       </TooltipProvider>
     </MotionConfig>

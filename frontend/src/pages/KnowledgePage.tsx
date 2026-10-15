@@ -112,7 +112,7 @@ export default function KnowledgePage() {
         {stats.isPending ? (
           <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {[0, 1, 2, 3].map((i) => (
-              <Skeleton key={i} className="h-28 rounded-xl" />
+              <Skeleton key={i} className="h-28 rounded-md" />
             ))}
           </div>
         ) : stats.isError ? (
@@ -228,13 +228,13 @@ function SourceBrowser() {
 
       <div className="mt-5 grid gap-3 sm:grid-cols-2">
         {sources.isPending
-          ? [0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-28 rounded-xl" />)
+          ? [0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-28 rounded-md" />)
           : sources.data?.items.map((s) => (
               <button
                 key={s.document_id}
                 type="button"
                 onClick={() => setOpenId(s.document_id)}
-                className="rounded-xl border border-border bg-surface-solid p-4 text-left transition-[border-color,box-shadow] hover:border-border-strong hover:shadow-soft"
+                className="rounded-md border border-border bg-surface-solid p-4 text-left transition-[border-color,box-shadow] hover:border-border-strong hover:shadow-soft"
               >
                 <div className="flex items-start gap-3">
                   <FileText className="mt-0.5 size-4 shrink-0 text-lavender" />
@@ -383,7 +383,7 @@ function RetrievalTest() {
           </div>
           <ol className="mt-4 space-y-3">
             {result.passages.map((p) => (
-              <li key={p.chunk_id} className={cn('rounded-xl border bg-surface-solid p-4', p.above_threshold ? 'border-border' : 'border-dashed border-border opacity-70')}>
+              <li key={p.chunk_id} className={cn('rounded-md border bg-surface-solid p-4', p.above_threshold ? 'border-border' : 'border-dashed border-border opacity-70')}>
                 <div className="flex flex-wrap items-center gap-2 text-xs">
                   <span className="font-semibold text-foreground">#{p.rank}</span>
                   <span className="font-medium text-foreground">{p.title}</span>
@@ -409,7 +409,7 @@ function IngestionErrors({ count, lastFailure }: { count: number; lastFailure: s
     <section className="mt-14" aria-labelledby="errors-title">
       <h2 id="errors-title" className="font-display text-2xl">{t.knowledge.errors}</h2>
       {lastFailure && (
-        <p role="alert" className="mt-3 flex gap-2 rounded-xl border border-border bg-surface-sunken p-3 text-sm text-danger">
+        <p role="alert" className="mt-3 flex gap-2 rounded-md border border-border bg-surface-sunken p-3 text-sm text-danger">
           <AlertTriangle className="size-4 shrink-0" /> {lastFailure}
         </p>
       )}
@@ -418,7 +418,7 @@ function IngestionErrors({ count, lastFailure }: { count: number; lastFailure: s
       ) : (
         <ul className="mt-4 space-y-2">
           {errors.data?.errors.map((e) => (
-            <li key={`${e.document_id}-${e.stage}`} className="rounded-xl border border-border bg-surface-solid p-3 text-sm">
+            <li key={`${e.document_id}-${e.stage}`} className="rounded-md border border-border bg-surface-solid p-3 text-sm">
               <span className="font-medium">{e.document_id}</span>
               <span className="text-muted-foreground"> · {e.stage}{e.path ? ` · ${e.path}` : ''}</span>
               <p className="mt-1 text-muted-foreground">{e.error}</p>

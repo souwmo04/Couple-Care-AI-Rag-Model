@@ -9,6 +9,7 @@ import { WelcomeState } from '@/components/chat/WelcomeState'
 import { ThemeToggle } from '@/components/layout/Controls'
 import { ModelStatusPill } from '@/components/layout/ModelStatus'
 import { useModelState } from '@/hooks/useModelState'
+import { useCloudMode } from '@/hooks/useProvider'
 import { Button } from '@/components/ui/button'
 import { Sheet } from '@/components/ui/overlay'
 import { Badge, Skeleton, Tooltip } from '@/components/ui/primitives'
@@ -38,6 +39,7 @@ export default function ChatPage() {
   const onCreated = useCallback((id: string) => navigate(`/chat/${id}`, { replace: true }), [navigate])
   const chat = useChat(validRouteId, onCreated)
   const modelState = useModelState()
+  const cloud = useCloudMode()
   const opts: SendOptions = { language: prefs.responseLanguage, stage: prefs.relationshipStage }
 
   // Topic deep links (/chat?topic=communication) prefill the composer — never auto-send.
@@ -177,9 +179,9 @@ export default function ChatPage() {
             >
               {chat.loading ? (
                 <div className="mx-auto max-w-3xl space-y-6 px-4 py-10">
-                  <Skeleton className="ml-auto h-12 w-2/3 rounded-2xl" />
-                  <Skeleton className="h-24 w-full rounded-2xl" />
-                  <Skeleton className="ml-auto h-10 w-1/2 rounded-2xl" />
+                  <Skeleton className="ml-auto h-12 w-2/3 rounded-lg" />
+                  <Skeleton className="h-24 w-full rounded-lg" />
+                  <Skeleton className="ml-auto h-10 w-1/2 rounded-lg" />
                 </div>
               ) : chat.loadError ? (
                 <div className="mx-auto max-w-xl px-4 py-16 text-center">
@@ -221,12 +223,12 @@ export default function ChatPage() {
             <div className="shrink-0 bg-gradient-to-t from-background via-background to-transparent px-4 pb-3 pt-2">
               <div className="mx-auto max-w-3xl">
                 {modelState === 'offline' && (
-                  <p role="status" className="mb-2 rounded-xl border border-border bg-surface-sunken px-3.5 py-2 text-xs text-muted-foreground">
-                    <span className="font-medium text-foreground">{t.status.modelOffline}.</span> {t.status.offlineHelp}
+                  <p role="status" className="mb-2 rounded-md border border-border bg-surface-sunken px-3.5 py-2 text-xs text-muted-foreground">
+                    <span className="font-medium text-foreground">{t.status.modelOffline}.</span> {cloud ? t.status.offlineHelpCloud : t.status.offlineHelp}
                   </p>
                 )}
                 {modelState === 'backend-down' && (
-                  <p role="status" className="mb-2 rounded-xl border border-border bg-surface-sunken px-3.5 py-2 text-xs text-muted-foreground">
+                  <p role="status" className="mb-2 rounded-md border border-border bg-surface-sunken px-3.5 py-2 text-xs text-muted-foreground">
                     {t.common.backendOffline}
                   </p>
                 )}

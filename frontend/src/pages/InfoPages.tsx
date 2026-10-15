@@ -4,6 +4,7 @@ import { Reveal } from '@/components/landing/Reveal'
 import { Button } from '@/components/ui/button'
 import { SectionEyebrow } from '@/components/ui/primitives'
 import { usePreferences } from '@/hooks/usePreferences'
+import { useCloudMode } from '@/hooks/useProvider'
 import { useCopy } from '@/i18n'
 import { INFO, type InfoPage } from '@/pages/infoContent'
 
@@ -18,14 +19,14 @@ function InfoLayout({ page, highlight }: { page: InfoPage; highlight?: string })
       <div className="mx-auto max-w-6xl">
         <Reveal className="max-w-3xl">
           <SectionEyebrow>{page.eyebrow}</SectionEyebrow>
-          <h1 className="mt-4 text-balance font-display text-[clamp(2.4rem,5.5vw,4rem)] leading-[1.02] tracking-[-0.02em]">
+          <h1 className="mt-5 text-balance font-wide text-[clamp(2.2rem,5.2vw,3.8rem)] font-black uppercase leading-[0.98]">
             {page.title}
           </h1>
           <p className="mt-6 text-lg leading-relaxed text-muted-foreground">{page.lead}</p>
         </Reveal>
 
         {highlight && (
-          <Reveal className="mt-10 rounded-2xl border border-[color-mix(in_oklch,var(--accent)_35%,transparent)] bg-accent-soft p-5 text-sm font-medium leading-relaxed text-foreground">
+          <Reveal className="mt-10 rounded-lg border-2 border-ink bg-highlight p-5 text-sm font-medium leading-relaxed text-ink shadow-soft">
             {highlight}
           </Reveal>
         )}
@@ -92,7 +93,9 @@ export function AboutPage() {
 }
 
 export function PrivacyPage() {
-  return <InfoLayout page={usePage('privacy')} />
+  const t = useCopy()
+  // In cloud mode the page's "stays on this computer" statements no longer hold for generation; say so first.
+  return <InfoLayout page={usePage('privacy')} highlight={useCloudMode() ? t.hero.privacyCloud : undefined} />
 }
 
 export function SafetyPage() {

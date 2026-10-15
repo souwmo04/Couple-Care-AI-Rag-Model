@@ -105,7 +105,7 @@ describe('Chat page', () => {
     expect(await screen.findByText(/reflective listening/)).toBeInTheDocument()
     const chip = await screen.findByRole('button', { name: 'Sources S1' })
     expect(chip).toBeInTheDocument()
-    await userEvent.click(screen.getByRole('button', { name: /Show evidence/ }))
+    await userEvent.click(screen.getByRole('button', { name: /See where this comes from/ }))
     expect(screen.getAllByText('Feeling Unheard').length).toBeGreaterThan(0)
 
     const call = fetchMock.mock.calls.find(([url]) => String(url).includes('/api/chat/stream'))!

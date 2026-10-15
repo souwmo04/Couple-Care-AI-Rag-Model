@@ -1,3 +1,5 @@
+import { useCloudMode } from '@/hooks/useProvider'
+import { KineticLoader } from '@/components/kinetic/KineticLoader'
 import { BookOpenText, Check, ChevronDown, Copy, PlugZap, RefreshCw, ThumbsDown, ThumbsUp, TriangleAlert } from 'lucide-react'
 import { useEntrance } from '@/hooks/useEntrance'
 import { AnimatePresence, motion } from 'motion/react'
@@ -16,17 +18,11 @@ import { CITE_RE, linkCitations } from '@/lib/citations'
 import { cn } from '@/lib/utils'
 import { api } from '@/services/api'
 
-function TypingDots({ label }: { label: string }) {
+function Thinking({ word, label }: { word: string; label: string }) {
   return (
-    <span role="status" aria-label={label} className="inline-flex items-center gap-1.5 py-1">
-      {[0, 1, 2].map((i) => (
-        <span
-          key={i}
-          className="size-1.5 rounded-full bg-lavender"
-          style={{ animation: `dot-pulse 1.2s ${i * 0.15}s infinite ease-in-out` }}
-        />
-      ))}
-      <span className="ml-2 text-xs text-muted-foreground">{label}</span>
+    <span className="flex flex-col items-start gap-1 py-1">
+      <KineticLoader text={word} className="text-2xl text-foreground" />
+      <span className="text-xs text-muted-foreground">{label}</span>
     </span>
   )
 }
@@ -75,7 +71,7 @@ export const AssistantMessage = memo(function AssistantMessage({
                 e.stopPropagation()
                 onCite(id)
               }}
-              className="mx-0.5 inline-flex translate-y-[-1px] items-center rounded-md bg-lavender-soft px-1.5 align-baseline text-[0.7rem] font-semibold text-lavender transition-colors hover:bg-lavender hover:text-background"
+              className="mx-0.5 inline-flex translate-y-[-1px] items-center rounded-sm border-2 border-ink bg-mint px-1 align-baseline font-mono text-[0.65rem] font-bold text-ink transition-colors hover:bg-highlight"
               aria-label={`${t.chat.sources} ${id}`}
             >
               {children}
@@ -83,7 +79,7 @@ export const AssistantMessage = memo(function AssistantMessage({
           )
         }
         return (
-          <a href={href} target="_blank" rel="noreferrer noopener" className="text-lavender underline">
+          <a href={href} target="_blank" rel="noreferrer noopener" className="font-semibold underline decoration-2 underline-offset-2">
             {children}
           </a>
         )
@@ -113,6 +109,7 @@ export const AssistantMessage = memo(function AssistantMessage({
     }
   }
 
+  const cloud = useCloudMode()
   const isError = message.status === 'error'
   const offline = message.error?.code === 'model_offline' || message.error?.code === 'backend_unreachable'
 
@@ -125,10 +122,15 @@ export const AssistantMessage = memo(function AssistantMessage({
       aria-label={t.chat.assistant}
       onClick={onSelect}
     >
-      <span className="mt-1 flex size-8 shrink-0 items-center justify-center rounded-full border border-border bg-surface-solid">
+      <span className="mt-1 flex size-9 shrink-0 items-center justify-center rounded-sm border-2 border-ink bg-highlight text-ink shadow-soft">
         <LogoMark className="size-5" />
       </span>
-      <div className={cn('min-w-0 flex-1 rounded-2xl px-1 py-0.5 transition-colors', selected && message.sources.length > 0 && 'lg:bg-transparent')}>
+      <div
+        className={cn(
+          'min-w-0 flex-1 rounded-md border-2 border-ink bg-surface-solid px-4 py-3.5 shadow-soft transition-shadow dark:border-foreground sm:px-5',
+          selected && message.sources.length > 0 && 'lg:shadow-lift',
+        )}
+      >
         {(message.generated === false || (message.status === 'done' && message.grounded === false && message.generated)) && (
           <div className="mb-2 flex flex-wrap gap-1.5">
             {message.generated === false && <Badge tone="lavender">{t.chat.notGenerated}</Badge>}
@@ -145,11 +147,11 @@ export const AssistantMessage = memo(function AssistantMessage({
               {linkCitations(message.content, available)}
             </Markdown>
             {message.status === 'streaming' && (
-              <span aria-hidden className="ml-0.5 inline-block h-4 w-0.5 translate-y-0.5 bg-lavender [animation:caret-blink_1s_steps(1)_infinite]" />
+              <span aria-hidden className="ml-0.5 inline-block h-4 w-2 translate-y-0.5 bg-accent [animation:caret-blink_1s_steps(1)_infinite]" />
             )}
           </div>
         ) : message.status === 'streaming' ? (
-          <TypingDots label={t.chat.thinking} />
+          <Thinking word={t.chat.thinkingShort} label={t.chat.thinking} />
         ) : null}
 
         {message.status === 'stopped' && <p className="mt-2 text-xs italic text-muted-foreground">{t.chat.stopped}</p>}
@@ -157,14 +159,14 @@ export const AssistantMessage = memo(function AssistantMessage({
         {isError && message.error && (
           <div
             role="alert"
-            className="mt-1 rounded-xl border border-[color-mix(in_oklch,var(--warning)_45%,transparent)] bg-[color-mix(in_oklch,var(--warning)_10%,transparent)] p-4"
+            className="mt-1 rounded-md border-2 border-ink bg-highlight p-4 text-ink"
           >
-            <p className="flex items-center gap-2 text-sm font-medium text-foreground">
-              {offline ? <PlugZap className="size-4 text-warning" /> : <TriangleAlert className="size-4 text-warning" />}
+            <p className="flex items-center gap-2 text-sm font-medium text-ink">
+              {offline ? <PlugZap className="size-4 text-ink" /> : <TriangleAlert className="size-4 text-ink" />}
               {offline ? t.chat.offlineTitle : t.chat.errorTitle}
             </p>
-            <p className="mt-1.5 text-sm text-muted-foreground">{offline ? t.chat.offlineBody : message.error.message}</p>
-            {offline && <p className="mt-1 text-xs text-muted-foreground">{t.status.offlineHelp}</p>}
+            <p className="mt-1.5 text-sm text-ink/80">{offline ? t.chat.offlineBody : message.error.message}</p>
+            {offline && <p className="mt-1 text-xs text-ink/80">{cloud ? t.status.offlineHelpCloud : t.status.offlineHelp}</p>}
             {message.error.retryable && (
               <Button size="sm" variant="secondary" className="mt-3" onClick={onRetry}>
                 <RefreshCw /> {t.common.retry}
@@ -185,7 +187,7 @@ export const AssistantMessage = memo(function AssistantMessage({
                   setShowEvidence((v) => !v)
                 }}
                 aria-expanded={showEvidence}
-                className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:border-border-strong hover:text-foreground"
+                className="press inline-flex items-center gap-2 rounded-sm border-2 border-ink bg-lavender-soft px-3 py-1.5 text-xs font-bold text-ink dark:border-foreground dark:text-foreground"
               >
                 <BookOpenText className="size-3.5" />
                 {showEvidence ? t.chat.hideEvidence : t.chat.showEvidence} · {message.sources.length}
@@ -245,7 +247,7 @@ function EvidenceGroup({ title, items }: { title: string; items: UiMessage['sour
   if (!items.length) return null
   return (
     <div className="mt-3">
-      <p className="mb-2 text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">{title}</p>
+      <p className="kicker mb-2 text-muted-foreground">{title}</p>
       <div className="grid gap-2 sm:grid-cols-2">
         {items.map((s) => (
           <SourceCardView key={s.chunk_id} source={s} />
@@ -267,7 +269,7 @@ function ActionButton({ label, onClick, children, pressed }: { label: string; on
           e.stopPropagation()
           onClick()
         }}
-        className={cn('text-muted-foreground hover:text-foreground', pressed && 'text-lavender')}
+        className={cn('text-muted-foreground hover:text-ink', pressed && 'border-ink bg-highlight text-ink')}
       >
         {children}
       </Button>
@@ -286,7 +288,7 @@ export function UserMessage({ message }: { message: UiMessage }) {
       className="flex justify-end"
       aria-label={t.chat.you}
     >
-      <p className="max-w-[min(85%,36rem)] whitespace-pre-wrap rounded-2xl rounded-br-md bg-primary px-4 py-3 text-[0.95rem] leading-relaxed text-primary-foreground">
+      <p className="max-w-[min(85%,36rem)] whitespace-pre-wrap rounded-md border-2 border-ink bg-highlight px-4 py-3 text-[0.95rem] font-medium leading-relaxed text-ink shadow-soft">
         {message.content}
       </p>
     </motion.article>

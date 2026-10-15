@@ -92,8 +92,8 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
     >
       <div
         className={cn(
-          'rounded-[1.4rem] border bg-surface-solid shadow-soft transition-[border-color,box-shadow] focus-within:border-border-strong focus-within:shadow-lift',
-          error || over ? 'border-danger' : 'border-border',
+          'rounded-md border-[3px] bg-surface-solid shadow-lift transition-[box-shadow,transform] focus-within:-translate-x-px focus-within:-translate-y-px focus-within:shadow-[8px_8px_0_0_var(--ink)] dark:focus-within:shadow-[8px_8px_0_0_var(--foreground)]',
+          error || over ? 'border-danger' : 'border-ink dark:border-foreground',
         )}
       >
         <label htmlFor="composer" className="sr-only">

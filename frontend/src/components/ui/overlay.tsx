@@ -29,7 +29,7 @@ export function ConfirmDialog({
     <AlertDialog.Root open={open} onOpenChange={onOpenChange}>
       <AlertDialog.Portal>
         <AlertDialog.Overlay className="fixed inset-0 z-50 bg-[oklch(0.17_0.035_268/0.45)] backdrop-blur-sm animate-fade-up" />
-        <AlertDialog.Content className="fixed left-1/2 top-1/2 z-50 w-[calc(100vw-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-border bg-surface-solid p-6 shadow-lift animate-fade-up">
+        <AlertDialog.Content className="fixed left-1/2 top-1/2 z-50 w-[calc(100vw-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-lg border border-border bg-surface-solid p-6 shadow-lift animate-fade-up">
           <AlertDialog.Title className="font-display text-xl text-foreground">{title}</AlertDialog.Title>
           <AlertDialog.Description className="mt-2 text-sm leading-relaxed text-muted-foreground">
             {description}
@@ -119,7 +119,7 @@ export function Modal({
         <Dialog.Content
           aria-describedby={description ? undefined : undefined}
           className={cn(
-            'fixed left-1/2 top-1/2 z-50 flex max-h-[85vh] w-[calc(100vw-2rem)] -translate-x-1/2 -translate-y-1/2 flex-col rounded-2xl border border-border bg-surface-solid shadow-lift animate-fade-up',
+            'fixed left-1/2 top-1/2 z-50 flex max-h-[85vh] w-[calc(100vw-2rem)] -translate-x-1/2 -translate-y-1/2 flex-col rounded-lg border border-border bg-surface-solid shadow-lift animate-fade-up',
             wide ? 'max-w-3xl' : 'max-w-lg',
           )}
         >
@@ -184,7 +184,7 @@ export function Select<T extends string>({
         <SelectPrimitive.Content
           position="popper"
           sideOffset={6}
-          className="z-50 min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-xl border border-border bg-surface-solid p-1 shadow-lift animate-fade-up"
+          className="z-50 min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-md border border-border bg-surface-solid p-1 shadow-lift animate-fade-up"
         >
           <SelectPrimitive.Viewport>
             {options.map((o) => (

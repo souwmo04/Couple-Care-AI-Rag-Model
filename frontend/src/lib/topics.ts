@@ -36,14 +36,14 @@ export const TOPIC_ICONS: Record<TopicId, LucideIcon> = {
 
 /** Topic accent hues — used sparingly for icon tiles. */
 export const TOPIC_TONES: Record<TopicId, string> = {
-  communication: 'text-lavender bg-lavender-soft',
-  trust_jealousy: 'text-accent bg-accent-soft',
-  emotional_distance: 'text-lavender bg-lavender-soft',
-  dating_commitment: 'text-accent bg-accent-soft',
-  marriage_family: 'text-lavender bg-lavender-soft',
-  boundaries_expectations: 'text-accent bg-accent-soft',
-  conflict_resolution: 'text-lavender bg-lavender-soft',
-  healthy_separation: 'text-accent bg-accent-soft',
+  communication: 'text-ink bg-lavender-soft',
+  trust_jealousy: 'text-ink bg-accent',
+  emotional_distance: 'text-ink bg-sky',
+  dating_commitment: 'text-ink bg-highlight',
+  marriage_family: 'text-ink bg-mint',
+  boundaries_expectations: 'text-ink bg-lavender-soft',
+  conflict_resolution: 'text-ink bg-highlight',
+  healthy_separation: 'text-ink bg-sky',
 }
 
 /** Starter sentences placed in the composer (never sent automatically). */

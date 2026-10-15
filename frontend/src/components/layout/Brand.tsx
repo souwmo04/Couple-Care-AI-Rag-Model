@@ -10,9 +10,9 @@ export function LogoMark({ className }: { className?: string }) {
           <circle cx="12.5" cy="16" r="8.5" />
         </clipPath>
       </defs>
-      <circle cx="12.5" cy="16" r="8.5" fill="none" stroke="currentColor" strokeWidth="1.6" />
-      <circle cx="19.5" cy="16" r="8.5" fill="none" stroke="currentColor" strokeWidth="1.6" />
-      <circle cx="19.5" cy="16" r="8.5" fill="var(--accent)" clipPath="url(#cc-left)" opacity="0.9" />
+      <circle cx="12.5" cy="16" r="8.5" fill="none" stroke="currentColor" strokeWidth="2.6" />
+      <circle cx="19.5" cy="16" r="8.5" fill="none" stroke="currentColor" strokeWidth="2.6" />
+      <circle cx="19.5" cy="16" r="8.5" fill="var(--accent)" clipPath="url(#cc-left)" opacity="1" />
     </svg>
   )
 }
@@ -25,8 +25,9 @@ export function Wordmark({ className, to = '/' }: { className?: string; to?: str
       aria-label="CoupleCare AI — home"
     >
       <LogoMark />
-      <span className="font-display text-[1.15rem] font-medium tracking-tight">
-        CoupleCare <span className="text-muted-foreground">AI</span>
+      <span className="font-wide text-[1.05rem] font-black uppercase tracking-tight">
+        CoupleCare{' '}
+        <span className="rounded-sm border-2 border-ink bg-accent px-1 text-ink dark:border-foreground">AI</span>
       </span>
     </Link>
   )

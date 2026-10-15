@@ -10,6 +10,16 @@
   redacted unless `COUPLECARE_LOG_MESSAGE_CONTENT=true`. Validation errors never echo input.
 - Conversations are never ingested into the knowledge base (tested).
 
+## Optional cloud mode (Groq)
+
+Off by default. With `COUPLECARE_LLM_PROVIDER=groq` the backend sends, for every generated reply, the
+system prompt, the retrieved knowledge passages, recent conversation turns and the new message to Groq's
+API (`https://api.groq.com/openai`, fixed in code) over HTTPS, authenticated with the operator's key from
+`.env`. Groq's own terms and data handling then apply to that content — read them before enabling it.
+Everything else is unchanged: safety classification, pre-written safety templates, output filters,
+retrieval, embeddings and conversation storage stay local. The UI shows a cloud notice on the landing
+page, the privacy page and the model status badge whenever cloud mode is on.
+
 ## What is stored where
 
 | Data | Location | When |

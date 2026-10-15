@@ -1,6 +1,6 @@
 @import 'tailwindcss';
-@import '@fontsource-variable/fraunces';
-@import '@fontsource-variable/inter';
+@import '@fontsource-variable/archivo/wdth.css';
+@import '@fontsource-variable/jetbrains-mono';
 @import '@fontsource-variable/noto-sans-bengali';
 
 /* Dark mode is driven by a class on <html> so the theme selector (light / dark / system)
@@ -12,82 +12,91 @@
    Raw palette → semantic tokens → Tailwind theme. Components only use semantic tokens.
    ------------------------------------------------------------------------------------------ */
 :root {
-  /* Raw palette */
-  --midnight-950: oklch(0.17 0.035 268);
-  --midnight-900: oklch(0.21 0.045 268);
-  --midnight-800: oklch(0.27 0.05 268);
-  --midnight-700: oklch(0.36 0.055 268);
-  --ivory-50: oklch(0.985 0.008 85);
-  --ivory-100: oklch(0.965 0.014 82);
-  --cream-200: oklch(0.925 0.024 78);
-  --cream-300: oklch(0.88 0.03 75);
-  --lavender-200: oklch(0.88 0.04 295);
-  --lavender-400: oklch(0.72 0.075 295);
-  --lavender-600: oklch(0.52 0.1 293);
-  --coral-300: oklch(0.82 0.08 35);
-  --coral-500: oklch(0.69 0.13 35);
-  --coral-600: oklch(0.6 0.14 33);
-  --rose-200: oklch(0.9 0.035 15);
-  --sage-500: oklch(0.6 0.07 160);
-  --amber-500: oklch(0.72 0.12 75);
-  --red-600: oklch(0.55 0.18 25);
+  /* Raw palette — neo-brutalist: paper, ink and a few loud flat colours */
+  --paper-50: oklch(0.985 0.012 90);
+  --paper-100: oklch(0.965 0.028 88);
+  --paper-200: oklch(0.93 0.04 86);
+  --ink-950: oklch(0.17 0.01 270);
+  --ink-900: oklch(0.22 0.012 270);
+  --ink-800: oklch(0.28 0.014 270);
+  --ink-700: oklch(0.36 0.016 270);
+  --tomato-500: oklch(0.69 0.19 34);
+  --tomato-400: oklch(0.76 0.16 36);
+  --yellow-300: oklch(0.91 0.17 100);
+  --lilac-300: oklch(0.82 0.1 300);
+  --lilac-700: oklch(0.47 0.17 295);
+  --mint-300: oklch(0.88 0.11 165);
+  --sky-300: oklch(0.84 0.09 235);
+  --green-600: oklch(0.55 0.13 155);
+  --amber-500: oklch(0.75 0.15 70);
+  --red-600: oklch(0.55 0.2 27);
 
   /* Semantic tokens — light */
-  --background: var(--ivory-50);
-  --foreground: var(--midnight-950);
-  --surface: oklch(1 0 0 / 0.72);
-  --surface-solid: oklch(0.995 0.004 85);
-  --surface-sunken: var(--ivory-100);
-  --muted: var(--cream-200);
-  --muted-foreground: oklch(0.45 0.03 268);
-  --border: oklch(0.21 0.045 268 / 0.1);
-  --border-strong: oklch(0.21 0.045 268 / 0.18);
-  --primary: var(--midnight-900);
-  --primary-foreground: var(--ivory-50);
-  --accent: var(--coral-600);
-  --accent-soft: oklch(0.69 0.13 35 / 0.12);
-  --accent-foreground: oklch(0.99 0.005 85);
-  --lavender: var(--lavender-600);
-  --lavender-soft: oklch(0.72 0.075 295 / 0.16);
-  --rose-soft: oklch(0.9 0.035 15 / 0.55);
-  --success: var(--sage-500);
+  --background: var(--paper-100);
+  --foreground: var(--ink-950);
+  --ink: var(--ink-950);
+  --surface: oklch(1 0 0);
+  --surface-solid: oklch(1 0 0);
+  --surface-sunken: var(--paper-50);
+  --muted: var(--paper-200);
+  --muted-foreground: oklch(0.4 0.015 270);
+  --border: var(--ink-950);
+  --border-strong: var(--ink-950);
+  --primary: var(--ink-950);
+  --primary-foreground: var(--paper-50);
+  --accent: var(--tomato-500);
+  --accent-soft: var(--yellow-300);
+  --accent-foreground: var(--ink-950);
+  --lavender: var(--lilac-700);
+  --lavender-soft: var(--lilac-300);
+  --rose-soft: var(--mint-300);
+  --highlight: var(--yellow-300);
+  --mint: var(--mint-300);
+  --sky: var(--sky-300);
+  --success: var(--green-600);
   --warning: var(--amber-500);
   --danger: var(--red-600);
-  --ring: var(--lavender-600);
-  --glow-a: oklch(0.82 0.08 35 / 0.35);
-  --glow-b: oklch(0.72 0.075 295 / 0.3);
+  --ring: var(--tomato-500);
+  --glow-a: var(--yellow-300);
+  --glow-b: var(--lilac-300);
 
-  --shadow-soft: 0 1px 2px oklch(0.21 0.045 268 / 0.04), 0 8px 24px -12px oklch(0.21 0.045 268 / 0.12);
-  --shadow-lift: 0 2px 4px oklch(0.21 0.045 268 / 0.05), 0 24px 48px -20px oklch(0.21 0.045 268 / 0.22);
+  /* Hard, offset shadows instead of soft blur */
+  --shadow-soft: 3px 3px 0 0 var(--ink);
+  --shadow-lift: 6px 6px 0 0 var(--ink);
+  --border-width: 2px;
 
   --font-scale: 1;
   color-scheme: light;
 }
 
 .dark {
-  --background: var(--midnight-950);
-  --foreground: var(--ivory-100);
-  --surface: oklch(0.24 0.045 268 / 0.62);
-  --surface-solid: var(--midnight-900);
-  --surface-sunken: oklch(0.15 0.03 268);
-  --muted: var(--midnight-800);
-  --muted-foreground: oklch(0.76 0.025 280);
-  --border: oklch(0.96 0.014 82 / 0.09);
-  --border-strong: oklch(0.96 0.014 82 / 0.16);
-  --primary: var(--ivory-100);
-  --primary-foreground: var(--midnight-950);
-  --accent: var(--coral-500);
-  --accent-soft: oklch(0.69 0.13 35 / 0.16);
-  --accent-foreground: var(--midnight-950);
-  --lavender: var(--lavender-400);
-  --lavender-soft: oklch(0.72 0.075 295 / 0.14);
-  --rose-soft: oklch(0.9 0.035 15 / 0.08);
-  --ring: var(--lavender-400);
-  --glow-a: oklch(0.69 0.13 35 / 0.18);
-  --glow-b: oklch(0.52 0.1 293 / 0.28);
+  --background: oklch(0.16 0.008 270);
+  --foreground: var(--paper-100);
+  --ink: oklch(0.05 0 0);
+  --surface: oklch(0.22 0.01 270);
+  --surface-solid: oklch(0.22 0.01 270);
+  --surface-sunken: oklch(0.19 0.01 270);
+  --muted: oklch(0.27 0.012 270);
+  --muted-foreground: oklch(0.8 0.02 85);
+  --border: var(--paper-100);
+  --border-strong: var(--paper-100);
+  --primary: var(--yellow-300);
+  --primary-foreground: var(--ink-950);
+  --accent: var(--tomato-400);
+  --accent-soft: var(--yellow-300);
+  --accent-foreground: var(--ink-950);
+  --lavender: var(--lilac-300);
+  --lavender-soft: var(--lilac-300);
+  --rose-soft: var(--mint-300);
+  --highlight: var(--yellow-300);
+  --mint: var(--mint-300);
+  --sky: var(--sky-300);
+  --ring: var(--yellow-300);
+  --glow-a: oklch(0.91 0.17 100 / 0.25);
+  --glow-b: oklch(0.82 0.1 300 / 0.25);
 
-  --shadow-soft: 0 1px 2px oklch(0 0 0 / 0.3), 0 8px 24px -12px oklch(0 0 0 / 0.5);
-  --shadow-lift: 0 2px 4px oklch(0 0 0 / 0.3), 0 24px 48px -20px oklch(0 0 0 / 0.6);
+  --shadow-soft: 3px 3px 0 0 var(--paper-100);
+  --shadow-lift: 6px 6px 0 0 var(--paper-100);
   color-scheme: dark;
 }
 
@@ -113,15 +122,20 @@
   --color-warning: var(--warning);
   --color-danger: var(--danger);
   --color-ring: var(--ring);
+  --color-ink: var(--ink);
+  --color-highlight: var(--highlight);
+  --color-mint: var(--mint);
+  --color-sky: var(--sky);
 
-  --font-display: 'Fraunces Variable', 'Noto Sans Bengali Variable', Georgia, serif;
-  --font-sans: 'Inter Variable', 'Noto Sans Bengali Variable', system-ui, sans-serif;
+  --font-display: 'Archivo Variable', 'Noto Sans Bengali Variable', system-ui, sans-serif;
+  --font-sans: 'Archivo Variable', 'Noto Sans Bengali Variable', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono Variable', ui-monospace, monospace;
 
-  --radius-sm: 0.5rem;
-  --radius-md: 0.75rem;
-  --radius-lg: 1rem;
-  --radius-xl: 1.5rem;
-  --radius-2xl: 2rem;
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.625rem;
+  --radius-2xl: 0.75rem;
 
   --shadow-soft: var(--shadow-soft);
   --shadow-lift: var(--shadow-lift);
@@ -207,10 +221,9 @@ html[data-motion='reduced'] *::after {
 }
 
 @utility glass {
-  background: var(--surface);
-  backdrop-filter: blur(16px) saturate(140%);
-  -webkit-backdrop-filter: blur(16px) saturate(140%);
-  border: 1px solid var(--border);
+  /* Kept for existing call sites: in the neo-brutalist theme it is a solid panel with an ink rule. */
+  background: var(--surface-solid);
+  border: var(--border-width) solid var(--border);
 }
 
 @utility text-balance { text-wrap: balance; }
@@ -249,3 +262,142 @@ html[data-motion='reduced'] *::after {
   font-style: italic;
 }
 .prose-chat code { font-size: 0.9em; background: var(--muted); padding: 0.1em 0.35em; border-radius: 0.3em; }
+
+/* ------------------------------------------------------------------------------------------
+   Neo-brutalist structure: every border is a 2px ink line (components keep using Tailwind's
+   border utilities; only the width changes here).
+   ------------------------------------------------------------------------------------------ */
+@layer utilities {
+  .border { border-width: var(--border-width); }
+  .border-t { border-top-width: var(--border-width); }
+  .border-b { border-bottom-width: var(--border-width); }
+  .border-l { border-left-width: var(--border-width); }
+  .border-r { border-right-width: var(--border-width); }
+  .border-x { border-left-width: var(--border-width); border-right-width: var(--border-width); }
+  .border-y { border-top-width: var(--border-width); border-bottom-width: var(--border-width); }
+}
+
+/* Buttons and cards that "press": shadow collapses and the element moves into it. */
+@utility press {
+  box-shadow: var(--shadow-soft);
+  transition: transform 120ms ease-out, box-shadow 120ms ease-out;
+  &:hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 0 var(--ink); }
+  &:active { transform: translate(3px, 3px); box-shadow: 0 0 0 0 var(--ink); }
+}
+.dark .press:hover { box-shadow: 4px 4px 0 0 var(--paper-100); }
+
+/* Display type: wide and heavy (Archivo variable width axis). */
+@utility font-wide {
+  font-family: var(--font-display);
+  font-stretch: 118%;
+  letter-spacing: -0.02em;
+}
+@utility kicker {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* ------------------------------------------------------------------------------------------
+   Kinetic typography (components/kinetic). Every animation here is also switched off by the
+   reduced-motion rules above; components additionally render static text in that mode.
+   ------------------------------------------------------------------------------------------ */
+
+/* FlipText — adapted from Vengeance UI (MIT), see THIRD_PARTY_NOTICES.md */
+.flip-text { perspective: 1000px; }
+.flip-char {
+  color: inherit;
+  -webkit-text-fill-color: transparent;
+  height: 1.2em;
+  line-height: 1.2em;
+  vertical-align: middle;
+  animation: vui-flip var(--flip-duration, 2.2s) var(--flip-delay, 0s) var(--flip-iteration, infinite) ease;
+}
+.flip-char::before,
+.flip-char::after {
+  color: inherit;
+  -webkit-text-fill-color: currentColor;
+  content: attr(data-char);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backface-visibility: hidden;
+  animation: vui-fade var(--flip-duration, 2.2s) var(--flip-delay, 0s) var(--flip-iteration, infinite) ease;
+}
+.flip-char::after { transform: translate(-50%, -50%) translateZ(0.6em); }
+.flip-char::before {
+  transform: translate(-50%, -50%) rotateX(-90deg) translateZ(0.6em);
+  opacity: 0;
+  --opacity: 1;
+}
+@keyframes vui-flip {
+  0% { transform: rotateX(0deg); }
+  25%, 100% { transform: rotateX(90deg); }
+}
+@keyframes vui-fade {
+  0% { opacity: 1; }
+  30%, 100% { opacity: var(--opacity, 0); }
+}
+
+/* KineticLoader — stretch-and-squash wave, adapted from Vengeance UI (MIT) */
+.kinetic-letter {
+  animation: kinetic-stretch 1.4s cubic-bezier(0.25, 0.25, 0.75, 0.75) infinite;
+  animation-delay: calc(var(--i) * 90ms);
+}
+.kinetic-dot { animation: kinetic-dot 1.4s ease-in-out infinite; }
+@keyframes kinetic-stretch {
+  0%, 100% { transform: scale(1, 1); }
+  12% { transform: scale(1.08, 0.55); }
+  26% { transform: scale(0.94, 1.35); }
+  38% { transform: scale(1, 0.92); }
+  50% { transform: scale(1, 1); }
+}
+@keyframes kinetic-dot {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-0.6em); }
+}
+
+/* Marquee */
+.marquee-track { animation: marquee linear infinite; }
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+/* StretchText — Archivo width/weight axes */
+.stretch-letter {
+  font-family: var(--font-display);
+  font-stretch: 100%;
+  font-weight: 800;
+  animation: stretch-breathe 3.2s ease-in-out infinite;
+  animation-delay: calc(var(--i) * 110ms);
+  transition: font-stretch 200ms ease-out, font-weight 200ms ease-out;
+}
+.stretch-letter:hover { animation-play-state: paused; font-stretch: 125%; font-weight: 900; }
+@keyframes stretch-breathe {
+  0%, 100% { font-stretch: 125%; font-weight: 900; }
+  50% { font-stretch: 72%; font-weight: 500; }
+}
+
+/* Reduced motion: show text plainly (FlipText hides glyphs mid-animation otherwise). */
+@media (prefers-reduced-motion: reduce) {
+  .flip-char { animation: none; -webkit-text-fill-color: currentColor; }
+  .flip-char::before, .flip-char::after { display: none; }
+}
+html[data-motion='reduced'] .flip-char { animation: none; -webkit-text-fill-color: currentColor; }
+html[data-motion='reduced'] .flip-char::before, html[data-motion='reduced'] .flip-char::after { display: none; }
+
+/* Headings set in the display face become heavy and slightly wide (no italics in this style). */
+.font-display {
+  font-weight: 850;
+  font-stretch: 110%;
+  letter-spacing: -0.02em;
+  font-style: normal;
+}

@@ -4,18 +4,19 @@ import { forwardRef, type ButtonHTMLAttributes } from 'react'
 import { cn } from '@/lib/utils'
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full font-medium transition-[background-color,color,box-shadow,transform,border-color] duration-200 ease-out-soft disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98] [&_svg]:size-4 [&_svg]:shrink-0',
+  // Neo-brutalist: 2px ink border, hard offset shadow that collapses when pressed.
+  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md border-2 border-ink font-bold tracking-tight transition-[background-color,color,box-shadow,transform] duration-150 ease-out disabled:pointer-events-none disabled:opacity-50 [&_svg]:size-4 [&_svg]:shrink-0 dark:border-foreground',
   {
     variants: {
       variant: {
-        primary: 'bg-primary text-primary-foreground shadow-soft hover:shadow-lift hover:-translate-y-px',
-        accent: 'bg-accent text-accent-foreground shadow-soft hover:shadow-lift hover:-translate-y-px',
-        secondary: 'bg-surface-solid text-foreground border border-border-strong hover:bg-muted',
-        ghost: 'text-foreground hover:bg-muted',
-        subtle: 'bg-muted text-foreground hover:bg-border-strong',
-        outline: 'border border-border-strong text-foreground hover:bg-muted',
-        danger: 'bg-danger text-white hover:opacity-90',
-        link: 'text-foreground underline-offset-4 hover:underline rounded-sm',
+        primary: 'press bg-primary text-primary-foreground',
+        accent: 'press bg-accent text-accent-foreground',
+        secondary: 'press bg-surface-solid text-foreground',
+        ghost: 'border-transparent text-foreground hover:border-ink hover:bg-highlight hover:text-ink dark:border-transparent dark:hover:border-foreground',
+        subtle: 'border-transparent bg-muted text-foreground hover:border-ink dark:border-transparent dark:hover:border-foreground',
+        outline: 'bg-transparent text-foreground hover:bg-highlight hover:text-ink',
+        danger: 'press bg-danger text-white',
+        link: 'border-transparent text-foreground underline decoration-2 underline-offset-4 hover:bg-highlight hover:text-ink dark:border-transparent',
       },
       size: {
         sm: 'h-8 px-3 text-sm',

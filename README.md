@@ -115,6 +115,26 @@ risk replies), `scripts/annotation_pack.py` (blind human-rating sheets and κ).
 Results (JSON + CSV + manifest) go to `artifacts/evaluation_results/`. The held-out test split
 requires `--final`. See [research/experimental_protocol.md](research/experimental_protocol.md).
 
+## Optional: better replies with Groq (cloud mode)
+
+The local 4B model is weak in Banglish. You can opt in to a larger model on Groq's free tier
+(default `openai/gpt-oss-120b`). **This sends each message — with the system prompt, the retrieved
+knowledge passages and recent history — to Groq.** Safety checks, retrieval, output filters and your
+conversation history still run and stay on this computer, and the app shows a "Cloud mode" notice.
+
+1. Create a free API key at <https://console.groq.com/keys> (you need a Groq account).
+2. Copy `.env.example` to `.env` (if you have not already) and set:
+   ```
+   COUPLECARE_LLM_PROVIDER=groq
+   COUPLECARE_GROQ_API_KEY=<your key>
+   # optional: COUPLECARE_GROQ_MODEL=llama-3.3-70b-versatile
+   ```
+3. Restart the backend (`scripts\stop.ps1`, then `scripts\start-all.ps1`). The local model server is not
+   needed in this mode. Set `COUPLECARE_LLM_PROVIDER=local` (or remove the line) to go back.
+
+The key is read only from `.env` (git-ignored) and is never returned by the API. The Groq endpoint is fixed
+in code. Free-tier limits apply; when they are reached the app says so and you can switch back to local.
+
 ## Configuration
 
 All options are in [.env.example](.env.example). Host and model-server URL must be loopback

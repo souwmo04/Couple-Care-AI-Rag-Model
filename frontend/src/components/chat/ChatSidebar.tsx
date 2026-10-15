@@ -72,13 +72,13 @@ export function ChatSidebar({ activeId, onNew, onTopic, onDeleted }: SidebarProp
             placeholder={t.chat.searchPlaceholder}
             aria-label={t.chat.searchPlaceholder}
             maxLength={100}
-            className="h-9 w-full rounded-full border border-border bg-surface-solid pl-9 pr-3 text-sm outline-none placeholder:text-muted-foreground focus:border-border-strong"
+            className="h-9 w-full rounded-sm border bg-surface-solid pl-9 pr-3 text-sm outline-none placeholder:text-muted-foreground focus:shadow-soft"
           />
         </div>
       </div>
 
       <div className="mt-4 min-h-0 flex-1 overflow-y-auto px-3">
-        <h2 className="px-2 text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{t.chat.recent}</h2>
+        <h2 className="px-2 kicker text-foreground">{t.chat.recent}</h2>
         <div className="mt-2">
           {conversations.isPending ? (
             <div className="space-y-2 px-2 py-1">
@@ -101,8 +101,10 @@ export function ChatSidebar({ activeId, onNew, onTopic, onDeleted }: SidebarProp
                     onClick={() => navigate(`/chat/${c.id}`)}
                     aria-current={c.id === activeId ? 'page' : undefined}
                     className={cn(
-                      'flex w-full items-center gap-2.5 rounded-lg py-2 pl-2.5 pr-9 text-left text-sm transition-colors',
-                      c.id === activeId ? 'bg-muted text-foreground' : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+                      'flex w-full items-center gap-2.5 rounded-sm border-2 py-2 pl-2.5 pr-9 text-left text-sm font-medium transition-colors',
+                      c.id === activeId
+                        ? 'border-ink bg-highlight text-ink'
+                        : 'border-transparent text-foreground/80 hover:border-ink hover:bg-surface-solid dark:hover:border-foreground',
                     )}
                   >
                     <MessageSquareText className="size-4 shrink-0 opacity-60" />
@@ -128,7 +130,7 @@ export function ChatSidebar({ activeId, onNew, onTopic, onDeleted }: SidebarProp
           )}
         </div>
 
-        <h2 className="mt-6 px-2 text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{t.chat.topics}</h2>
+        <h2 className="mt-6 px-2 kicker text-foreground">{t.chat.topics}</h2>
         <ul className="mt-2 space-y-0.5 pb-4">
           {TOPIC_IDS.map((id) => {
             const Icon = TOPIC_ICONS[id]
@@ -137,7 +139,7 @@ export function ChatSidebar({ activeId, onNew, onTopic, onDeleted }: SidebarProp
                 <button
                   type="button"
                   onClick={() => onTopic(id)}
-                  className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                  className="flex w-full items-center gap-2.5 rounded-sm border-2 border-transparent px-2.5 py-1.5 text-left text-sm text-foreground/80 transition-colors hover:border-ink hover:bg-highlight hover:text-ink"
                 >
                   <Icon className="size-4 shrink-0 opacity-70" />
                   {t.topics.items[id].title}
@@ -148,17 +150,17 @@ export function ChatSidebar({ activeId, onNew, onTopic, onDeleted }: SidebarProp
         </ul>
       </div>
 
-      <div className="space-y-1 border-t border-border p-3">
-        <Link to="/knowledge" className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground">
+      <div className="space-y-1 border-t p-3">
+        <Link to="/knowledge" className="flex items-center gap-2.5 rounded-sm border-2 border-transparent px-2.5 py-2 text-sm font-medium text-foreground/80 hover:border-ink hover:bg-highlight hover:text-ink">
           <Library className="size-4" /> {t.chat.knowledgeSources}
         </Link>
-        <Link to="/settings" className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground">
+        <Link to="/settings" className="flex items-center gap-2.5 rounded-sm border-2 border-transparent px-2.5 py-2 text-sm font-medium text-foreground/80 hover:border-ink hover:bg-highlight hover:text-ink">
           <Settings className="size-4" /> {t.chat.settings}
         </Link>
         <button
           type="button"
           onClick={() => setConfirmAll(true)}
-          className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm text-muted-foreground hover:bg-muted hover:text-danger"
+          className="flex w-full items-center gap-2.5 rounded-sm border-2 border-transparent px-2.5 py-2 text-left text-sm font-medium text-foreground/80 hover:border-ink hover:bg-accent hover:text-ink"
         >
           <Trash2 className="size-4" /> {t.chat.clearHistory}
         </button>

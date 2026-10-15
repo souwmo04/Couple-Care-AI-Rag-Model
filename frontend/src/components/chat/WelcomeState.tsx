@@ -1,3 +1,4 @@
+import { StaggerText } from '@/components/kinetic/StaggerText'
 import { motion } from 'motion/react'
 import { useEntrance } from '@/hooks/useEntrance'
 import { LogoMark } from '@/components/layout/Brand'
@@ -15,10 +16,12 @@ export function WelcomeState({ onTopic }: { onTopic: (topic: TopicId) => void })
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col px-4 pb-8 pt-10 sm:pt-16">
       <motion.div initial={enter({ opacity: 0, y: 10 })} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-        <span className="flex size-12 items-center justify-center rounded-2xl border border-border bg-surface-solid shadow-soft">
+        <span className="flex size-12 rotate-[-4deg] items-center justify-center rounded-md border-2 border-ink bg-highlight text-ink shadow-lift">
           <LogoMark className="size-7" />
         </span>
-        <h1 className="mt-6 font-display text-[clamp(1.9rem,4vw,2.75rem)] leading-tight tracking-[-0.01em]">{t.chat.welcomeGreeting}</h1>
+        <h1 className="mt-6 font-wide text-[clamp(2rem,4.6vw,3.25rem)] font-black uppercase leading-[0.98]">
+          <StaggerText animateOnMount>{t.chat.welcomeGreeting}</StaggerText>
+        </h1>
         <p className="mt-3 max-w-2xl text-base leading-relaxed text-muted-foreground">{t.chat.welcomeBody}</p>
       </motion.div>
 
@@ -63,9 +66,9 @@ export function WelcomeState({ onTopic }: { onTopic: (topic: TopicId) => void })
               initial={enter({ opacity: 0, y: 8 })}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.45, delay: 0.15 + i * 0.03 }}
-              className="group flex items-center gap-3.5 rounded-2xl border border-border bg-surface-solid p-3.5 text-left transition-[border-color,box-shadow,transform] duration-300 ease-out-soft hover:-translate-y-px hover:border-border-strong hover:shadow-soft"
+              className="press group flex items-center gap-3.5 rounded-md border-2 border-ink bg-surface-solid p-3.5 text-left dark:border-foreground"
             >
-              <span className={cn('flex size-9 shrink-0 items-center justify-center rounded-xl', TOPIC_TONES[id])}>
+              <span className={cn('flex size-9 shrink-0 items-center justify-center rounded-sm border-2 border-ink', TOPIC_TONES[id])}>
                 <Icon className="size-4" />
               </span>
               <span className="min-w-0">
