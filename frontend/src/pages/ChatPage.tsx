@@ -1,4 +1,4 @@
-import { Eraser, Menu, PanelLeftClose, PanelLeftOpen, PanelRight, Settings } from 'lucide-react'
+import { Eraser, Menu, PanelLeftClose, PanelLeftOpen, PanelRight, PanelRightClose, PanelRightOpen, Settings, Zap } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
 import { ChatSidebar } from '@/components/chat/ChatSidebar'
@@ -7,12 +7,13 @@ import { ContextPanel } from '@/components/chat/ContextPanel'
 import { AssistantMessage, UserMessage } from '@/components/chat/MessageItem'
 import { WelcomeState } from '@/components/chat/WelcomeState'
 import { ThemeToggle } from '@/components/layout/Controls'
+import { HeartsBackdrop } from '@/components/layout/HeartsBackdrop'
 import { ModelStatusPill } from '@/components/layout/ModelStatus'
 import { useModelState } from '@/hooks/useModelState'
 import { useCloudMode } from '@/hooks/useProvider'
 import { Button } from '@/components/ui/button'
 import { Sheet } from '@/components/ui/overlay'
-import { Badge, Skeleton, Tooltip } from '@/components/ui/primitives'
+import { Badge, Skeleton, Switch, Tooltip } from '@/components/ui/primitives'
 import { useChat, type SendOptions } from '@/hooks/useChat'
 import { usePreferences } from '@/hooks/usePreferences'
 import { useCopy } from '@/i18n'
@@ -21,7 +22,7 @@ import { TOPIC_IDS, TOPIC_STARTERS, type TopicId } from '@/lib/topics'
 
 export default function ChatPage() {
   const t = useCopy()
-  const { prefs } = usePreferences()
+  const { prefs, update } = usePreferences()
   const navigate = useNavigate()
   const { conversationId: routeId } = useParams()
   const [searchParams, setSearchParams] = useSearchParams()
@@ -30,6 +31,7 @@ export default function ChatPage() {
   const stickToBottom = useRef(true)
 
   const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [contextOpen, setContextOpen] = useState(true)
   const [mobileNav, setMobileNav] = useState(false)
   const [mobileContext, setMobileContext] = useState(false)
   const [selectedKey, setSelectedKey] = useState<string | null>(null)
@@ -40,7 +42,7 @@ export default function ChatPage() {
   const chat = useChat(validRouteId, onCreated)
   const modelState = useModelState()
   const cloud = useCloudMode()
-  const opts: SendOptions = { language: prefs.responseLanguage, stage: prefs.relationshipStage }
+  const opts: SendOptions = { language: prefs.responseLanguage, stage: prefs.relationshipStage, mode: prefs.chatMode }
 
   // Topic deep links (/chat?topic=communication) prefill the composer — never auto-send.
   const starterLanguage = prefs.responseLanguage === 'auto' ? prefs.uiLanguage : prefs.responseLanguage
@@ -78,12 +80,6 @@ export default function ChatPage() {
     setMobileNav(false)
     navigate('/chat')
     composerRef.current?.focus()
-  }
-
-  function cite(messageKey: string, citationId: string) {
-    setSelectedKey(messageKey)
-    setActiveCitation(citationId)
-    if (window.matchMedia('(max-width: 1279px)').matches) setMobileContext(true)
   }
 
   const sidebar = (
@@ -141,6 +137,11 @@ export default function ChatPage() {
               <Badge tone="outline" className="py-0 text-[0.68rem]">
                 {t.chat.stageBadge}: {t.stages[prefs.relationshipStage]}
               </Badge>
+              {prefs.chatMode === 'coach' && (
+                <Badge tone="danger" className="py-0 text-[0.68rem]">
+                  <Zap /> {t.chat.coachOnBadge}
+                </Badge>
+              )}
             </div>
           </div>
           <ModelStatusPill className="hidden md:inline-flex" />
@@ -163,10 +164,23 @@ export default function ChatPage() {
           <Button variant="ghost" size="icon" className="xl:hidden" aria-label={t.chat.openContext} onClick={() => setMobileContext(true)}>
             <PanelRight />
           </Button>
+          <Tooltip content={contextOpen ? t.chat.collapseContext : t.chat.expandContext}>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="hidden xl:inline-flex"
+              aria-label={contextOpen ? t.chat.collapseContext : t.chat.expandContext}
+              aria-expanded={contextOpen}
+              onClick={() => setContextOpen((v) => !v)}
+            >
+              {contextOpen ? <PanelRightClose /> : <PanelRightOpen />}
+            </Button>
+          </Tooltip>
         </header>
 
         <div className="flex min-h-0 flex-1">
-          <main id="main" className="flex min-w-0 flex-1 flex-col">
+          <main id="main" className="relative isolate flex min-w-0 flex-1 flex-col">
+            <HeartsBackdrop count={14} seed={23} />
             <div
               ref={scrollRef}
               onScroll={(e) => {
@@ -210,7 +224,6 @@ export default function ChatPage() {
                         canRegenerate={!chat.isGenerating}
                         selected={selectedMessage?.key === m.key}
                         onSelect={() => setSelectedKey(m.key)}
-                        onCite={(id) => cite(m.key, id)}
                         onRegenerate={() => chat.regenerate(opts)}
                         onRetry={() => chat.retry(opts)}
                       />
@@ -232,6 +245,18 @@ export default function ChatPage() {
                     {t.common.backendOffline}
                   </p>
                 )}
+                <div className="mb-2 flex flex-wrap items-center gap-x-3 gap-y-1">
+                  <Switch
+                    id="coach-mode"
+                    checked={prefs.chatMode === 'coach'}
+                    onCheckedChange={(on) => update({ chatMode: on ? 'coach' : 'support' })}
+                    label={t.chat.coachMode}
+                  />
+                  <label htmlFor="coach-mode" className="cursor-pointer text-sm font-bold">
+                    {t.chat.coachMode}
+                  </label>
+                  <span className="text-xs text-muted-foreground">{t.chat.coachHint}</span>
+                </div>
                 <Composer
                   ref={composerRef}
                   generating={chat.isGenerating}
@@ -248,8 +273,14 @@ export default function ChatPage() {
           </main>
 
           {/* Desktop context panel */}
-          <aside aria-label={t.chat.contextPanel} className="hidden w-80 shrink-0 border-l border-border bg-surface-sunken xl:block">
-            {context}
+          <aside
+            aria-label={t.chat.contextPanel}
+            className={cn(
+              'hidden shrink-0 overflow-hidden border-l border-border bg-surface-sunken transition-[width] duration-300 ease-out-soft xl:block',
+              contextOpen ? 'w-80' : 'w-0 border-l-0',
+            )}
+          >
+            <div className="h-full w-80">{context}</div>
           </aside>
         </div>
       </div>

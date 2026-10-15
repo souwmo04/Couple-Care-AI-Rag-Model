@@ -46,7 +46,7 @@ def test_off_topic_chat_is_ungrounded(client, fake_llm) -> None:
     body = client.post("/api/chat", json={"message": "zzqx flurble wibble quantum"}).json()
     assert body["grounded"] is False and body["sources"] == []
     assert "[S1]" not in body["answer"]
-    assert "No sufficiently relevant passages" in fake_llm.calls[-1][-1].content
+    assert "No knowledge-base passages are available" in fake_llm.calls[-1][-1].content
 
 
 def test_bangla_message_gets_bangla_instruction(client, fake_llm) -> None:
@@ -203,7 +203,7 @@ def test_vague_opener_asks_first_without_grounding(client, fake_llm) -> None:
     assert body["grounded"] is False and body["sources"] == []
     assert body["needs_clarification"] is True
     prompt = fake_llm.calls[-1][-1].content
-    assert "No sufficiently relevant passages" in prompt and "ask ONE focused clarifying question" in prompt
+    assert "No knowledge-base passages are available" in prompt and "ask ONE focused clarifying question" in prompt
 
 
 def test_vague_opener_still_goes_through_safety(client, fake_llm) -> None:
@@ -217,3 +217,28 @@ def test_follow_up_short_message_is_grounded(client, fake_llm) -> None:
         "/api/chat", json={"message": "What should I say?", "conversation_id": first["conversation_id"]}
     ).json()
     assert body["grounded"] is True
+
+
+def test_coach_mode_prompt_and_budget(client, fake_llm) -> None:
+    body = client.post("/api/chat", json={"message": "We had a fight.", "mode": "coach"}).json()
+    system, user = fake_llm.calls[-1][0].content, fake_llm.calls[-1][-1].content
+    assert "COACH MODE" in system and "pickup-artist" in system
+    assert "clarifying question about what happened" not in user  # coach mode answers directly
+    assert fake_llm.params[-1].max_tokens <= 320 and body["generated"]
+
+
+def test_support_mode_has_no_coach_instructions(client, fake_llm) -> None:
+    client.post("/api/chat", json={"message": "My partner does not listen to me"})
+    assert "COACH MODE" not in fake_llm.calls[-1][0].content
+
+
+def test_new_relationship_stages_reach_the_prompt(client, fake_llm) -> None:
+    client.post(
+        "/api/chat", json={"message": "I like someone who does not like me back", "relationship_stage": "one_sided"}
+    )
+    system = fake_llm.calls[-1][0].content
+    assert "one-sided love" in system and "persisting after a 'no'" in system
+    client.post(
+        "/api/chat", json={"message": "How do I start talking to someone I like?", "relationship_stage": "single"}
+    )
+    assert "The user is single" in fake_llm.calls[-1][0].content

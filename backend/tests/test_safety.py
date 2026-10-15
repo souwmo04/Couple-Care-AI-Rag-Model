@@ -199,7 +199,7 @@ def test_risk_addenda_forbid_excusing_the_behaviour() -> None:
     for text in (*esc.ADDENDA.values(), esc.SEMANTIC_DEFAULT_ADDENDUM):
         assert "Do NOT offer explanations that excuse" in text
     assert "excuse, justify or soften" in load_system_prompt()
-    assert PROMPT_VERSION.endswith(esc.SAFETY_ADDENDA_VERSION)
+    assert esc.SAFETY_ADDENDA_VERSION in PROMPT_VERSION
 
 
 @pytest.mark.parametrize(

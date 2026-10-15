@@ -407,3 +407,23 @@ html[data-motion='reduced'] .flip-char::before, html[data-motion='reduced'] .fli
   letter-spacing: -0.02em;
   font-style: normal;
 }
+
+/* ------------------------------------------------------------------------------------------
+   Hearts backdrop (components/layout/HeartsBackdrop) — decorative, low opacity, behind content.
+   ------------------------------------------------------------------------------------------ */
+:root {
+  --heart-pink: oklch(0.8 0.14 2);
+  --heart-red: oklch(0.63 0.22 22);
+  --heart-opacity: 0.32;
+}
+.dark { --heart-opacity: 0.22; }
+.heart { transform: rotate(var(--heart-rotate)); opacity: var(--heart-opacity); }
+.heart-pink path { fill: var(--heart-pink); stroke: var(--ink); stroke-width: 1.2; }
+.heart-red path { fill: var(--heart-red); stroke: var(--ink); stroke-width: 1.2; }
+.heart-outline path { fill: none; stroke: var(--heart-red); stroke-width: 1.8; }
+.dark .heart-pink path, .dark .heart-red path { stroke: var(--foreground); }
+.heart-float { animation: heart-float ease-in-out infinite alternate; }
+@keyframes heart-float {
+  from { transform: translateY(0) rotate(var(--heart-rotate)); }
+  to { transform: translateY(-18px) rotate(calc(var(--heart-rotate) + 8deg)); }
+}

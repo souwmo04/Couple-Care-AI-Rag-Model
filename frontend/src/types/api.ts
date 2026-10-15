@@ -2,7 +2,17 @@
 
 export type LanguageCode = 'auto' | 'en' | 'bn' | 'banglish'
 export type DetectedLanguage = 'en' | 'bn' | 'banglish' | 'mixed' | 'unknown'
-export type RelationshipStage = 'dating' | 'engaged' | 'married' | 'unspecified'
+export type RelationshipStage =
+  | 'unspecified'
+  | 'single'
+  | 'one_sided'
+  | 'situationship'
+  | 'dating'
+  | 'long_distance'
+  | 'engaged'
+  | 'married'
+/** support: reflective guidance (default). coach: short, direct 'what to say / do next' answers. */
+export type ChatMode = 'support' | 'coach'
 export type SafetyLevel = 'none' | 'caution' | 'support' | 'urgent' | 'declined'
 
 export interface SourceCard {
@@ -43,6 +53,7 @@ export interface ChatRequest {
   conversation_id: string | null
   language: LanguageCode
   relationship_stage: RelationshipStage
+  mode?: ChatMode
   regenerate?: boolean
 }
 

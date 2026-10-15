@@ -103,14 +103,15 @@ describe('Chat page', () => {
     renderChat()
     await userEvent.type(screen.getByLabelText('Your message'), 'My partner does not listen to me{Enter}')
     expect(await screen.findByText(/reflective listening/)).toBeInTheDocument()
-    const chip = await screen.findByRole('button', { name: 'Sources S1' })
-    expect(chip).toBeInTheDocument()
+    // Citation markers are not shown in the reply text; sources are listed in the panel instead.
+    expect(screen.queryByRole('button', { name: 'Sources S1' })).toBeNull()
+    expect(screen.queryByText(/\[S1\]/)).toBeNull()
     await userEvent.click(screen.getByRole('button', { name: /See where this comes from/ }))
     expect(screen.getAllByText('Feeling Unheard').length).toBeGreaterThan(0)
 
     const call = fetchMock.mock.calls.find(([url]) => String(url).includes('/api/chat/stream'))!
     const body = JSON.parse(String(call[1]!.body))
-    expect(body).toMatchObject({ message: 'My partner does not listen to me', language: 'auto', conversation_id: null })
+    expect(body).toMatchObject({ message: 'My partner does not listen to me', language: 'auto', conversation_id: null, mode: 'support' })
     expect((call[1]!.headers as Record<string, string>)['X-Client-Id']).toMatch(/^[A-Za-z0-9-]{16,64}$/)
   })
 

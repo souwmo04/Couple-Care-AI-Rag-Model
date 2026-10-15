@@ -1,7 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { ApiError, api, streamChat } from '@/services/api'
-import type { ChatResponse, ConversationDetail, LanguageCode, RelationshipStage, SafetyStatus, SourceCard } from '@/types/api'
+import type { ChatMode, ChatResponse, ConversationDetail, LanguageCode, RelationshipStage, SafetyStatus, SourceCard } from '@/types/api'
 
 export type MessageStatus = 'streaming' | 'done' | 'error' | 'stopped'
 
@@ -61,6 +61,7 @@ function applyResponse(msg: UiMessage, res: ChatResponse): UiMessage {
 export interface SendOptions {
   language: LanguageCode
   stage: RelationshipStage
+  mode: ChatMode
 }
 
 export function useChat(initialConversationId: string | null, onConversationCreated?: (id: string) => void) {
@@ -127,6 +128,7 @@ export function useChat(initialConversationId: string | null, onConversationCrea
             conversation_id: conversationId,
             language: opts.language,
             relationship_stage: opts.stage,
+            mode: opts.mode,
             regenerate,
           },
           (event) => {

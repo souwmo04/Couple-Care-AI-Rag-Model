@@ -7,6 +7,7 @@ import { Select } from '@/components/ui/overlay'
 import type { UiMessage } from '@/hooks/useChat'
 import { usePreferences } from '@/hooks/usePreferences'
 import { useCopy } from '@/i18n'
+import { RELATIONSHIP_STAGES } from '@/lib/stages'
 import type { LanguageCode, RelationshipStage, SourceCard } from '@/types/api'
 
 /** Passages from the same guide are shown as one card ("S1 S2") instead of repeated titles. */
@@ -113,7 +114,7 @@ export function ContextPanel({ message, activeCitation }: ContextPanelProps) {
             label={t.chat.welcomeStage}
             value={prefs.relationshipStage}
             onValueChange={(v) => update({ relationshipStage: v })}
-            options={(['unspecified', 'dating', 'engaged', 'married'] as const).map((v) => ({ value: v, label: t.stages[v] }))}
+            options={RELATIONSHIP_STAGES.map((v) => ({ value: v, label: t.stages[v] }))}
           />
         </div>
         <Link to="/settings" className="inline-block text-xs font-bold underline decoration-2 underline-offset-2">

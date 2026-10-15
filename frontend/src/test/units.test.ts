@@ -80,3 +80,13 @@ describe('copy', () => {
     expect(text).not.toMatch(/\b\d{3}[-\s]?\d{3,}\b/)
   })
 })
+
+describe('stripCitations', () => {
+  it('removes markers and tidies the text left behind', async () => {
+    const { stripCitations } = await import('@/lib/citations')
+    expect(stripCitations('Talk calmly [S1]. Take a break ([S2]) today [S3], then talk.')).toBe(
+      'Talk calmly. Take a break today, then talk.',
+    )
+    expect(stripCitations('দোষারোপ নেই [S1]।')).toBe('দোষারোপ নেই।')
+  })
+})

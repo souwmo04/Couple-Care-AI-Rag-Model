@@ -5,6 +5,7 @@ import { LogoMark } from '@/components/layout/Brand'
 import { Segmented } from '@/components/ui/primitives'
 import { usePreferences } from '@/hooks/usePreferences'
 import { useCopy } from '@/i18n'
+import { RELATIONSHIP_STAGES } from '@/lib/stages'
 import { cn } from '@/lib/utils'
 import { TOPIC_ICONS, TOPIC_IDS, TOPIC_TONES, type TopicId } from '@/lib/topics'
 import type { LanguageCode, RelationshipStage } from '@/types/api'
@@ -50,7 +51,7 @@ export function WelcomeState({ onTopic }: { onTopic: (topic: TopicId) => void })
             label={t.chat.welcomeStage}
             value={prefs.relationshipStage}
             onValueChange={(v) => update({ relationshipStage: v })}
-            options={(['unspecified', 'dating', 'engaged', 'married'] as const).map((v) => ({ value: v, label: t.stages[v] }))}
+            options={RELATIONSHIP_STAGES.map((v) => ({ value: v, label: t.stages[v] }))}
           />
         </div>
       </motion.div>

@@ -30,6 +30,7 @@ from app.core.language import (
 )
 from app.core.prompts import build_messages
 from app.core.schemas import (
+    ChatMode,
     ChatRequest,
     ChatResponse,
     DetectedLanguage,
@@ -59,6 +60,7 @@ log = logging.getLogger("couplecare.orchestrator")
 HISTORY_CHAR_LIMIT = 1200
 PROMPT_OVERHEAD_TOKENS = 900
 VAGUE_MAX_TOKENS = 6
+COACH_OUTPUT_TOKENS = 320
 
 
 @dataclass
@@ -136,7 +138,8 @@ class Orchestrator:
             output_tokens = output_token_allowance(response_language, runtime.max_output_tokens)
             context_items = self._fit_budget(retrieval.relevant, output_tokens, conversation)
 
-        hint = vague  # caution-level safety addenda already ask their own check-in question
+        # Caution-level safety addenda already ask their own check-in question; coach mode answers directly.
+        hint = vague and request.mode != ChatMode.COACH
         return TurnPlan(
             request=request,
             owner=owner,
@@ -221,9 +224,11 @@ class Orchestrator:
 
     def _generation_params(self, plan: TurnPlan) -> GenerationParams:
         runtime = self.c.settings_store.get()
+        # Coach mode answers in under ~120 words, so it needs (and reserves) a much smaller budget.
+        base = min(runtime.max_output_tokens, COACH_OUTPUT_TOKENS) if plan.request.mode == ChatMode.COACH else None
         return GenerationParams(
             temperature=runtime.temperature,
-            max_tokens=output_token_allowance(plan.response_language, runtime.max_output_tokens),
+            max_tokens=output_token_allowance(plan.response_language, base or runtime.max_output_tokens),
         )
 
     def _messages(self, plan: TurnPlan):
@@ -241,6 +246,7 @@ class Orchestrator:
             grounded=plan.grounded,
             safety_addendum=plan.decision.prompt_addendum,
             needs_clarification_hint=plan.needs_clarification_hint,
+            mode=plan.request.mode.value,
         )
 
     def _finalize(

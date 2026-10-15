@@ -1,6 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
-import type { LanguageCode, RelationshipStage } from '@/types/api'
+import { RELATIONSHIP_STAGES } from '@/lib/stages'
+import type { ChatMode, LanguageCode, RelationshipStage } from '@/types/api'
 
 export type ThemePreference = 'light' | 'dark' | 'system'
 export type MotionPreference = 'system' | 'reduced' | 'full'
@@ -13,6 +14,7 @@ export interface Preferences {
   uiLanguage: UiLanguage
   responseLanguage: LanguageCode
   relationshipStage: RelationshipStage
+  chatMode: ChatMode
   guestMode: boolean
 }
 
@@ -24,6 +26,7 @@ export const DEFAULT_PREFERENCES: Preferences = {
   uiLanguage: 'en',
   responseLanguage: 'auto',
   relationshipStage: 'unspecified',
+  chatMode: 'support',
   guestMode: false,
 }
 
@@ -57,8 +60,9 @@ function sanitize(raw: unknown): Preferences {
   if (typeof r.fontScale === 'number' && (FONT_SCALES as readonly number[]).includes(r.fontScale)) p.fontScale = r.fontScale
   if (r.uiLanguage === 'en' || r.uiLanguage === 'bn') p.uiLanguage = r.uiLanguage
   if (['auto', 'en', 'bn', 'banglish'].includes(r.responseLanguage as string)) p.responseLanguage = r.responseLanguage as LanguageCode
-  if (['dating', 'engaged', 'married', 'unspecified'].includes(r.relationshipStage as string))
+  if ((RELATIONSHIP_STAGES as readonly string[]).includes(r.relationshipStage as string))
     p.relationshipStage = r.relationshipStage as RelationshipStage
+  if (r.chatMode === 'support' || r.chatMode === 'coach') p.chatMode = r.chatMode
   return p
 }
 

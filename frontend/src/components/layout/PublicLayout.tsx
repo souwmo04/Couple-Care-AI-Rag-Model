@@ -1,4 +1,5 @@
 import { Outlet } from 'react-router'
+import { HeartsBackdrop } from '@/components/layout/HeartsBackdrop'
 import { SiteFooter } from '@/components/layout/SiteFooter'
 import { SiteHeader } from '@/components/layout/SiteHeader'
 import { useCopy } from '@/i18n'
@@ -14,7 +15,8 @@ export function PublicLayout() {
         {t.nav.skip}
       </a>
       <SiteHeader />
-      <main id="main" className="flex-1 overflow-x-clip">
+      <main id="main" className="relative isolate flex-1 overflow-x-clip">
+        <HeartsBackdrop count={42} seed={11} />
         <Outlet />
       </main>
       <SiteFooter />

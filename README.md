@@ -115,6 +115,14 @@ risk replies), `scripts/annotation_pack.py` (blind human-rating sheets and κ).
 Results (JSON + CSV + manifest) go to `artifacts/evaluation_results/`. The held-out test split
 requires `--final`. See [research/experimental_protocol.md](research/experimental_protocol.md).
 
+## Coach mode
+
+A switch above the message box (**Coach mode**) changes replies from reflective guidance to short, direct
+answers: two or three exact lines to say or send, and one or two concrete next steps (under ~120 words). It also
+helps single people start a conversation or ask someone out — respectfully: no manipulation, pickup tactics or
+pressure, and a "no" or no reply is respected. Safety checks apply exactly as in normal mode. Relationship stages
+include Single, One-sided love, Situationship and Long-distance as well as Dating, Engaged and Married.
+
 ## Optional: better replies with Groq (cloud mode)
 
 The local 4B model is weak in Banglish. You can opt in to a larger model on Groq's free tier

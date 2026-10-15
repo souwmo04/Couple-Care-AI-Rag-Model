@@ -32,7 +32,8 @@ def test_unknown_fields_rejected(client) -> None:
 
 def test_invalid_enums_rejected(client) -> None:
     assert client.post("/api/chat", json={"message": "hi", "language": "fr"}).status_code == 422
-    assert client.post("/api/chat", json={"message": "hi", "relationship_stage": "situationship"}).status_code == 422
+    assert client.post("/api/chat", json={"message": "hi", "relationship_stage": "complicated"}).status_code == 422
+    assert client.post("/api/chat", json={"message": "hi", "mode": "flirt"}).status_code == 422
 
 
 def test_invalid_conversation_id_rejected(client) -> None:

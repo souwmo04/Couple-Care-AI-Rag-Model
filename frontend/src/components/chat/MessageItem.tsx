@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button'
 import { Badge, Tooltip } from '@/components/ui/primitives'
 import type { UiMessage } from '@/hooks/useChat'
 import { useCopy } from '@/i18n'
-import { CITE_RE, linkCitations } from '@/lib/citations'
+import { CITE_RE, stripCitations } from '@/lib/citations'
 import { cn } from '@/lib/utils'
 import { api } from '@/services/api'
 
@@ -34,7 +34,6 @@ interface AssistantProps {
   canRegenerate: boolean
   selected: boolean
   onSelect: () => void
-  onCite: (citationId: string) => void
   onRegenerate: () => void
   onRetry: () => void
 }
@@ -46,7 +45,6 @@ export const AssistantMessage = memo(function AssistantMessage({
   canRegenerate,
   selected,
   onSelect,
-  onCite,
   onRegenerate,
   onRetry,
 }: AssistantProps) {
@@ -55,37 +53,18 @@ export const AssistantMessage = memo(function AssistantMessage({
   const [copied, setCopied] = useState(false)
   const [rating, setRating] = useState<'helpful' | 'not_helpful' | null>(null)
   const [showEvidence, setShowEvidence] = useState(false)
-  const available = useMemo(() => new Set(message.sources.map((s) => s.citation_id)), [message.sources])
   const cited = message.sources.filter((s) => s.cited)
   const related = message.sources.filter((s) => !s.cited)
 
   const components = useMemo<Components>(
     () => ({
-      a: ({ href, children }) => {
-        if (href?.startsWith('#cite-')) {
-          const id = href.slice(6)
-          return (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation()
-                onCite(id)
-              }}
-              className="mx-0.5 inline-flex translate-y-[-1px] items-center rounded-sm border-2 border-ink bg-mint px-1 align-baseline font-mono text-[0.65rem] font-bold text-ink transition-colors hover:bg-highlight"
-              aria-label={`${t.chat.sources} ${id}`}
-            >
-              {children}
-            </button>
-          )
-        }
-        return (
-          <a href={href} target="_blank" rel="noreferrer noopener" className="font-semibold underline decoration-2 underline-offset-2">
-            {children}
-          </a>
-        )
-      },
+      a: ({ href, children }) => (
+        <a href={href} target="_blank" rel="noreferrer noopener" className="font-semibold underline decoration-2 underline-offset-2">
+          {children}
+        </a>
+      ),
     }),
-    [onCite, t.chat.sources],
+    [],
   )
 
   async function copy() {
@@ -131,9 +110,7 @@ export const AssistantMessage = memo(function AssistantMessage({
           selected && message.sources.length > 0 && 'lg:shadow-lift',
         )}
       >
-        {(message.generated === false ||
-          message.fallbackReason ||
-          (message.status === 'done' && message.grounded === false && message.generated)) && (
+        {(message.generated === false || message.fallbackReason) && (
           <div className="mb-2 flex flex-wrap gap-1.5">
             {message.generated === false && <Badge tone="lavender">{t.chat.notGenerated}</Badge>}
             {message.fallbackReason && (
@@ -141,7 +118,6 @@ export const AssistantMessage = memo(function AssistantMessage({
                 {message.fallbackReason === 'rate_limited' ? t.chat.fallbackRateLimited : t.chat.fallbackUnavailable}
               </Badge>
             )}
-            {message.generated && message.grounded === false && <Badge tone="outline">{t.chat.ungrounded}</Badge>}
           </div>
         )}
 
@@ -151,7 +127,7 @@ export const AssistantMessage = memo(function AssistantMessage({
             className="prose-chat text-[0.95rem] leading-relaxed text-foreground"
           >
             <Markdown remarkPlugins={[remarkGfm]} components={components}>
-              {linkCitations(message.content, available)}
+              {stripCitations(message.content)}
             </Markdown>
             {message.status === 'streaming' && (
               <span aria-hidden className="ml-0.5 inline-block h-4 w-2 translate-y-0.5 bg-accent [animation:caret-blink_1s_steps(1)_infinite]" />
@@ -184,9 +160,10 @@ export const AssistantMessage = memo(function AssistantMessage({
 
         {message.safety && message.status !== 'error' && <SafetyNotice safety={message.safety} />}
 
-        {message.status === 'done' && message.generated && (
-          <div className="mt-4">
-            {message.sources.length > 0 ? (
+        {/* Sources live in the side panel; on screens without it, they can be opened under the reply. */}
+        {message.status === 'done' && message.generated && message.sources.length > 0 && (
+          <div className="mt-4 xl:hidden">
+            {message.sources.length > 0 && (
               <button
                 type="button"
                 onClick={(e) => {
@@ -200,8 +177,6 @@ export const AssistantMessage = memo(function AssistantMessage({
                 {showEvidence ? t.chat.hideEvidence : t.chat.showEvidence} · {message.sources.length}
                 <ChevronDown className={cn('size-3.5 transition-transform', showEvidence && 'rotate-180')} />
               </button>
-            ) : (
-              <p className="text-xs text-muted-foreground">{t.chat.noSources}</p>
             )}
             <AnimatePresence initial={false}>
               {showEvidence && (

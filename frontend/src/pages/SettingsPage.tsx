@@ -9,6 +9,7 @@ import { Badge, Card, Field, SectionEyebrow, Segmented, Skeleton, Slider, Switch
 import { keys, useModelStatus, useSettings, useUpdateSettings } from '@/hooks/useBackend'
 import { FONT_SCALES, usePreferences, type MotionPreference, type ThemePreference } from '@/hooks/usePreferences'
 import { useCopy } from '@/i18n'
+import { RELATIONSHIP_STAGES } from '@/lib/stages'
 import { api } from '@/services/api'
 import type { LanguageCode, RelationshipStage, RuntimeSettings } from '@/types/api'
 
@@ -187,7 +188,7 @@ export default function SettingsPage() {
                 label={t.settings.relationship}
                 value={prefs.relationshipStage}
                 onValueChange={(v) => update({ relationshipStage: v })}
-                options={(['unspecified', 'dating', 'engaged', 'married'] as const).map((v) => ({ value: v, label: t.stages[v] }))}
+                options={RELATIONSHIP_STAGES.map((v) => ({ value: v, label: t.stages[v] }))}
               />
             </Field>
           </Section>

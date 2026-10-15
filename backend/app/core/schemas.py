@@ -30,7 +30,18 @@ class RelationshipStage(StrEnum):
     DATING = "dating"
     ENGAGED = "engaged"
     MARRIED = "married"
+    SINGLE = "single"
+    ONE_SIDED = "one_sided"
+    SITUATIONSHIP = "situationship"
+    LONG_DISTANCE = "long_distance"
     UNSPECIFIED = "unspecified"
+
+
+class ChatMode(StrEnum):
+    """support: the default reflective guidance. coach: short, direct "what to say / do next" answers."""
+
+    SUPPORT = "support"
+    COACH = "coach"
 
 
 class SafetyLevel(StrEnum):
@@ -53,6 +64,7 @@ class ChatRequest(BaseModel):
     conversation_id: str | None = Field(default=None, pattern=CONVERSATION_ID_PATTERN)
     language: LanguageCode = LanguageCode.AUTO
     relationship_stage: RelationshipStage = RelationshipStage.UNSPECIFIED
+    mode: ChatMode = ChatMode.SUPPORT
     regenerate: bool = False
 
     @field_validator("message")
