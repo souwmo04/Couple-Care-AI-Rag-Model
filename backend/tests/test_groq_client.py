@@ -11,7 +11,7 @@ from app.config import Settings
 from app.core.container import Container
 from app.errors import ModelOfflineError, ModelResponseError
 from app.generation import llm_client
-from app.generation.llm_client import ChatMessage, GenerationParams, GroqClient
+from app.generation.llm_client import ChatMessage, FallbackChatModel, GenerationParams, GroqClient
 
 MESSAGES = [ChatMessage("user", "hi")]
 
@@ -106,11 +106,74 @@ async def test_bad_key_status() -> None:
 def test_container_uses_groq_only_when_opted_in(tmp_path) -> None:
     base = {"user_dir": tmp_path, "embedding_backend": "hashing"}
     local = Container(Settings(_env_file=None, **base), load_embedder=False)
-    assert not isinstance(local.llm(), GroqClient)
-    cloud = Container(Settings(_env_file=None, **base, llm_provider="groq", groq_api_key="k", groq_model="llama-3.3-70b-versatile"),
-                      load_embedder=False)  # fmt: skip
-    assert isinstance(cloud.llm(), GroqClient)
+    assert not isinstance(local.llm(), (GroqClient, FallbackChatModel))
+    groq_settings = {"llm_provider": "groq", "groq_api_key": "k", "groq_model": "llama-3.3-70b-versatile"}
+    cloud = Container(Settings(_env_file=None, **base, **groq_settings), load_embedder=False)
+    model = cloud.llm()
+    assert isinstance(model, FallbackChatModel) and isinstance(model.primary, GroqClient)
+    assert model.primary.max_retry_wait == 10.0  # switch to local quickly instead of waiting long
     assert cloud.active_model_id() == "groq:llama-3.3-70b-versatile"
+    strict = Container(
+        Settings(_env_file=None, **base, **groq_settings, groq_fallback_local=False), load_embedder=False
+    )
+    assert isinstance(strict.llm(), GroqClient)
+
+
+class FakeModel:
+    def __init__(self, text: str | None = None, error: Exception | None = None, partial: str | None = None) -> None:
+        self.text, self.error, self.partial, self.calls = text, error, partial, 0
+
+    async def complete(self, messages, params) -> str:
+        self.calls += 1
+        if self.error:
+            raise self.error
+        return self.text or ""
+
+    async def stream(self, messages, params):
+        self.calls += 1
+        if self.partial:
+            yield self.partial
+        if self.error:
+            raise self.error
+        yield self.text or ""
+
+    async def server_info(self):  # pragma: no cover - not used here
+        raise NotImplementedError
+
+
+async def test_fallback_answers_locally_when_cloud_is_rate_limited() -> None:
+    limited = llm_client.RateLimitedError("limit", 120)
+    model = FallbackChatModel(FakeModel(error=limited), FakeModel(text="local answer"))
+    assert await model.complete(MESSAGES, GenerationParams()) == "local answer"
+    assert model.fallback_used and model.fallback_reason == "rate_limited"
+
+
+async def test_fallback_not_used_when_cloud_works() -> None:
+    local = FakeModel(text="local")
+    model = FallbackChatModel(FakeModel(text="cloud answer"), local)
+    assert await model.complete(MESSAGES, GenerationParams()) == "cloud answer"
+    assert not model.fallback_used and local.calls == 0
+
+
+async def test_fallback_stream_and_original_error_when_both_fail() -> None:
+    model = FallbackChatModel(FakeModel(error=ModelOfflineError("net down")), FakeModel(text="from local"))
+    assert [d async for d in model.stream(MESSAGES, GenerationParams())] == ["from local"]
+    assert model.fallback_reason == "unavailable"
+    both = FallbackChatModel(
+        FakeModel(error=llm_client.RateLimitedError("limit", None)), FakeModel(error=ModelOfflineError("off"))
+    )
+    with pytest.raises(ModelOfflineError) as exc:
+        await both.complete(MESSAGES, GenerationParams())
+    assert exc.value.code == "model_rate_limited"  # the user sees why the cloud failed, not the fallback's error
+
+
+async def test_fallback_never_splices_a_half_streamed_reply() -> None:
+    model = FallbackChatModel(
+        FakeModel(partial="Half a sentence", error=ModelOfflineError("dropped")), FakeModel(text="x")
+    )
+    with pytest.raises(ModelOfflineError):
+        _ = [d async for d in model.stream(MESSAGES, GenerationParams())]
+    assert not model.fallback_used
 
 
 def test_groq_key_is_secret() -> None:
@@ -164,3 +227,16 @@ async def test_output_reservation_is_capped_for_the_free_tier() -> None:
     # A Bangla allowance sized for the local tokenizer (e.g. 1750) must not be reserved in full.
     await groq(handler).complete(MESSAGES, GenerationParams(max_tokens=1750))
     assert seen["max_tokens"] == llm_client.GROQ_MAX_OUTPUT_TOKENS + llm_client.GROQ_REASONING_TOKENS
+
+
+async def test_chat_reply_reports_local_fallback(settings) -> None:
+    from app.core.orchestrator import Orchestrator
+    from app.core.schemas import ChatRequest
+    from tests.conftest import FakeChatModel, make_container
+
+    cloud_down = FakeChatModel(error=llm_client.RateLimitedError("limit", None))
+    container = make_container(settings, llm=FallbackChatModel(cloud_down, FakeChatModel("Local guidance [S1].")))
+    reply = await Orchestrator(container).respond(ChatRequest(message="My partner does not listen to me"), owner="o")
+    assert reply.generated and reply.answer.startswith("Local guidance")
+    assert reply.fallback_reason == "rate_limited"
+    assert reply.model_id == container.settings_store.get().model_id  # the local model, not groq:…

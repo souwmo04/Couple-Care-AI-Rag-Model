@@ -58,6 +58,8 @@ export interface ChatResponse {
   needs_clarification: boolean
   model_id: string | null
   generated: boolean
+  /** Cloud mode: the reply came from the local model because the cloud model was rate-limited/unavailable. */
+  fallback_reason?: 'rate_limited' | 'unavailable' | null
   duration_ms: number
 }
 

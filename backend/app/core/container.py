@@ -8,7 +8,7 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime
 
 from app.config import Settings
-from app.generation.llm_client import ChatModel, GroqClient, OpenAICompatibleClient
+from app.generation.llm_client import ChatModel, FallbackChatModel, GroqClient, OpenAICompatibleClient
 from app.retrieval.embeddings import EmbedderHolder
 from app.retrieval.hybrid import Calibration
 from app.retrieval.index_store import load_bundle
@@ -86,12 +86,19 @@ class Container:
             return self._llm
         if self.settings.llm_provider == "groq":
             key = self.settings.groq_api_key.get_secret_value() if self.settings.groq_api_key else None
-            return GroqClient(
+            cloud = GroqClient(
                 key,
                 self.settings.groq_model,
                 timeout=self.settings.llm_timeout_seconds,
                 connect_timeout=max(self.settings.llm_connect_timeout_seconds, 5.0),
             )
+            if not self.settings.groq_fallback_local:
+                return cloud
+            cloud.max_retry_wait = 10.0
+            return FallbackChatModel(cloud, self.local_llm())
+        return self.local_llm()
+
+    def local_llm(self) -> ChatModel:
         runtime = self.settings_store.get()
         return OpenAICompatibleClient(
             self.settings.llm_base_url,

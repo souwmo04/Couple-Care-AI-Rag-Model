@@ -107,7 +107,9 @@ class ChatResponse(BaseModel):
     safety: SafetyStatus
     needs_clarification: bool
     model_id: str | None
-    generated: bool = Field(description="True only when the text came from the local language model.")
+    generated: bool = Field(description="True only when the text came from a language model (not a template).")
+    # Cloud mode only: the reply came from the local model because the cloud model was rate-limited/unavailable.
+    fallback_reason: Literal["rate_limited", "unavailable"] | None = None
     duration_ms: int
 
 

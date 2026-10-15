@@ -102,6 +102,8 @@ class Settings(BaseSettings):
     llm_provider: Literal["local", "groq"] = "local"
     groq_api_key: SecretStr | None = None
     groq_model: str = Field(default="openai/gpt-oss-120b", pattern=r"^[A-Za-z0-9._/:-]{1,100}$")
+    # When Groq is rate-limited or unreachable, answer with the local model server (if it is running).
+    groq_fallback_local: bool = True
 
     # Retrieval
     embedding_model: str = "intfloat/multilingual-e5-small"

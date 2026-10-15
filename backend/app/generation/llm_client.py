@@ -272,6 +272,8 @@ class GroqClient(OpenAICompatibleClient):
     ) -> None:
         super().__init__(GROQ_BASE_URL, model_id, timeout=timeout, connect_timeout=connect_timeout, transport=transport)
         self._api_key = (api_key or "").strip()
+        # Lowered when a local fallback is configured: switching models beats a long wait for quota.
+        self.max_retry_wait = GROQ_MAX_RETRY_WAIT_SECONDS
 
     def _headers(self) -> dict[str, str]:
         return {"Authorization": f"Bearer {self._api_key}"} if self._api_key else {}
@@ -338,10 +340,9 @@ class GroqClient(OpenAICompatibleClient):
                 if started or not await self._wait_for_quota(exc, attempt):
                     raise
 
-    @staticmethod
-    async def _wait_for_quota(exc: RateLimitedError, attempt: int) -> bool:
+    async def _wait_for_quota(self, exc: RateLimitedError, attempt: int) -> bool:
         wait = exc.wait_seconds
-        if attempt >= GROQ_RETRIES or wait is None or wait > GROQ_MAX_RETRY_WAIT_SECONDS:
+        if attempt >= GROQ_RETRIES or wait is None or wait > self.max_retry_wait:
             return False
         await asyncio.sleep(wait + 0.5)
         return True
@@ -389,3 +390,50 @@ class GroqClient(OpenAICompatibleClient):
         except ValueError:
             context = None
         return ServerInfo(True, model=self.model_id, context_length=context)
+
+
+class FallbackChatModel:
+    """Try the cloud model first; if it is rate-limited, unreachable, slow or failing, answer with the local
+    model instead. The fallback is local, so it never sends data anywhere new. ``fallback_used`` and
+    ``fallback_reason`` tell the caller which model produced the text (shown to the user on that reply)."""
+
+    def __init__(self, primary: ChatModel, fallback: ChatModel) -> None:
+        self.primary = primary
+        self.fallback = fallback
+        self.fallback_used = False
+        self.fallback_reason: str | None = None
+
+    def _switch(self, exc: Exception) -> None:
+        self.fallback_used = True
+        self.fallback_reason = "rate_limited" if getattr(exc, "code", None) == "model_rate_limited" else "unavailable"
+
+    async def complete(self, messages: list[ChatMessage], params: GenerationParams) -> str:
+        try:
+            return await self.primary.complete(messages, params)
+        except (ModelOfflineError, ModelTimeoutError, ModelResponseError) as exc:
+            self._switch(exc)
+            try:
+                return await self.fallback.complete(messages, params)
+            except (ModelOfflineError, ModelTimeoutError, ModelResponseError):
+                raise exc from None
+
+    async def stream(self, messages: list[ChatMessage], params: GenerationParams) -> AsyncIterator[str]:
+        started = False
+        try:
+            async for delta in self.primary.stream(messages, params):
+                started = True
+                yield delta
+            return
+        except (ModelOfflineError, ModelTimeoutError, ModelResponseError) as exc:
+            if started:  # never splice two models into one reply
+                raise
+            self._switch(exc)
+            primary_error = exc
+        try:
+            async for delta in self.fallback.stream(messages, params):
+                yield delta
+        except (ModelOfflineError, ModelTimeoutError, ModelResponseError):
+            raise primary_error from None
+
+    async def server_info(self) -> ServerInfo:
+        return await self.primary.server_info()

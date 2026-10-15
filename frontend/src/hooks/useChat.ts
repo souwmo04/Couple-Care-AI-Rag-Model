@@ -14,6 +14,7 @@ export interface UiMessage {
   sources: SourceCard[]
   safety?: SafetyStatus | null
   generated?: boolean
+  fallbackReason?: 'rate_limited' | 'unavailable' | null
   grounded?: boolean
   needsClarification?: boolean
   responseLanguage?: string
@@ -49,6 +50,7 @@ function applyResponse(msg: UiMessage, res: ChatResponse): UiMessage {
     sources: res.sources,
     safety: res.safety,
     generated: res.generated,
+    fallbackReason: res.fallback_reason ?? null,
     grounded: res.grounded,
     needsClarification: res.needs_clarification,
     responseLanguage: res.response_language,

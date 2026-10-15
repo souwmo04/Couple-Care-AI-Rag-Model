@@ -231,7 +231,9 @@ class Orchestrator:
             needs_clarification_hint=plan.needs_clarification_hint,
         )
 
-    def _finalize(self, plan: TurnPlan, raw_answer: str, generated: bool) -> ChatResponse:
+    def _finalize(
+        self, plan: TurnPlan, raw_answer: str, generated: bool, fallback_reason: str | None = None
+    ) -> ChatResponse:
         sources: list[SourceCard] = []
         answer = raw_answer
         flags: list[str] = []
@@ -292,7 +294,10 @@ class Orchestrator:
             grounded=plan.grounded and generated,
             safety=safety,
             needs_clarification=needs_clarification,
-            model_id=self.c.active_model_id() if generated else None,
+            model_id=(self.c.settings_store.get().model_id if fallback_reason else self.c.active_model_id())
+            if generated
+            else None,
+            fallback_reason=fallback_reason if generated else None,
             generated=generated,
             duration_ms=duration_ms,
         )
@@ -303,8 +308,9 @@ class Orchestrator:
         self._record_user_message(plan)
         if plan.decision.skip_generation:
             return self._finalize(plan, plan.decision.template or "", generated=False)
-        answer = await self.c.llm().complete(self._messages(plan), self._generation_params(plan))
-        return self._finalize(plan, answer, generated=True)
+        llm = self.c.llm()
+        answer = await llm.complete(self._messages(plan), self._generation_params(plan))
+        return self._finalize(plan, answer, generated=True, fallback_reason=getattr(llm, "fallback_reason", None))
 
     async def stream(self, request: ChatRequest, owner: str) -> AsyncIterator[dict]:
         """Yield events: ``meta`` → ``delta``* → ``done`` (or ``error``).
@@ -330,8 +336,9 @@ class Orchestrator:
 
         buffer = ""
         raw = ""
+        llm = self.c.llm()
         try:
-            async for token in self.c.llm().stream(self._messages(plan), self._generation_params(plan)):
+            async for token in llm.stream(self._messages(plan), self._generation_params(plan)):
                 raw += token
                 buffer += token
                 ready, buffer = _split_complete(buffer)
@@ -351,7 +358,7 @@ class Orchestrator:
             safe = self._check_fragment(buffer, plan)
             if safe:
                 yield {"event": "delta", "text": safe}
-        final = self._finalize(plan, raw, generated=True)
+        final = self._finalize(plan, raw, generated=True, fallback_reason=getattr(llm, "fallback_reason", None))
         yield {"event": "done", "response": final.model_dump(mode="json")}
 
     def _check_fragment(self, fragment: str, plan: TurnPlan) -> str:

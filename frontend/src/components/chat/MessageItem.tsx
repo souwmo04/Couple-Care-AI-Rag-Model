@@ -131,9 +131,16 @@ export const AssistantMessage = memo(function AssistantMessage({
           selected && message.sources.length > 0 && 'lg:shadow-lift',
         )}
       >
-        {(message.generated === false || (message.status === 'done' && message.grounded === false && message.generated)) && (
+        {(message.generated === false ||
+          message.fallbackReason ||
+          (message.status === 'done' && message.grounded === false && message.generated)) && (
           <div className="mb-2 flex flex-wrap gap-1.5">
             {message.generated === false && <Badge tone="lavender">{t.chat.notGenerated}</Badge>}
+            {message.fallbackReason && (
+              <Badge tone="warning">
+                {message.fallbackReason === 'rate_limited' ? t.chat.fallbackRateLimited : t.chat.fallbackUnavailable}
+              </Badge>
+            )}
             {message.generated && message.grounded === false && <Badge tone="outline">{t.chat.ungrounded}</Badge>}
           </div>
         )}
