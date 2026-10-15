@@ -144,7 +144,7 @@ export const INFO: Record<'en' | 'bn', PageSet> = {
           heading: 'How responses change',
           list: [
             'Immediate danger or self-harm: a pre-written, clearly labelled safety message is shown instead of a generated reply.',
-            'Violence, coercion, threats or stalking: the reply prioritises your safety, does not suggest confronting your partner or joint counselling, and points to specialised support.',
+            'Violence, coercion, threats or stalking: the reply prioritises your safety, does not suggest confronting your partner or joint counselling, and points to specialised support. In Bangla and Banglish this first reply is a pre-written, clearly labelled message, because the local model did not follow the safety instructions reliably in those languages.',
             'Signs of control or humiliation with unclear context: the assistant takes it seriously and may gently ask whether you feel safe.',
             'Requests to monitor or manipulate someone: the assistant declines and offers to help with the underlying worry instead.',
           ],
@@ -292,7 +292,7 @@ export const INFO: Record<'en' | 'bn', PageSet> = {
           heading: 'উত্তর কীভাবে বদলায়',
           list: [
             'তাৎক্ষণিক বিপদ বা আত্মক্ষতি: তৈরি করা উত্তরের বদলে আগে থেকে লেখা, স্পষ্টভাবে চিহ্নিত নিরাপত্তা-বার্তা দেখানো হয়।',
-            'সহিংসতা, জবরদস্তি, হুমকি বা পিছু নেওয়া: উত্তর আপনার নিরাপত্তাকে অগ্রাধিকার দেয়, সঙ্গীর মুখোমুখি হতে বা একসঙ্গে কাউন্সেলিংয়ে যেতে বলে না, এবং বিশেষায়িত সহায়তার কথা জানায়।',
+            'সহিংসতা, জবরদস্তি, হুমকি বা পিছু নেওয়া: উত্তর আপনার নিরাপত্তাকে অগ্রাধিকার দেয়, সঙ্গীর মুখোমুখি হতে বা একসঙ্গে কাউন্সেলিংয়ে যেতে বলে না, এবং বিশেষায়িত সহায়তার কথা জানায়। বাংলা ও বাংলিশে এই প্রথম উত্তরটি আগে থেকে লেখা, স্পষ্টভাবে চিহ্নিত বার্তা, কারণ ওই ভাষাগুলোতে লোকাল মডেল নিরাপত্তা-নির্দেশনা নির্ভরযোগ্যভাবে মানেনি।',
             'অস্পষ্ট প্রসঙ্গে নিয়ন্ত্রণ বা অপমানের লক্ষণ: সহকারী বিষয়টিকে গুরুত্ব দেয় এবং আলতো করে জিজ্ঞেস করতে পারে আপনি নিরাপদ বোধ করছেন কি না।',
             'কারও ওপর নজর রাখা বা ম্যানিপুলেট করার অনুরোধ: সহকারী সাহায্য করতে অস্বীকার করে এবং এর পেছনের দুশ্চিন্তা নিয়ে সাহায্যের প্রস্তাব দেয়।',
           ],

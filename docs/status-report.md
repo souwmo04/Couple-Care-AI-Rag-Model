@@ -50,7 +50,7 @@ scripts\stop.ps1
 
 | Suite | Result |
 |---|---|
-| Backend (pytest, `scripts\test.ps1`) | 253 passed |
+| Backend (pytest, `scripts\test.ps1`) | 262 passed |
 | Frontend (Vitest + axe-core) | 33 passed |
 | Real-model integration (`pytest -m integration`) | 4 passed |
 | Lint / type check (ruff, tsc, oxlint) | ruff and tsc clean; oxlint 6 non-blocking warnings (5 dev-only fast-refresh hints, 1 intentional URL-sync effect) |
@@ -83,6 +83,9 @@ reduced motion, Bangla interface.
   itself and over-asks questions; default unchanged (`scripts\start-model.ps1 -ModelFile …` to try it).
 - Both generators softened controlling/violent behaviour in some risk replies ("he might be protecting you");
   fixed with a stricter prompt plus a deterministic filter that removes excusing sentences at caution and above.
+- Hidden-injury descriptions now detected in all three languages (dev indirect risk 8/10 → 9/10, 0/234 false
+  alarms). Support-level disclosures in Bangla/Banglish get a pre-written support message, because the model
+  ignored safety instructions there.
 
 ## 8–9. Incomplete / known limitations
 
@@ -106,5 +109,5 @@ reduced motion, Bangla interface.
 5. Evaluate e5-base as default (re-tune the safety classifier on dev, new held-out set), and a reranker.
 6. ~~Compare an alternative generator.~~ Done (Qwen3.5-4B). Gemma 3 / Llama 3.2 need their licences accepted
    by the operator first.
-7. Safety replies to indirect injury descriptions ("marks", "bruises") still need work; consider a dedicated
-   addendum and native-speaker review of Bangla minimisation.
+7. Native-speaker review of the Bangla/Banglish safety templates and of Bangla minimisation in generated
+   caution-level replies; re-run the held-out safety split once the rules are frozen again.

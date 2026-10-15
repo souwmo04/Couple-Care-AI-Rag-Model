@@ -22,7 +22,7 @@
 | self-harm | urgent | Pre-written supportive message; crisis/emergency contact; invitation to keep talking. No generation. |
 | surveillance request | declined | Pre-written decline + redirect to the underlying worry. No generation. |
 | manipulation / threat / blackmail request | declined | Pre-written decline + redirect. No generation. |
-| physical violence, sexual coercion, threats, stalking | support | Generation with a safety addendum: believe, prioritise safety, no confrontation, **no couples counselling**, specialised support. Output filter removes confrontation/joint-counselling sentences. |
+| physical violence, sexual coercion, threats, stalking | support | **Bangla/Banglish:** pre-written, labelled support message (the local model did not follow safety instructions reliably in these languages). **English:** generation with a safety addendum: believe, prioritise safety, no confrontation, **no couples counselling**, specialised support. Output filter removes confrontation/joint-counselling sentences. |
 | coercive control, repeated humiliation | caution | Generation with a careful addendum: take seriously without labelling; gently ask whether the user feels safe. |
 
 Pre-written templates exist in English, Bangla and Banglish and are labelled in the UI as
