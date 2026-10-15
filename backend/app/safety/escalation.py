@@ -156,7 +156,53 @@ TEMPLATES: dict[str, dict[str, str]] = {
             "Ki hoyeche bolle, apnar dorkar ta honest bhabe bola, boundary set kora, ba somporko ta apnar jonno thik kina ta bhabte ami help korte pari."
         ),
     },
+    # Used instead of generation for support-level disclosures (violence, sexual coercion, threats, stalking)
+    # in the languages listed in TEMPLATE_SUPPORT_LANGUAGES; see that constant for why.
+    "support": {
+        "en": (
+            "Thank you for telling me — I take what you've said seriously. If someone hurts you, threatens you, forces "
+            "you into anything or follows you, that is not your fault, and you have the right to be safe.\n\n"
+            "**If you are in immediate danger, contact your local emergency number or go somewhere other people are "
+            "around.**\n\n"
+            "A few small, safe steps:\n"
+            "- Tell someone you trust (a friend or family member) what is happening.\n"
+            "- A domestic-violence support service can help you make a safety plan.\n"
+            "- Confronting your partner about this can increase the risk — think about your own safety first.\n\n"
+            "I'm a chatbot running on this device; I can't call anyone or send help. If you like, tell me how you are "
+            "right now and whether you are safe — I'm listening."
+        ),
+        "bn": (
+            "কথাটা বলার জন্য ধন্যবাদ — আপনি যা বলছেন আমি তা গুরুত্ব দিয়ে নিচ্ছি। কেউ আপনাকে আঘাত করলে, ভয় দেখালে, "
+            "জোর করে কিছু করালে বা পিছু নিলে — সেটা আপনার দোষ নয়, আর নিরাপদ থাকার অধিকার আপনার আছে।\n\n"
+            "**আপনি যদি এখনই বিপদে থাকেন, আপনার এলাকার জরুরি নম্বরে যোগাযোগ করুন অথবা এমন জায়গায় যান যেখানে অন্য মানুষ আছে।**\n\n"
+            "কিছু ছোট, নিরাপদ পদক্ষেপ:\n"
+            "- বিশ্বস্ত কাউকে (বন্ধু বা পরিবারের কেউ) জানান কী ঘটছে।\n"
+            "- পারিবারিক সহিংসতা নিয়ে কাজ করে এমন সহায়তা সংস্থা নিরাপত্তা পরিকল্পনা করতে সাহায্য করতে পারে।\n"
+            "- সঙ্গীর সঙ্গে এ বিষয়ে সরাসরি কথা বলা বা তাকে চ্যালেঞ্জ করা ঝুঁকি বাড়াতে পারে — আগে নিজের নিরাপত্তার কথা ভাবুন।\n\n"
+            "আমি এই ডিভাইসে চলা একটি চ্যাটবট; আমি কাউকে ফোন করতে বা সাহায্য পাঠাতে পারি না। চাইলে বলুন এখন আপনি কেমন আছেন "
+            "আর নিরাপদ আছেন কি না — আমি শুনছি।"
+        ),
+        "banglish": (
+            "Kotha ta bolar jonno dhonnobad — apni ja bolchen ami ta gurutto diye nicchi. Keu apnake aghat korle, bhoy "
+            "dekhale, jor kore kichu korale ba pichu nile — seta apnar dosh na, ar nirapod thakar odhikar apnar ache.\n\n"
+            "**Apni jodi ekhon e bipode thaken, apnar elakar emergency number e jogajog korun ba emon jaygay jan jekhane "
+            "onno manush ache.**\n\n"
+            "Kichu chhoto, nirapod podokkhep:\n"
+            "- Bishwosto karo ke (bondhu ba poribarer keu) janan ki hocche.\n"
+            "- Domestic violence niye kaj kore emon support service nirapotta plan banate shahajjo korte pare.\n"
+            "- Partner er shathe ei bishoy niye shorasori kotha bola ba take challenge kora jhuki barate pare — age "
+            "nijer nirapottar kotha bhabun.\n\n"
+            "Ami ei device e chola ekta chatbot; ami kauke call korte ba help pathate pari na. Chaile bolun ekhon apni "
+            "kemon achen ar nirapod achen kina — ami shunchi."
+        ),
+    },
 }
+
+# Support-level disclosures in these languages get the pre-written "support" template instead of a generated
+# reply. Measured 2026-10-15 (research/results_log.md): the local 4B models ignored the safety instructions in
+# Banglish (repeating unrelated knowledge-base advice) and gave unsafe advice in Bangla ("resist him"), while
+# English generated replies followed them. Later turns in the conversation are still generated.
+TEMPLATE_SUPPORT_LANGUAGES = frozenset({"bn", "banglish"})
 
 BANNERS: dict[SafetyLevel, dict[str, str]] = {
     SafetyLevel.SUPPORT: {
@@ -246,6 +292,8 @@ def decide(assessment: Assessment, language: str) -> SafetyDecision:
     level = dict(PRIORITY)[primary]
     template = TEMPLATES.get(primary.value, {}).get(lang)
     skip = level in {SafetyLevel.URGENT, SafetyLevel.DECLINED}
+    if level == SafetyLevel.SUPPORT and lang in TEMPLATE_SUPPORT_LANGUAGES:
+        template, skip = TEMPLATES["support"][lang], True
     banner = BANNERS.get(level, {}).get(lang)
     return SafetyDecision(level, primary, categories, skip, template if skip else None, banner, ADDENDA.get(level))
 

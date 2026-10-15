@@ -257,3 +257,20 @@ def test_hidden_injury_rules(text: str, expected: str) -> None:
     from app.safety.classifier import RuleClassifier, SafetyEnsemble
 
     assert decide(SafetyEnsemble([RuleClassifier()]).assess(text), "en").level.value == expected
+
+
+@pytest.mark.parametrize(
+    ("text", "lang", "templated"),
+    [
+        ("Amar shami amake mare.", "banglish", True),
+        ("আমার স্বামী আমার গায়ে হাত তোলে।", "bn", True),
+        ("My husband hit me last night.", "en", False),
+    ],
+)
+def test_support_level_uses_template_in_bangla_and_banglish(text: str, lang: str, templated: bool) -> None:
+    from app.safety.classifier import RuleClassifier, SafetyEnsemble
+
+    decision = decide(SafetyEnsemble([RuleClassifier()]).assess(text), lang)
+    assert decision.level == SafetyLevel.SUPPORT
+    assert decision.skip_generation is templated
+    assert (decision.template == TEMPLATES["support"][lang]) is templated
