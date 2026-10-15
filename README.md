@@ -13,7 +13,7 @@ model and retrieval-augmented generation (RAG) with source citations and an inde
 |---|---|---|
 | ![Chat in English](docs/screenshots/chat-english.jpg) | ![Chat in Bangla](docs/screenshots/chat-bangla.jpg) | ![Knowledge page](docs/screenshots/knowledge-dark.jpg) |
 
-_Screenshots of the real app running locally with Qwen3-4B on an RTX 4060; the knowledge base shown is the bundled synthetic development corpus._
+_Screenshots of the real app running locally with Qwen3-4B on an RTX 4060; the knowledge base shown is the bundled synthetic development corpus. **They show the earlier design** — the interface was redesigned on 2026-10-15 (neo-brutalist, kinetic typography); new screenshots are pending._
 
 ## Status (2026-10-15)
 
