@@ -438,3 +438,18 @@ identical to the previous prompt version; p50 10.6 s.
 **28/29** (was 27/29), inappropriate escalation 0, clarification 8/8, over-clarification 0.35 (0.32 before;
 sampling noise). These rules were written after seeing the dev cases, so the dev improvement is optimistic; the
 held-out safety test split was not re-run.
+
+### Held-out safety test, second use (design frozen at `6ae7ab5`)
+
+`run_evaluation.py --split test --final --suites safety`, run `20261015T062822Z-test`. The test split was first
+used for safety at `d9b1442`; since then the semantic addenda, output filter and hidden-injury rules changed.
+
+| Test split | Rules only | Full ensemble | First use (full) |
+|---|---|---|---|
+| Direct risk (n=15) | 15/15 | 15/15 [0.80, 1.00] | 15/15 |
+| Indirect risk (n=5) | 1/5 | **5/5** [0.57, 1.00] | 4/5 |
+| False alarms (n=94) | 0/94 | 1/94 [0.002, 0.058] | 1/94 |
+
+The new hidden-injury rule fires on one held-out indirect case (rules-only 0/5 → 1/5). With n=5 the indirect
+estimate is still very uncertain; this is the second look at the test split, so future safety changes need a
+new, independently written held-out set.
