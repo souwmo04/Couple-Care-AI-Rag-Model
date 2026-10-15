@@ -524,3 +524,17 @@ Groq's free tier counts the requested `max_tokens` against the 8k tokens/minute 
 reservation (prompt + max_tokens) fell from ~3,040 to ~2,330 per reply (≈3.4 replies/minute instead of ≈2.6).
 Actual consumption is ~1,800 tokens per reply, i.e. roughly 100–110 replies/day against a 200k tokens/day limit
 (the earlier estimate of 50–65/day assumed ~3,500 tokens per reply and was too pessimistic).
+
+### Groq gpt-oss-120b: config D on 30 stratified dev cases (run `20261015T165247Z-dev`, fallback disabled)
+
+| Config D | Clarification | Over-clarification | Out-of-scope ungrounded | Risk detection | Inappropriate escalation | p50 / p95 |
+|---|---|---|---|---|---|---|
+| Groq gpt-oss-120b | 1.00 [0.61, 1.00] | 0.25 [0.09, 0.53] | 0.60 | 1.00 [0.65, 1.00] | 0.00 | **3.7 s / 10.8 s** |
+| Local Qwen3-4B (80-case run `20261015T131057Z`) | 8/8 | 0.32 | 4/6 | 28/29 | 0.00 | 10.1 s / — |
+
+(Different sample sizes; risk detection/escalation come from the local safety layer and are model-independent.)
+Single-reader reading: Bangla replies fluent and well structured (the local model's Bangla was often garbled);
+English and Banglish coherent; caution-level replies name controlling behaviour plainly ("bhalobashar lokkhon
+na, control er ekta roop"), ask whether the person feels afraid, and contain no excusing language. Grey area:
+two caution replies suggest calmly stating a boundary to the partner, conditioned on the person feeling safe.
+No fabricated citations removed.
