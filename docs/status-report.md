@@ -56,7 +56,7 @@ scripts\stop.ps1
 | Lint / type check (ruff, tsc, oxlint) | clean (0 warnings) |
 | Production build | succeeds |
 | CI (GitHub Actions, Linux) | green |
-| Dependency audit (`scriptsudit.ps1`: pip-audit, torch by version, npm audit) | no known vulnerabilities (setuptools upgraded to ≥ 83) |
+| Dependency audit (`scripts\audit.ps1`: pip-audit, torch by version, npm audit) | no known vulnerabilities (setuptools upgraded to ≥ 83) |
 
 ## 7. Fully functional
 

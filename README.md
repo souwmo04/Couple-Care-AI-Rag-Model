@@ -93,6 +93,7 @@ never substitutes canned text for model output.
 
 ```powershell
 scripts\test.ps1                        # ruff + pytest (backend) and tsc + oxlint + vitest (frontend)
+scripts\audit.ps1                       # known-vulnerability check for Python and npm dependencies
 ```
 
 Tests never download a model: they use a deterministic hashing embedder, a fake model server and
