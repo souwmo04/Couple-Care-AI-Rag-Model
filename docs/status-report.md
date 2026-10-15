@@ -50,7 +50,7 @@ scripts\stop.ps1
 
 | Suite | Result |
 |---|---|
-| Backend (pytest, `scripts\test.ps1`) | 262 passed |
+| Backend (pytest, `scripts\test.ps1`) | 268 passed |
 | Frontend (Vitest + axe-core) | 33 passed |
 | Real-model integration (`pytest -m integration`) | 4 passed |
 | Lint / type check (ruff, tsc, oxlint) | ruff and tsc clean; oxlint 6 non-blocking warnings (5 dev-only fast-refresh hints, 1 intentional URL-sync effect) |
@@ -103,7 +103,9 @@ reduced motion, Bangla interface.
 ## 10. Recommended next steps
 
 1. Add real, licensed knowledge sources (with native-speaker review for Bangla).
-2. Blind multi-annotator evaluation of A–D outputs (`research/annotation_guidelines.md`), reporting κ.
+2. Blind multi-annotator evaluation of A–D outputs, reporting κ. Tooling is ready (`scripts/annotation_pack.py`)
+   and a 120-item pack from the current pipeline is prepared in `artifacts/annotation/ad-dev-20261015/`;
+   it needs two human annotators.
 3. Independent, larger indirect-safety test set written by people who have not seen the rules.
 4. Banglish: few-shot examples, transliteration to Bangla script, or a stronger model; re-measure fidelity.
 5. Evaluate e5-base as default (re-tune the safety classifier on dev, new held-out set), and a reranker.
