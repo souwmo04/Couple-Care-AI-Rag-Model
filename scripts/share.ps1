@@ -5,10 +5,11 @@
   Builds the website, starts the backend on 127.0.0.1:7860 serving both the website and the API, and opens a
   public tunnel to it. The link works while this window is open and your PC is on. Ctrl+C stops sharing.
 
-  - Fixed link without a warning page (recommended): put SHARE_PAGES_REPO=yourname/couplecare in .env (a public
-    GitHub repository with GitHub Pages turned on). Each start opens a Cloudflare quick tunnel and publishes its
-    address to that repository, so friends always use https://yourname.github.io/couplecare/ . When sharing stops,
-    the page shows that CoupleCare is offline.
+  - Fixed link without a warning page (recommended): put SHARE_PAGES_REPO=yourname/repository in .env (a public
+    GitHub repository, e.g. this project's). Each start opens a Cloudflare quick tunnel and publishes its address
+    to that repository's gh-pages branch (only share-page/ and link.json; override with SHARE_PAGES_BRANCH), so
+    friends always use https://yourname.github.io/repository/ once GitHub Pages serves that branch. When sharing
+    stops, the page shows that CoupleCare is offline.
   - Fixed link with ngrok (free account, shows an ngrok notice page): NGROK_AUTHTOKEN and NGROK_DOMAIN in .env.
   - Otherwise: a Cloudflare quick tunnel (no account); its https://....trycloudflare.com link changes every time.
 
@@ -33,7 +34,7 @@ $dotenv = @{}
 $envFile = Join-Path $Root '.env'
 if (Test-Path $envFile) {
     foreach ($line in Get-Content $envFile) {
-        if ($line -match '^\s*(NGROK_AUTHTOKEN|NGROK_DOMAIN|SHARE_PAGES_REPO)\s*=\s*"?([^"#\s]+)"?') {
+        if ($line -match '^\s*(NGROK_AUTHTOKEN|NGROK_DOMAIN|SHARE_PAGES_REPO|SHARE_PAGES_BRANCH)\s*=\s*"?([^"#\s]+)"?') {
             $dotenv[$Matches[1]] = $Matches[2]
         }
     }
@@ -42,21 +43,33 @@ $pagesRepo = $dotenv['SHARE_PAGES_REPO']
 if ($pagesRepo -and $pagesRepo -notmatch '^[A-Za-z0-9-]+/[A-Za-z0-9._-]+$') { throw 'SHARE_PAGES_REPO must look like yourname/couplecare' }
 $useNgrok = -not $pagesRepo -and $dotenv.ContainsKey('NGROK_AUTHTOKEN') -and $dotenv.ContainsKey('NGROK_DOMAIN')
 if ($pagesRepo) {
-    $pagesOwner, $pagesName = $pagesRepo.ToLower().Split('/')
+    $pagesOwner, $pagesName = $pagesRepo.Split('/')
+    $pagesOwner = $pagesOwner.ToLower()
     $pagesUrl = "https://$pagesOwner.github.io/$pagesName/"
+    $pagesBranch = if ($dotenv['SHARE_PAGES_BRANCH']) { $dotenv['SHARE_PAGES_BRANCH'] } else { 'gh-pages' }
+    if ($pagesBranch -notmatch '^[A-Za-z0-9._/-]+$' -or $pagesBranch -in @('main', 'master')) {
+        throw 'SHARE_PAGES_BRANCH must be a separate branch such as gh-pages (never main/master).'
+    }
 }
 
 # Publish the current tunnel address (or $null = offline) to the GitHub Pages repository.
 function Publish-Link([string]$Link) {
     $ErrorActionPreference = 'Continue'
     $dir = Join-Path $Root '.cache\share-pages'
+    # A small separate checkout holding only the pages branch (never the project's code or history).
     if (-not (Test-Path (Join-Path $dir '.git'))) {
-        git clone --quiet "https://github.com/$pagesRepo.git" $dir 2>&1 | Out-Null
-        if ($LASTEXITCODE) { Write-Warning "Could not clone https://github.com/$pagesRepo (create it first)."; return }
+        New-Item -ItemType Directory -Force $dir | Out-Null
+        git -C $dir init --quiet 2>&1 | Out-Null
+        git -C $dir remote add origin "https://github.com/$pagesRepo.git" 2>&1 | Out-Null
+        git -C $dir checkout --quiet --orphan $pagesBranch 2>&1 | Out-Null
     }
-    git -C $dir fetch --quiet origin 2>&1 | Out-Null
-    git -C $dir rev-parse --verify --quiet origin/main 2>&1 | Out-Null
-    if (-not $LASTEXITCODE) { git -C $dir reset --quiet --hard origin/main 2>&1 | Out-Null }
+    # Commit as the same person as this project (its identity may be set only for this folder).
+    foreach ($key in 'user.name', 'user.email') {
+        $value = git -C $Root config $key
+        if ($value) { git -C $dir config $key $value }
+    }
+    git -C $dir fetch --quiet --depth 1 origin $pagesBranch 2>&1 | Out-Null
+    if (-not $LASTEXITCODE) { git -C $dir reset --quiet --hard FETCH_HEAD 2>&1 | Out-Null }
     Copy-Item -Path (Join-Path $Root 'share-page\*') -Destination $dir -Recurse -Force
     $json = [ordered]@{ url = $(if ($Link) { $Link } else { $null }); updated = (Get-Date).ToUniversalTime().ToString('o') } |
         ConvertTo-Json -Compress
@@ -64,7 +77,7 @@ function Publish-Link([string]$Link) {
     git -C $dir add -A 2>&1 | Out-Null
     $msg = if ($Link) { 'CoupleCare is online' } else { 'CoupleCare is offline' }
     git -C $dir commit --quiet -m $msg 2>&1 | Out-Null
-    git -C $dir push --quiet origin HEAD:main 2>&1 | Out-Null
+    git -C $dir push --quiet origin "HEAD:refs/heads/$pagesBranch" 2>&1 | Out-Null
     if ($LASTEXITCODE) { Write-Warning "Could not update https://github.com/$pagesRepo (check your GitHub login)." }
     elseif ($Link) { Write-Host "Friends' link (ready in about a minute): $pagesUrl" -ForegroundColor Green }
     else { Write-Host 'The friends'' page now shows that CoupleCare is offline.' }
