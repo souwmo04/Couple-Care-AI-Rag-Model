@@ -130,7 +130,7 @@ include Single, One-sided love, Situationship and Long-distance as well as Datin
 ## Share it online
 
 **From your PC (free, quickest):** run `scripts\share.ps1`. It builds the website, starts the app on port 7860 and
-opens a free Cloudflare quick tunnel (no account; `cloudflared.exe` is downloaded once into `.cache	ools`). Share
+opens a free Cloudflare quick tunnel (no account; `cloudflared.exe` is downloaded once into `.cache\tools`). Share
 the `https://….trycloudflare.com` link it prints. The link works only while that window stays open and your PC is
 on, and it changes every time you start it. Anyone with the link can use the app and your Groq quota.
 
