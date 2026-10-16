@@ -133,6 +133,8 @@ include Single, One-sided love, Situationship and Long-distance as well as Datin
 opens a free Cloudflare quick tunnel (no account; `cloudflared.exe` is downloaded once into `.cache\tools`). Share
 the `https://….trycloudflare.com` link it prints. The link works only while that window stays open and your PC is
 on, and it changes every time you start it. Anyone with the link can use the app and your Groq quota.
+For a **fixed link**, create a free ngrok account and put `NGROK_AUTHTOKEN` and `NGROK_DOMAIN` (your free
+`….ngrok-free.app` domain) in `.env`; `share.ps1` then uses ngrok instead.
 
 **Hugging Face Spaces (always on):** Docker Spaces now need a paid Hugging Face plan; see
 [docs/deploy-huggingface.md](docs/deploy-huggingface.md) and `scripts\deploy-huggingface.ps1 -Space yourname/couplecare-ai`.

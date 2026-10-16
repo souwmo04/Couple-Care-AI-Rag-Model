@@ -1,11 +1,14 @@
 <#
 .SYNOPSIS
-  Share CoupleCare AI from this PC with a temporary public link (Cloudflare quick tunnel, free, no account).
+  Share CoupleCare AI from this PC with a public link.
 .DESCRIPTION
   Builds the website, starts the backend on 127.0.0.1:7860 serving both the website and the API, and opens a
-  Cloudflare quick tunnel to it. The https://....trycloudflare.com link is printed below; it works while this
-  window is open and changes every time. cloudflared.exe is downloaded once into .cache\tools in this project.
-  Press Ctrl+C to stop sharing (the backend is stopped too).
+  public tunnel to it. The link works while this window is open and your PC is on. Ctrl+C stops sharing.
+
+  - Fixed link (ngrok, free account): put NGROK_AUTHTOKEN and NGROK_DOMAIN (e.g. name.ngrok-free.app) in .env.
+  - Otherwise: a Cloudflare quick tunnel (no account); its https://....trycloudflare.com link changes every time.
+
+  The tunnel program is downloaded once into .cache\tools in this project (nothing is installed elsewhere).
 .EXAMPLE
   scripts\share.ps1
 .EXAMPLE
@@ -19,14 +22,37 @@ Set-Location $Root
 $Py = Join-Path $Root '.venv\Scripts\python.exe'
 if (-not (Test-Path $Py)) { throw 'Virtual environment not found. Run scripts\setup.ps1 first.' }
 
-# 1. cloudflared, kept inside the project folder.
+# 1. Tunnel program, kept inside the project folder.
 $tools = Join-Path $Root '.cache\tools'
-$cf = Join-Path $tools 'cloudflared.exe'
-if (-not (Test-Path $cf)) {
-    New-Item -ItemType Directory -Force $tools | Out-Null
-    Write-Host 'Downloading cloudflared (once) ...' -ForegroundColor Cyan
-    $src = 'https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe'
-    Invoke-WebRequest -Uri $src -OutFile $cf -UseBasicParsing
+New-Item -ItemType Directory -Force $tools | Out-Null
+$dotenv = @{}
+$envFile = Join-Path $Root '.env'
+if (Test-Path $envFile) {
+    foreach ($line in Get-Content $envFile) {
+        if ($line -match '^\s*(NGROK_AUTHTOKEN|NGROK_DOMAIN)\s*=\s*"?([^"#\s]+)"?') { $dotenv[$Matches[1]] = $Matches[2] }
+    }
+}
+$useNgrok = $dotenv.ContainsKey('NGROK_AUTHTOKEN') -and $dotenv.ContainsKey('NGROK_DOMAIN')
+if ($useNgrok) {
+    $ngrok = Join-Path $tools 'ngrok.exe'
+    if (-not (Test-Path $ngrok)) {
+        Write-Host 'Downloading ngrok (once) ...' -ForegroundColor Cyan
+        $zip = Join-Path $tools 'ngrok.zip'
+        Invoke-WebRequest -Uri 'https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-windows-amd64.zip' -OutFile $zip -UseBasicParsing
+        Expand-Archive -Path $zip -DestinationPath $tools -Force
+        Remove-Item $zip
+    }
+    # Own config file in the project (ngrok would otherwise write one under AppData on C:).
+    $ngrokConfig = Join-Path $tools 'ngrok.yml'
+    if (-not (Test-Path $ngrokConfig)) { Set-Content -Path $ngrokConfig -Value 'version: "3"' -Encoding ascii }
+    $domain = $dotenv['NGROK_DOMAIN'] -replace '^https?://', '' -replace '/.*$', ''
+} else {
+    $cf = Join-Path $tools 'cloudflared.exe'
+    if (-not (Test-Path $cf)) {
+        Write-Host 'Downloading cloudflared (once) ...' -ForegroundColor Cyan
+        $src = 'https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe'
+        Invoke-WebRequest -Uri $src -OutFile $cf -UseBasicParsing
+    }
 }
 
 # 2. Website build.
@@ -60,11 +86,21 @@ try {
 
     # 4. Public link.
     Write-Host ''
-    Write-Host 'Opening the public link. Look for the line with https://....trycloudflare.com below.' -ForegroundColor Green
+    if ($useNgrok) {
+        Write-Host "Your link: https://$domain" -ForegroundColor Green
+    } else {
+        Write-Host 'Opening the public link. Look for the line with https://....trycloudflare.com below.' -ForegroundColor Green
+    }
     Write-Host 'Keep this window open while friends use it. Ctrl+C stops sharing.' -ForegroundColor Green
     Write-Host ''
-    $ErrorActionPreference = 'Continue'  # cloudflared logs to stderr
-    & $cf tunnel --no-autoupdate --url "http://127.0.0.1:$Port" 2>&1 | ForEach-Object { "$_" }
+    $ErrorActionPreference = 'Continue'  # tunnel programs log to stderr
+    if ($useNgrok) {
+        $env:NGROK_AUTHTOKEN = $dotenv['NGROK_AUTHTOKEN']
+        & $ngrok http "http://127.0.0.1:$Port" --url "https://$domain" --config $ngrokConfig --log stdout 2>&1 |
+            ForEach-Object { "$_" }
+    } else {
+        & $cf tunnel --no-autoupdate --url "http://127.0.0.1:$Port" 2>&1 | ForEach-Object { "$_" }
+    }
 }
 finally {
     if (-not $backend.HasExited) { Stop-Process -Id $backend.Id -Force -ErrorAction SilentlyContinue }
