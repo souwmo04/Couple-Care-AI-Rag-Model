@@ -127,11 +127,15 @@ helps single people start a conversation or ask someone out — respectfully: no
 pressure, and a "no" or no reply is respected. Safety checks apply exactly as in normal mode. Relationship stages
 include Single, One-sided love, Situationship and Long-distance as well as Dating, Engaged and Married.
 
-## Share it online (Hugging Face Spaces)
+## Share it online
 
-To let a few friends use it from their browser, deploy it as a free Hugging Face Space (Docker; cloud mode with
-your Groq key as a Space secret): see **[docs/deploy-huggingface.md](docs/deploy-huggingface.md)**. Upload with
-`scripts\deploy-huggingface.ps1 -Space yourname/couplecare-ai`.
+**From your PC (free, quickest):** run `scripts\share.ps1`. It builds the website, starts the app on port 7860 and
+opens a free Cloudflare quick tunnel (no account; `cloudflared.exe` is downloaded once into `.cache	ools`). Share
+the `https://….trycloudflare.com` link it prints. The link works only while that window stays open and your PC is
+on, and it changes every time you start it. Anyone with the link can use the app and your Groq quota.
+
+**Hugging Face Spaces (always on):** Docker Spaces now need a paid Hugging Face plan; see
+[docs/deploy-huggingface.md](docs/deploy-huggingface.md) and `scripts\deploy-huggingface.ps1 -Space yourname/couplecare-ai`.
 
 ## Voice (optional)
 

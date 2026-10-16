@@ -3,7 +3,8 @@
 This puts the app online as a free Hugging Face Space so a few people can use it from their browser. It runs in
 cloud mode: replies come from Groq (your key), voice input uses Groq Whisper, and there is no local model.
 
-**What it costs:** nothing on Hugging Face's free CPU tier. All visitors share your Groq free quota
+**What it costs:** Docker Spaces now require a paid Hugging Face plan (PRO). For a free option, share from your PC
+with `scripts\share.ps1` instead (see the README). All visitors share your Groq free quota
 (about 100 chat messages a day in total, ~3 per minute).
 
 **Good to know before sharing**
