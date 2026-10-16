@@ -12,6 +12,11 @@ import type { LanguageCode } from '@/types/api'
 
 export const MAX_MESSAGE_CHARS = 4000
 
+/** Phones and tablets: the on-screen keyboard has no Shift+Enter, so Enter adds a new line and the button sends. */
+function touchKeyboard(): boolean {
+  return typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(pointer: coarse)').matches
+}
+
 export interface ComposerHandle {
   setText: (text: string) => void
   focus: () => void
@@ -34,6 +39,7 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
   const [text, setText] = useState('')
   const [error, setError] = useState<string | null>(null)
   const areaRef = useRef<HTMLTextAreaElement>(null)
+  const [touch] = useState(touchKeyboard)
   const voiceAvailable = useHealth().data?.voice_input === true
   const showMic = voiceRecordingSupported()
   const voiceLanguage = prefs.responseLanguage === 'bn' ? 'bn' : prefs.responseLanguage === 'en' ? 'en' : 'auto'
@@ -84,7 +90,7 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
   }
 
   function onKeyDown(e: KeyboardEvent<HTMLTextAreaElement>) {
-    if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
+    if (e.key === 'Enter' && !e.shiftKey && !touch && !e.nativeEvent.isComposing) {
       e.preventDefault()
       submit()
     }
@@ -115,13 +121,14 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
           ref={areaRef}
           value={text}
           rows={1}
+          enterKeyHint={touch ? 'enter' : 'send'}
           disabled={disabled}
           onChange={(e) => {
             setText(e.target.value)
             if (error) setError(null)
           }}
           onKeyDown={onKeyDown}
-          placeholder={t.chat.composerPlaceholder}
+          placeholder={touch ? t.chat.composerPlaceholderTouch : t.chat.composerPlaceholder}
           aria-invalid={!!error || over}
           aria-describedby={error ? 'composer-error' : undefined}
           className="block max-h-[220px] min-h-[3.25rem] w-full resize-none bg-transparent px-5 pb-1 pt-4 text-[0.95rem] leading-relaxed text-foreground outline-none placeholder:text-muted-foreground disabled:opacity-60"

@@ -287,6 +287,7 @@ export const bn: Copy = {
     welcomeLanguage: 'উত্তরের ভাষা',
     welcomeStage: 'সম্পর্কের পর্যায়',
     composerPlaceholder: 'কী হচ্ছে লিখুন… (পাঠাতে Enter, নতুন লাইনে Shift+Enter)',
+    composerPlaceholderTouch: 'কী হচ্ছে লিখুন…',
     composerLabel: 'আপনার বার্তা',
     send: 'বার্তা পাঠান',
     stop: 'লেখা থামান',

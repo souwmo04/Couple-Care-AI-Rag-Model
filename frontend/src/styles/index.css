@@ -422,6 +422,10 @@ html[data-motion='reduced'] .flip-char::before, html[data-motion='reduced'] .fli
 .heart-red path { fill: var(--heart-red); stroke: var(--ink); stroke-width: 1.2; }
 .heart-outline path { fill: none; stroke: var(--heart-red); stroke-width: 1.8; }
 .dark .heart-pink path, .dark .heart-red path { stroke: var(--foreground); }
+/* Phones: text spans the full width, so the few edge hearts are kept small and faint. */
+@media (max-width: 639px) {
+  .heart { opacity: calc(var(--heart-opacity) * 0.45); max-width: 26px; max-height: 26px; }
+}
 .heart-float { animation: heart-float ease-in-out infinite alternate; }
 @keyframes heart-float {
   from { transform: translateY(0) rotate(var(--heart-rotate)); }

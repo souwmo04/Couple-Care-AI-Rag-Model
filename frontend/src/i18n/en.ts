@@ -286,6 +286,7 @@ export const en = {
     welcomeLanguage: 'Reply language',
     welcomeStage: 'Relationship stage',
     composerPlaceholder: 'Write what is happening… (Enter to send, Shift+Enter for a new line)',
+    composerPlaceholderTouch: 'Write what is happening…',
     composerLabel: 'Your message',
     send: 'Send message',
     stop: 'Stop generating',

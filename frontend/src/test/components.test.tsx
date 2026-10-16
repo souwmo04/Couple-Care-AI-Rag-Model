@@ -37,6 +37,24 @@ describe('Composer', () => {
     expect(box).toHaveValue('')
   })
 
+  it('on a phone, Enter adds a new line and the button sends', async () => {
+    const original = window.matchMedia
+    window.matchMedia = ((query: string) => ({ matches: query === '(pointer: coarse)' })) as typeof window.matchMedia
+    try {
+      const onSend = vi.fn()
+      renderWithProviders(<Composer onSend={onSend} onStop={() => {}} generating={false} />)
+      const box = screen.getByLabelText('Your message')
+      expect(box).toHaveAttribute('placeholder', 'Write what is happening…')
+      await userEvent.type(box, 'First line{Enter}second line')
+      expect(onSend).not.toHaveBeenCalled()
+      expect(box).toHaveValue('First line\nsecond line')
+      await userEvent.click(screen.getByRole('button', { name: 'Send message' }))
+      expect(onSend).toHaveBeenCalledWith('First line\nsecond line')
+    } finally {
+      window.matchMedia = original
+    }
+  })
+
   it('validates empty input instead of sending', async () => {
     const onSend = vi.fn()
     renderWithProviders(<Composer onSend={onSend} onStop={() => {}} generating={false} />)

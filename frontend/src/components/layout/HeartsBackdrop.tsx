@@ -1,6 +1,7 @@
 /**
  * Decorative pink/red hearts behind page content. Positions are fixed (seeded), the layer ignores pointer
- * events and is hidden from assistive technology, and hearts stop floating under reduced motion.
+ * events and is hidden from assistive technology, and hearts stop floating under reduced motion. On phones only the
+ * hearts near the left and right edges are shown, so none drift over the text.
  */
 import type { CSSProperties } from 'react'
 import { usePreferences } from '@/hooks/usePreferences'
@@ -40,7 +41,12 @@ export function HeartsBackdrop({ count = 18, seed = 7, className }: { count?: nu
         <svg
           key={i}
           viewBox="0 0 24 24"
-          className={cn('heart absolute', !reducedMotion && 'heart-float', `heart-${h.style}`)}
+          className={cn(
+            'heart absolute',
+            !reducedMotion && 'heart-float',
+            `heart-${h.style}`,
+            h.left > 6 && h.left < 84 && 'max-sm:hidden',
+          )}
           style={
             {
               left: `${h.left}%`,
