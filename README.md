@@ -133,12 +133,13 @@ include Single, One-sided love, Situationship and Long-distance as well as Datin
 opens a free Cloudflare quick tunnel (no account; `cloudflared.exe` is downloaded once into `.cache\tools`). Share
 the `https://….trycloudflare.com` link it prints. The link works only while that window stays open and your PC is
 on, and it changes every time you start it. Anyone with the link can use the app and your Groq quota.
-For a **fixed link with no warning page**, create an empty public GitHub repository (e.g. `couplecare`), put
-`SHARE_PAGES_REPO=yourname/couplecare` in `.env`, and turn on GitHub Pages for it (Settings → Pages → Deploy from
-a branch → `main`, `/ (root)`). Each start publishes the new tunnel address there, so friends always open
-`https://yourname.github.io/couplecare/`; it shows an "offline" message while sharing is stopped (the page is
-[share-page/index.html](share-page/index.html)). Alternatively, `NGROK_AUTHTOKEN` and `NGROK_DOMAIN` (a free ngrok
-domain) give a fixed `….ngrok-free.dev` link, but visitors first see an ngrok notice page.
+For a **fixed link with no warning page**, put `SHARE_PAGES_REPO=yourname/your-repository` (a public GitHub
+repository, e.g. this one) in `.env`. Each start publishes the new tunnel address to that repository's `gh-pages`
+branch (only [share-page/index.html](share-page/index.html) and `link.json`), so once GitHub Pages serves that branch
+(Settings → Pages → Deploy from a branch → `gh-pages`, `/ (root)`) friends always open
+`https://yourname.github.io/your-repository/`. It shows an "offline" message while sharing is stopped.
+Alternatively, `NGROK_AUTHTOKEN` and `NGROK_DOMAIN` (a free ngrok domain) give a fixed `….ngrok-free.dev` link, but
+visitors first see an ngrok notice page.
 
 **Hugging Face Spaces (always on):** Docker Spaces now need a paid Hugging Face plan; see
 [docs/deploy-huggingface.md](docs/deploy-huggingface.md) and `scripts\deploy-huggingface.ps1 -Space yourname/couplecare-ai`.
