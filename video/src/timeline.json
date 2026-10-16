@@ -1,0 +1,881 @@
+{
+ "fps": 30,
+ "durationInFrames": 2231,
+ "seconds": 74.38,
+ "scenes": [
+  {
+   "id": "hook",
+   "text": "Ever had a fight with someone you love… and no one to talk to about it?",
+   "start": 0.0,
+   "voStart": 1.1,
+   "end": 5.568,
+   "from": 0,
+   "durationInFrames": 167,
+   "voFrom": 33,
+   "words": [
+    {
+     "text": "Ever",
+     "from": 36,
+     "to": 42
+    },
+    {
+     "text": "had",
+     "from": 42,
+     "to": 46
+    },
+    {
+     "text": "a",
+     "from": 46,
+     "to": 48
+    },
+    {
+     "text": "fight",
+     "from": 48,
+     "to": 57
+    },
+    {
+     "text": "with",
+     "from": 57,
+     "to": 61
+    },
+    {
+     "text": "someone",
+     "from": 61,
+     "to": 70
+    },
+    {
+     "text": "you",
+     "from": 70,
+     "to": 74
+    },
+    {
+     "text": "love",
+     "from": 74,
+     "to": 86
+    },
+    {
+     "text": "and",
+     "from": 87,
+     "to": 96
+    },
+    {
+     "text": "no",
+     "from": 103,
+     "to": 107
+    },
+    {
+     "text": "one",
+     "from": 107,
+     "to": 110
+    },
+    {
+     "text": "to",
+     "from": 110,
+     "to": 112
+    },
+    {
+     "text": "talk",
+     "from": 112,
+     "to": 120
+    },
+    {
+     "text": "to",
+     "from": 120,
+     "to": 122
+    },
+    {
+     "text": "about",
+     "from": 123,
+     "to": 130
+    },
+    {
+     "text": "it",
+     "from": 130,
+     "to": 135
+    }
+   ]
+  },
+  {
+   "id": "why",
+   "text": "Counselling feels far away. Friends take sides. And the right words just don't come.",
+   "start": 5.568,
+   "voStart": 6.018,
+   "end": 12.91,
+   "from": 167,
+   "durationInFrames": 220,
+   "voFrom": 14,
+   "words": [
+    {
+     "text": "Counselling",
+     "from": 16,
+     "to": 34
+    },
+    {
+     "text": "feels",
+     "from": 34,
+     "to": 49
+    },
+    {
+     "text": "far",
+     "from": 50,
+     "to": 58
+    },
+    {
+     "text": "away",
+     "from": 58,
+     "to": 72
+    },
+    {
+     "text": "Friends",
+     "from": 87,
+     "to": 96
+    },
+    {
+     "text": "take",
+     "from": 97,
+     "to": 103
+    },
+    {
+     "text": "sides",
+     "from": 104,
+     "to": 123
+    },
+    {
+     "text": "And",
+     "from": 135,
+     "to": 138
+    },
+    {
+     "text": "the",
+     "from": 139,
+     "to": 141
+    },
+    {
+     "text": "right",
+     "from": 142,
+     "to": 151
+    },
+    {
+     "text": "words",
+     "from": 152,
+     "to": 164
+    },
+    {
+     "text": "just",
+     "from": 164,
+     "to": 171
+    },
+    {
+     "text": "don't",
+     "from": 171,
+     "to": 176
+    },
+    {
+     "text": "come",
+     "from": 176,
+     "to": 188
+    }
+   ]
+  },
+  {
+   "id": "meet",
+   "text": "Meet CoupleCare AI: a calm place to understand each other better.",
+   "start": 12.91,
+   "voStart": 13.61,
+   "end": 18.75,
+   "from": 387,
+   "durationInFrames": 175,
+   "voFrom": 21,
+   "words": [
+    {
+     "text": "Meet",
+     "from": 24,
+     "to": 31
+    },
+    {
+     "text": "CoupleCare",
+     "from": 31,
+     "to": 48
+    },
+    {
+     "text": "AI",
+     "from": 49,
+     "to": 62
+    },
+    {
+     "text": "a",
+     "from": 78,
+     "to": 80
+    },
+    {
+     "text": "calm",
+     "from": 80,
+     "to": 91
+    },
+    {
+     "text": "place",
+     "from": 92,
+     "to": 101
+    },
+    {
+     "text": "to",
+     "from": 101,
+     "to": 104
+    },
+    {
+     "text": "understand",
+     "from": 104,
+     "to": 122
+    },
+    {
+     "text": "each",
+     "from": 122,
+     "to": 126
+    },
+    {
+     "text": "other",
+     "from": 126,
+     "to": 132
+    },
+    {
+     "text": "better",
+     "from": 132,
+     "to": 143
+    }
+   ]
+  },
+  {
+   "id": "languages",
+   "text": "Talk the way you really talk. English, Bangla, or Banglish. It replies in your language.",
+   "start": 18.75,
+   "voStart": 19.2,
+   "end": 26.236,
+   "from": 562,
+   "durationInFrames": 225,
+   "voFrom": 14,
+   "words": [
+    {
+     "text": "Talk",
+     "from": 17,
+     "to": 26
+    },
+    {
+     "text": "the",
+     "from": 26,
+     "to": 28
+    },
+    {
+     "text": "way",
+     "from": 29,
+     "to": 34
+    },
+    {
+     "text": "you",
+     "from": 34,
+     "to": 38
+    },
+    {
+     "text": "really",
+     "from": 39,
+     "to": 48
+    },
+    {
+     "text": "talk",
+     "from": 48,
+     "to": 63
+    },
+    {
+     "text": "English",
+     "from": 75,
+     "to": 93
+    },
+    {
+     "text": "Bangla",
+     "from": 94,
+     "to": 111
+    },
+    {
+     "text": "or",
+     "from": 112,
+     "to": 119
+    },
+    {
+     "text": "Banglish",
+     "from": 119,
+     "to": 138
+    },
+    {
+     "text": "It",
+     "from": 151,
+     "to": 154
+    },
+    {
+     "text": "replies",
+     "from": 154,
+     "to": 169
+    },
+    {
+     "text": "in",
+     "from": 169,
+     "to": 171
+    },
+    {
+     "text": "your",
+     "from": 172,
+     "to": 175
+    },
+    {
+     "text": "language",
+     "from": 175,
+     "to": 193
+    }
+   ]
+  },
+  {
+   "id": "stages",
+   "text": "Single, one-sided love, dating, long-distance, or married. It adapts to where you are.",
+   "start": 26.236,
+   "voStart": 26.686,
+   "end": 34.13,
+   "from": 787,
+   "durationInFrames": 237,
+   "voFrom": 14,
+   "words": [
+    {
+     "text": "Single",
+     "from": 17,
+     "to": 32
+    },
+    {
+     "text": "one-sided",
+     "from": 39,
+     "to": 56
+    },
+    {
+     "text": "love",
+     "from": 56,
+     "to": 70
+    },
+    {
+     "text": "dating",
+     "from": 84,
+     "to": 98
+    },
+    {
+     "text": "long-distance",
+     "from": 102,
+     "to": 125
+    },
+    {
+     "text": "or",
+     "from": 126,
+     "to": 131
+    },
+    {
+     "text": "married",
+     "from": 132,
+     "to": 149
+    },
+    {
+     "text": "It",
+     "from": 161,
+     "to": 164
+    },
+    {
+     "text": "adapts",
+     "from": 164,
+     "to": 179
+    },
+    {
+     "text": "to",
+     "from": 179,
+     "to": 182
+    },
+    {
+     "text": "where",
+     "from": 182,
+     "to": 188
+    },
+    {
+     "text": "you",
+     "from": 189,
+     "to": 193
+    },
+    {
+     "text": "are",
+     "from": 193,
+     "to": 205
+    }
+   ],
+   "chips": [
+    17,
+    39,
+    72,
+    84,
+    102,
+    119,
+    132
+   ]
+  },
+  {
+   "id": "coach",
+   "text": "Need it straight? Turn on Coach mode, and get exactly what to say, and what to do next.",
+   "start": 34.13,
+   "voStart": 34.58,
+   "end": 41.16,
+   "from": 1024,
+   "durationInFrames": 211,
+   "voFrom": 13,
+   "words": [
+    {
+     "text": "Need",
+     "from": 15,
+     "to": 19
+    },
+    {
+     "text": "it",
+     "from": 19,
+     "to": 22
+    },
+    {
+     "text": "straight",
+     "from": 22,
+     "to": 37
+    },
+    {
+     "text": "Turn",
+     "from": 49,
+     "to": 56
+    },
+    {
+     "text": "on",
+     "from": 56,
+     "to": 60
+    },
+    {
+     "text": "Coach",
+     "from": 60,
+     "to": 70
+    },
+    {
+     "text": "mode",
+     "from": 70,
+     "to": 81
+    },
+    {
+     "text": "and",
+     "from": 86,
+     "to": 92
+    },
+    {
+     "text": "get",
+     "from": 92,
+     "to": 97
+    },
+    {
+     "text": "exactly",
+     "from": 98,
+     "to": 114
+    },
+    {
+     "text": "what",
+     "from": 114,
+     "to": 118
+    },
+    {
+     "text": "to",
+     "from": 119,
+     "to": 121
+    },
+    {
+     "text": "say",
+     "from": 121,
+     "to": 134
+    },
+    {
+     "text": "and",
+     "from": 140,
+     "to": 148
+    },
+    {
+     "text": "what",
+     "from": 150,
+     "to": 154
+    },
+    {
+     "text": "to",
+     "from": 154,
+     "to": 157
+    },
+    {
+     "text": "do",
+     "from": 157,
+     "to": 161
+    },
+    {
+     "text": "next",
+     "from": 162,
+     "to": 178
+    }
+   ]
+  },
+  {
+   "id": "voice",
+   "text": "Don't feel like typing? Just speak. And it can read every reply out loud.",
+   "start": 41.16,
+   "voStart": 41.61,
+   "end": 47.998,
+   "from": 1235,
+   "durationInFrames": 205,
+   "voFrom": 13,
+   "words": [
+    {
+     "text": "Don't",
+     "from": 15,
+     "to": 21
+    },
+    {
+     "text": "feel",
+     "from": 21,
+     "to": 27
+    },
+    {
+     "text": "like",
+     "from": 27,
+     "to": 32
+    },
+    {
+     "text": "typing",
+     "from": 33,
+     "to": 49
+    },
+    {
+     "text": "Just",
+     "from": 61,
+     "to": 70
+    },
+    {
+     "text": "speak",
+     "from": 70,
+     "to": 85
+    },
+    {
+     "text": "And",
+     "from": 97,
+     "to": 108
+    },
+    {
+     "text": "it",
+     "from": 113,
+     "to": 115
+    },
+    {
+     "text": "can",
+     "from": 115,
+     "to": 120
+    },
+    {
+     "text": "read",
+     "from": 121,
+     "to": 130
+    },
+    {
+     "text": "every",
+     "from": 134,
+     "to": 143
+    },
+    {
+     "text": "reply",
+     "from": 143,
+     "to": 154
+    },
+    {
+     "text": "out",
+     "from": 154,
+     "to": 159
+    },
+    {
+     "text": "loud",
+     "from": 160,
+     "to": 172
+    }
+   ]
+  },
+  {
+   "id": "trust",
+   "text": "Its advice comes from a guide library you can check. And if something sounds unsafe, it gently points you to real help.",
+   "start": 47.998,
+   "voStart": 48.448,
+   "end": 57.116,
+   "from": 1440,
+   "durationInFrames": 273,
+   "voFrom": 13,
+   "words": [
+    {
+     "text": "Its",
+     "from": 16,
+     "to": 20
+    },
+    {
+     "text": "advice",
+     "from": 21,
+     "to": 35
+    },
+    {
+     "text": "comes",
+     "from": 35,
+     "to": 45
+    },
+    {
+     "text": "from",
+     "from": 45,
+     "to": 49
+    },
+    {
+     "text": "a",
+     "from": 49,
+     "to": 52
+    },
+    {
+     "text": "guide",
+     "from": 52,
+     "to": 63
+    },
+    {
+     "text": "library",
+     "from": 63,
+     "to": 78
+    },
+    {
+     "text": "you",
+     "from": 79,
+     "to": 83
+    },
+    {
+     "text": "can",
+     "from": 83,
+     "to": 87
+    },
+    {
+     "text": "check",
+     "from": 88,
+     "to": 101
+    },
+    {
+     "text": "And",
+     "from": 113,
+     "to": 123
+    },
+    {
+     "text": "if",
+     "from": 127,
+     "to": 130
+    },
+    {
+     "text": "something",
+     "from": 130,
+     "to": 143
+    },
+    {
+     "text": "sounds",
+     "from": 143,
+     "to": 154
+    },
+    {
+     "text": "unsafe",
+     "from": 154,
+     "to": 174
+    },
+    {
+     "text": "it",
+     "from": 189,
+     "to": 192
+    },
+    {
+     "text": "gently",
+     "from": 192,
+     "to": 202
+    },
+    {
+     "text": "points",
+     "from": 203,
+     "to": 215
+    },
+    {
+     "text": "you",
+     "from": 215,
+     "to": 219
+    },
+    {
+     "text": "to",
+     "from": 219,
+     "to": 222
+    },
+    {
+     "text": "real",
+     "from": 223,
+     "to": 230
+    },
+    {
+     "text": "help",
+     "from": 230,
+     "to": 242
+    }
+   ]
+  },
+  {
+   "id": "phone",
+   "text": "No sign-up. Nothing to install. It works right on your phone.",
+   "start": 57.116,
+   "voStart": 57.566,
+   "end": 63.162,
+   "from": 1713,
+   "durationInFrames": 182,
+   "voFrom": 14,
+   "words": [
+    {
+     "text": "No",
+     "from": 17,
+     "to": 26
+    },
+    {
+     "text": "sign-up",
+     "from": 26,
+     "to": 47
+    },
+    {
+     "text": "Nothing",
+     "from": 59,
+     "to": 72
+    },
+    {
+     "text": "to",
+     "from": 73,
+     "to": 77
+    },
+    {
+     "text": "install",
+     "from": 77,
+     "to": 96
+    },
+    {
+     "text": "It",
+     "from": 107,
+     "to": 111
+    },
+    {
+     "text": "works",
+     "from": 111,
+     "to": 123
+    },
+    {
+     "text": "right",
+     "from": 123,
+     "to": 129
+    },
+    {
+     "text": "on",
+     "from": 129,
+     "to": 132
+    },
+    {
+     "text": "your",
+     "from": 132,
+     "to": 135
+    },
+    {
+     "text": "phone",
+     "from": 135,
+     "to": 150
+    }
+   ]
+  },
+  {
+   "id": "cta",
+   "text": "CoupleCare AI. Listen first. Understand better. Try it today. The link is in the post.",
+   "start": 63.162,
+   "voStart": 63.612,
+   "end": 74.38,
+   "from": 1895,
+   "durationInFrames": 336,
+   "voFrom": 13,
+   "words": [
+    {
+     "text": "CoupleCare",
+     "from": 16,
+     "to": 36
+    },
+    {
+     "text": "AI",
+     "from": 37,
+     "to": 49
+    },
+    {
+     "text": "Listen",
+     "from": 60,
+     "to": 70
+    },
+    {
+     "text": "first",
+     "from": 71,
+     "to": 89
+    },
+    {
+     "text": "Understand",
+     "from": 101,
+     "to": 121
+    },
+    {
+     "text": "better",
+     "from": 121,
+     "to": 133
+    },
+    {
+     "text": "Try",
+     "from": 145,
+     "to": 154
+    },
+    {
+     "text": "it",
+     "from": 155,
+     "to": 158
+    },
+    {
+     "text": "today",
+     "from": 159,
+     "to": 174
+    },
+    {
+     "text": "The",
+     "from": 186,
+     "to": 188
+    },
+    {
+     "text": "link",
+     "from": 189,
+     "to": 197
+    },
+    {
+     "text": "is",
+     "from": 197,
+     "to": 200
+    },
+    {
+     "text": "in",
+     "from": 201,
+     "to": 202
+    },
+    {
+     "text": "the",
+     "from": 202,
+     "to": 204
+    },
+    {
+     "text": "post",
+     "from": 204,
+     "to": 222
+    }
+   ]
+  }
+ ]
+}

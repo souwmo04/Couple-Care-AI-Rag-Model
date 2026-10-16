@@ -1,0 +1,827 @@
+[
+  {
+    "id": "hook",
+    "text": "Ever had a fight with someone you love… and no one to talk to about it?",
+    "file": "vo/hook.mp3",
+    "duration": 3.768,
+    "words": [
+      {
+        "text": "Ever",
+        "start": 0.091,
+        "end": 0.299
+      },
+      {
+        "text": "had",
+        "start": 0.299,
+        "end": 0.443
+      },
+      {
+        "text": "a",
+        "start": 0.443,
+        "end": 0.495
+      },
+      {
+        "text": "fight",
+        "start": 0.508,
+        "end": 0.794
+      },
+      {
+        "text": "with",
+        "start": 0.807,
+        "end": 0.924
+      },
+      {
+        "text": "someone",
+        "start": 0.938,
+        "end": 1.224
+      },
+      {
+        "text": "you",
+        "start": 1.237,
+        "end": 1.354
+      },
+      {
+        "text": "love",
+        "start": 1.354,
+        "end": 1.758
+      },
+      {
+        "text": "and",
+        "start": 1.81,
+        "end": 2.109
+      },
+      {
+        "text": "no",
+        "start": 2.344,
+        "end": 2.461
+      },
+      {
+        "text": "one",
+        "start": 2.474,
+        "end": 2.565
+      },
+      {
+        "text": "to",
+        "start": 2.578,
+        "end": 2.63
+      },
+      {
+        "text": "talk",
+        "start": 2.643,
+        "end": 2.904
+      },
+      {
+        "text": "to",
+        "start": 2.904,
+        "end": 2.982
+      },
+      {
+        "text": "about",
+        "start": 2.995,
+        "end": 3.229
+      },
+      {
+        "text": "it",
+        "start": 3.229,
+        "end": 3.398
+      }
+    ]
+  },
+  {
+    "id": "why",
+    "text": "Counselling feels far away. Friends take sides. And the right words just don't come.",
+    "file": "vo/why.mp3",
+    "duration": 6.192,
+    "words": [
+      {
+        "text": "Counselling",
+        "start": 0.091,
+        "end": 0.677
+      },
+      {
+        "text": "feels",
+        "start": 0.69,
+        "end": 1.198
+      },
+      {
+        "text": "far",
+        "start": 1.211,
+        "end": 1.471
+      },
+      {
+        "text": "away",
+        "start": 1.484,
+        "end": 1.953
+      },
+      {
+        "text": "Friends",
+        "start": 2.435,
+        "end": 2.76
+      },
+      {
+        "text": "take",
+        "start": 2.773,
+        "end": 2.995
+      },
+      {
+        "text": "sides",
+        "start": 3.008,
+        "end": 3.646
+      },
+      {
+        "text": "And",
+        "start": 4.05,
+        "end": 4.154
+      },
+      {
+        "text": "the",
+        "start": 4.167,
+        "end": 4.258
+      },
+      {
+        "text": "right",
+        "start": 4.271,
+        "end": 4.596
+      },
+      {
+        "text": "words",
+        "start": 4.609,
+        "end": 5.013
+      },
+      {
+        "text": "just",
+        "start": 5.013,
+        "end": 5.234
+      },
+      {
+        "text": "don't",
+        "start": 5.234,
+        "end": 5.43
+      },
+      {
+        "text": "come",
+        "start": 5.43,
+        "end": 5.807
+      }
+    ]
+  },
+  {
+    "id": "meet",
+    "text": "Meet CoupleCare AI: a calm place to understand each other better.",
+    "file": "vo/meet.mp3",
+    "duration": 4.44,
+    "words": [
+      {
+        "text": "Meet",
+        "start": 0.091,
+        "end": 0.313
+      },
+      {
+        "text": "CoupleCare",
+        "start": 0.326,
+        "end": 0.898
+      },
+      {
+        "text": "AI",
+        "start": 0.911,
+        "end": 1.341
+      },
+      {
+        "text": "a",
+        "start": 1.901,
+        "end": 1.966
+      },
+      {
+        "text": "calm",
+        "start": 1.966,
+        "end": 2.331
+      },
+      {
+        "text": "place",
+        "start": 2.344,
+        "end": 2.669
+      },
+      {
+        "text": "to",
+        "start": 2.669,
+        "end": 2.76
+      },
+      {
+        "text": "understand",
+        "start": 2.773,
+        "end": 3.359
+      },
+      {
+        "text": "each",
+        "start": 3.359,
+        "end": 3.49
+      },
+      {
+        "text": "other",
+        "start": 3.49,
+        "end": 3.685
+      },
+      {
+        "text": "better",
+        "start": 3.698,
+        "end": 4.062
+      }
+    ]
+  },
+  {
+    "id": "languages",
+    "text": "Talk the way you really talk. English, Bangla, or Banglish. It replies in your language.",
+    "file": "vo/languages.mp3",
+    "duration": 6.336,
+    "words": [
+      {
+        "text": "Talk",
+        "start": 0.091,
+        "end": 0.391
+      },
+      {
+        "text": "the",
+        "start": 0.404,
+        "end": 0.482
+      },
+      {
+        "text": "way",
+        "start": 0.495,
+        "end": 0.651
+      },
+      {
+        "text": "you",
+        "start": 0.651,
+        "end": 0.807
+      },
+      {
+        "text": "really",
+        "start": 0.82,
+        "end": 1.12
+      },
+      {
+        "text": "talk",
+        "start": 1.133,
+        "end": 1.641
+      },
+      {
+        "text": "English",
+        "start": 2.044,
+        "end": 2.63
+      },
+      {
+        "text": "Bangla",
+        "start": 2.656,
+        "end": 3.229
+      },
+      {
+        "text": "or",
+        "start": 3.281,
+        "end": 3.49
+      },
+      {
+        "text": "Banglish",
+        "start": 3.503,
+        "end": 4.141
+      },
+      {
+        "text": "It",
+        "start": 4.557,
+        "end": 4.661
+      },
+      {
+        "text": "replies",
+        "start": 4.661,
+        "end": 5.156
+      },
+      {
+        "text": "in",
+        "start": 5.169,
+        "end": 5.247
+      },
+      {
+        "text": "your",
+        "start": 5.26,
+        "end": 5.352
+      },
+      {
+        "text": "language",
+        "start": 5.352,
+        "end": 5.977
+      }
+    ]
+  },
+  {
+    "id": "stages",
+    "text": "Single, one-sided love, dating, long-distance, or married. It adapts to where you are.",
+    "file": "vo/stages.mp3",
+    "duration": 6.744,
+    "words": [
+      {
+        "text": "Single",
+        "start": 0.104,
+        "end": 0.625
+      },
+      {
+        "text": "one-sided",
+        "start": 0.846,
+        "end": 1.406
+      },
+      {
+        "text": "love",
+        "start": 1.419,
+        "end": 1.875
+      },
+      {
+        "text": "dating",
+        "start": 2.331,
+        "end": 2.826
+      },
+      {
+        "text": "long-distance",
+        "start": 2.956,
+        "end": 3.724
+      },
+      {
+        "text": "or",
+        "start": 3.75,
+        "end": 3.919
+      },
+      {
+        "text": "married",
+        "start": 3.932,
+        "end": 4.518
+      },
+      {
+        "text": "It",
+        "start": 4.909,
+        "end": 5.0
+      },
+      {
+        "text": "adapts",
+        "start": 5.013,
+        "end": 5.521
+      },
+      {
+        "text": "to",
+        "start": 5.521,
+        "end": 5.625
+      },
+      {
+        "text": "where",
+        "start": 5.625,
+        "end": 5.82
+      },
+      {
+        "text": "you",
+        "start": 5.833,
+        "end": 5.977
+      },
+      {
+        "text": "are",
+        "start": 5.99,
+        "end": 6.38
+      }
+    ]
+  },
+  {
+    "id": "coach",
+    "text": "Need it straight? Turn on Coach mode, and get exactly what to say, and what to do next.",
+    "file": "vo/coach.mp3",
+    "duration": 5.88,
+    "words": [
+      {
+        "text": "Need",
+        "start": 0.052,
+        "end": 0.195
+      },
+      {
+        "text": "it",
+        "start": 0.195,
+        "end": 0.273
+      },
+      {
+        "text": "straight",
+        "start": 0.273,
+        "end": 0.781
+      },
+      {
+        "text": "Turn",
+        "start": 1.172,
+        "end": 1.406
+      },
+      {
+        "text": "on",
+        "start": 1.419,
+        "end": 1.549
+      },
+      {
+        "text": "Coach",
+        "start": 1.55,
+        "end": 1.875
+      },
+      {
+        "text": "mode",
+        "start": 1.888,
+        "end": 2.253
+      },
+      {
+        "text": "and",
+        "start": 2.422,
+        "end": 2.604
+      },
+      {
+        "text": "get",
+        "start": 2.617,
+        "end": 2.799
+      },
+      {
+        "text": "exactly",
+        "start": 2.812,
+        "end": 3.346
+      },
+      {
+        "text": "what",
+        "start": 3.359,
+        "end": 3.503
+      },
+      {
+        "text": "to",
+        "start": 3.516,
+        "end": 3.594
+      },
+      {
+        "text": "say",
+        "start": 3.594,
+        "end": 4.01
+      },
+      {
+        "text": "and",
+        "start": 4.206,
+        "end": 4.479
+      },
+      {
+        "text": "what",
+        "start": 4.557,
+        "end": 4.687
+      },
+      {
+        "text": "to",
+        "start": 4.701,
+        "end": 4.779
+      },
+      {
+        "text": "do",
+        "start": 4.792,
+        "end": 4.935
+      },
+      {
+        "text": "next",
+        "start": 4.948,
+        "end": 5.495
+      }
+    ]
+  },
+  {
+    "id": "voice",
+    "text": "Don't feel like typing? Just speak. And it can read every reply out loud.",
+    "file": "vo/voice.mp3",
+    "duration": 5.688,
+    "words": [
+      {
+        "text": "Don't",
+        "start": 0.065,
+        "end": 0.26
+      },
+      {
+        "text": "feel",
+        "start": 0.26,
+        "end": 0.456
+      },
+      {
+        "text": "like",
+        "start": 0.456,
+        "end": 0.638
+      },
+      {
+        "text": "typing",
+        "start": 0.651,
+        "end": 1.198
+      },
+      {
+        "text": "Just",
+        "start": 1.602,
+        "end": 1.901
+      },
+      {
+        "text": "speak",
+        "start": 1.901,
+        "end": 2.396
+      },
+      {
+        "text": "And",
+        "start": 2.8,
+        "end": 3.151
+      },
+      {
+        "text": "it",
+        "start": 3.307,
+        "end": 3.385
+      },
+      {
+        "text": "can",
+        "start": 3.398,
+        "end": 3.568
+      },
+      {
+        "text": "read",
+        "start": 3.581,
+        "end": 3.906
+      },
+      {
+        "text": "every",
+        "start": 4.023,
+        "end": 4.31
+      },
+      {
+        "text": "reply",
+        "start": 4.323,
+        "end": 4.687
+      },
+      {
+        "text": "out",
+        "start": 4.701,
+        "end": 4.87
+      },
+      {
+        "text": "loud",
+        "start": 4.883,
+        "end": 5.299
+      }
+    ]
+  },
+  {
+    "id": "trust",
+    "text": "Its advice comes from a guide library you can check. And if something sounds unsafe, it gently points you to real help.",
+    "file": "vo/trust.mp3",
+    "duration": 7.968,
+    "words": [
+      {
+        "text": "Its",
+        "start": 0.091,
+        "end": 0.234
+      },
+      {
+        "text": "advice",
+        "start": 0.247,
+        "end": 0.703
+      },
+      {
+        "text": "comes",
+        "start": 0.716,
+        "end": 1.042
+      },
+      {
+        "text": "from",
+        "start": 1.055,
+        "end": 1.185
+      },
+      {
+        "text": "a",
+        "start": 1.198,
+        "end": 1.276
+      },
+      {
+        "text": "guide",
+        "start": 1.289,
+        "end": 1.641
+      },
+      {
+        "text": "library",
+        "start": 1.654,
+        "end": 2.161
+      },
+      {
+        "text": "you",
+        "start": 2.175,
+        "end": 2.305
+      },
+      {
+        "text": "can",
+        "start": 2.318,
+        "end": 2.461
+      },
+      {
+        "text": "check",
+        "start": 2.474,
+        "end": 2.93
+      },
+      {
+        "text": "And",
+        "start": 3.333,
+        "end": 3.646
+      },
+      {
+        "text": "if",
+        "start": 3.776,
+        "end": 3.893
+      },
+      {
+        "text": "something",
+        "start": 3.893,
+        "end": 4.31
+      },
+      {
+        "text": "sounds",
+        "start": 4.323,
+        "end": 4.687
+      },
+      {
+        "text": "unsafe",
+        "start": 4.701,
+        "end": 5.352
+      },
+      {
+        "text": "it",
+        "start": 5.846,
+        "end": 5.938
+      },
+      {
+        "text": "gently",
+        "start": 5.951,
+        "end": 6.289
+      },
+      {
+        "text": "points",
+        "start": 6.302,
+        "end": 6.719
+      },
+      {
+        "text": "you",
+        "start": 6.732,
+        "end": 6.836
+      },
+      {
+        "text": "to",
+        "start": 6.849,
+        "end": 6.966
+      },
+      {
+        "text": "real",
+        "start": 6.979,
+        "end": 7.214
+      },
+      {
+        "text": "help",
+        "start": 7.227,
+        "end": 7.604
+      }
+    ]
+  },
+  {
+    "id": "phone",
+    "text": "No sign-up. Nothing to install. It works right on your phone.",
+    "file": "vo/phone.mp3",
+    "duration": 4.896,
+    "words": [
+      {
+        "text": "No",
+        "start": 0.091,
+        "end": 0.404
+      },
+      {
+        "text": "sign-up",
+        "start": 0.417,
+        "end": 1.094
+      },
+      {
+        "text": "Nothing",
+        "start": 1.484,
+        "end": 1.94
+      },
+      {
+        "text": "to",
+        "start": 1.953,
+        "end": 2.096
+      },
+      {
+        "text": "install",
+        "start": 2.109,
+        "end": 2.721
+      },
+      {
+        "text": "It",
+        "start": 3.112,
+        "end": 3.229
+      },
+      {
+        "text": "works",
+        "start": 3.242,
+        "end": 3.62
+      },
+      {
+        "text": "right",
+        "start": 3.633,
+        "end": 3.828
+      },
+      {
+        "text": "on",
+        "start": 3.828,
+        "end": 3.919
+      },
+      {
+        "text": "your",
+        "start": 3.932,
+        "end": 4.036
+      },
+      {
+        "text": "phone",
+        "start": 4.036,
+        "end": 4.518
+      }
+    ]
+  },
+  {
+    "id": "cta",
+    "text": "CoupleCare AI. Listen first. Understand better. Try it today. The link is in the post.",
+    "file": "vo/cta.mp3",
+    "duration": 7.368,
+    "words": [
+      {
+        "text": "CoupleCare",
+        "start": 0.091,
+        "end": 0.768
+      },
+      {
+        "text": "AI",
+        "start": 0.781,
+        "end": 1.172
+      },
+      {
+        "text": "Listen",
+        "start": 1.548,
+        "end": 1.9
+      },
+      {
+        "text": "first",
+        "start": 1.913,
+        "end": 2.512
+      },
+      {
+        "text": "Understand",
+        "start": 2.917,
+        "end": 3.581
+      },
+      {
+        "text": "better",
+        "start": 3.594,
+        "end": 3.997
+      },
+      {
+        "text": "Try",
+        "start": 4.401,
+        "end": 4.701
+      },
+      {
+        "text": "it",
+        "start": 4.714,
+        "end": 4.831
+      },
+      {
+        "text": "today",
+        "start": 4.844,
+        "end": 5.352
+      },
+      {
+        "text": "The",
+        "start": 5.742,
+        "end": 5.833
+      },
+      {
+        "text": "link",
+        "start": 5.846,
+        "end": 6.107
+      },
+      {
+        "text": "is",
+        "start": 6.12,
+        "end": 6.237
+      },
+      {
+        "text": "in",
+        "start": 6.25,
+        "end": 6.302
+      },
+      {
+        "text": "the",
+        "start": 6.302,
+        "end": 6.367
+      },
+      {
+        "text": "post",
+        "start": 6.367,
+        "end": 6.966
+      }
+    ]
+  }
+]
