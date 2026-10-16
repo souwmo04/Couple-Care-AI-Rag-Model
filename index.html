@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CoupleCare AI</title>
+  <meta name="description" content="A relationship-support assistant in English, Bangla and Banglish.">
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='1' y='1' width='30' height='30' rx='6' fill='%23fbf1e1' stroke='%231b1c22' stroke-width='2'/%3E%3Cpath d='M16 23s-7-4.4-7-9.2C9 11.3 11 9.5 13.1 9.5c1.4 0 2.3.6 2.9 1.7.6-1.1 1.5-1.7 2.9-1.7 2.1 0 4.1 1.8 4.1 4.3 0 4.8-7 9.2-7 9.2z' fill='%23ef5b3b' stroke='%231b1c22' stroke-width='1.4'/%3E%3C/svg%3E">
+  <style>
+    :root { --bg: #fbf1e1; --ink: #1b1c22; --accent: #ef5b3b; --muted: #5d5a55; --card: #fffaf2; }
+    @media (prefers-color-scheme: dark) { :root { --bg: #17171c; --ink: #f3ece0; --muted: #b7b0a5; --card: #212128; } }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 16px; background: var(--bg);
+      color: var(--ink); font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans Bengali", sans-serif; }
+    .card { width: 100%; max-width: 420px; background: var(--card); border: 3px solid var(--ink); border-radius: 10px;
+      box-shadow: 6px 6px 0 var(--ink); padding: 28px 24px; text-align: center; }
+    .logo { width: 64px; height: 64px; }
+    h1 { margin: 12px 0 4px; font-size: 1.5rem; letter-spacing: .02em; text-transform: uppercase; }
+    h1 span { background: var(--accent); color: #fff; padding: 0 6px; border: 2px solid var(--ink); border-radius: 4px; }
+    p { margin: 10px 0 0; }
+    .muted { color: var(--muted); font-size: .92rem; }
+    .spinner { width: 28px; height: 28px; margin: 18px auto 0; border: 3px solid var(--ink); border-right-color: transparent;
+      border-radius: 50%; animation: spin 0.9s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @media (prefers-reduced-motion: reduce) { .spinner { animation: none; } }
+    button { margin-top: 18px; font: inherit; font-weight: 700; padding: 10px 20px; background: var(--accent); color: #fff;
+      border: 3px solid var(--ink); border-radius: 8px; box-shadow: 3px 3px 0 var(--ink); cursor: pointer; }
+    button:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ink); }
+    [hidden] { display: none !important; }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <svg class="logo" viewBox="0 0 32 32" aria-hidden="true">
+      <rect x="1" y="1" width="30" height="30" rx="6" fill="#fbf1e1" stroke="#1b1c22" stroke-width="2"/>
+      <g transform="translate(3 3) scale(0.8125)">
+        <path d="M16 9.6s-3.5-2.2-3.5-4.6c0-1.25 1-2.15 2.05-2.15.7 0 1.15.3 1.45.85.3-.55.75-.85 1.45-.85 1.05 0 2.05.9 2.05 2.15 0 2.4-3.5 4.6-3.5 4.6z" fill="#ef5b3b" stroke="#1b1c22" stroke-width="1.1" stroke-linejoin="round"/>
+        <circle cx="7.5" cy="10.8" r="3.1" fill="#1b1c22"/>
+        <circle cx="24.5" cy="10.8" r="3.1" fill="#1b1c22"/>
+        <path d="M3.9 29v-8.3a3.6 3.6 0 0 1 7.2 0V29z" fill="#1b1c22"/>
+        <path d="M20.9 29v-8.3a3.6 3.6 0 0 1 7.2 0V29z" fill="#1b1c22"/>
+        <path d="M10.4 17.6 L15.2 23.4 M21.6 17.6 L16.8 23.4" fill="none" stroke="#1b1c22" stroke-width="2.2" stroke-linecap="round"/>
+        <circle cx="16" cy="23.6" r="2" fill="#ef5b3b" stroke="#1b1c22" stroke-width="1.1"/>
+      </g>
+    </svg>
+    <h1>CoupleCare <span>AI</span></h1>
+
+    <section id="connecting" aria-live="polite">
+      <p>Opening CoupleCare…</p>
+      <p class="muted">CoupleCare খোলা হচ্ছে…</p>
+      <div class="spinner" role="progressbar" aria-label="Loading"></div>
+    </section>
+
+    <section id="offline" hidden aria-live="polite">
+      <p><strong>CoupleCare is offline right now.</strong></p>
+      <p class="muted">CoupleCare এখন বন্ধ আছে। একটু পরে আবার চেষ্টা করুন।</p>
+      <p class="muted" id="waiting">This page keeps checking and opens it automatically as soon as it is back.</p>
+      <button type="button" id="retry">Try again</button>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      var CHECK_EVERY_MS = 10000;
+      var GIVE_UP_AFTER_MS = 5 * 60 * 1000;
+      var started = Date.now();
+      var timer = null;
+
+      function show(id) {
+        document.getElementById('connecting').hidden = id !== 'connecting';
+        document.getElementById('offline').hidden = id !== 'offline';
+      }
+
+      function withTimeout(ms) {
+        if (typeof AbortController === 'undefined') return {};
+        var c = new AbortController();
+        setTimeout(function () { c.abort(); }, ms);
+        return { signal: c.signal };
+      }
+
+      // link.json is updated by scripts/share.ps1 each time sharing starts or stops.
+      function currentLink() {
+        return fetch('link.json?t=' + Date.now(), { cache: 'no-store' })
+          .then(function (r) { return r.ok ? r.json() : {}; })
+          .then(function (d) { return typeof d.url === 'string' && /^https:\/\/[a-z0-9.-]+$/i.test(d.url) ? d.url : null; })
+          .catch(function () { return null; });
+      }
+
+      function isUp(url) {
+        var opts = withTimeout(8000);
+        opts.cache = 'no-store';
+        return fetch(url + '/api/health', opts)
+          .then(function (r) { return r.ok; })
+          .catch(function () { return false; });
+      }
+
+      function check() {
+        clearTimeout(timer);
+        currentLink().then(function (url) {
+          return url ? isUp(url).then(function (up) { return up ? url : null; }) : null;
+        }).then(function (url) {
+          if (url) {
+            window.location.replace(url + '/');
+            return;
+          }
+          show('offline');
+          if (Date.now() - started < GIVE_UP_AFTER_MS) {
+            timer = setTimeout(check, CHECK_EVERY_MS);
+          } else {
+            document.getElementById('waiting').hidden = true;
+          }
+        });
+      }
+
+      document.getElementById('retry').addEventListener('click', function () {
+        started = Date.now();
+        document.getElementById('waiting').hidden = false;
+        show('connecting');
+        check();
+      });
+      check();
+    })();
+  </script>
+</body>
+</html>
