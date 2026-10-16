@@ -1,0 +1,23 @@
+# Keep the image small and never copy secrets, caches, models or local data into it.
+.git
+.github
+.venv
+**/__pycache__
+**/.pytest_cache
+**/.ruff_cache
+.cache
+models
+logs
+artifacts
+.env
+.env.*
+!.env.example
+data/user
+frontend/node_modules
+frontend/dist
+frontend/coverage
+research
+docs/screenshots
+*.sqlite
+*.sqlite3
+*.gguf

@@ -136,6 +136,13 @@ class Settings(BaseSettings):
     # Evaluation traces are never stored unless explicitly enabled.
     store_eval_traces: bool = False
 
+    # Hosting (e.g. the Hugging Face Spaces demo). When set, the backend also serves the built website from this
+    # folder, so the app runs as a single process on one port.
+    frontend_dist: Path | None = None
+    # Origins allowed to show the app in a frame (Hugging Face displays Spaces inside huggingface.co). When unset,
+    # framing is refused entirely (X-Frame-Options: DENY).
+    frame_ancestors: str | None = Field(default=None, pattern=r"^https://[A-Za-z0-9.-]+( https://[A-Za-z0-9.-]+)*$")
+
     @field_validator("llm_base_url")
     @classmethod
     def _llm_must_be_local(cls, value: str) -> str:

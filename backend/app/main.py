@@ -8,6 +8,7 @@ Run locally (binds to 127.0.0.1 only):
 from __future__ import annotations
 
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -18,7 +19,7 @@ from app.api import chat, conversations, health, knowledge, voice
 from app.api import settings as settings_api
 from app.config import Settings, get_settings
 from app.core.container import Container
-from app.errors import error_body, install_error_handlers
+from app.errors import NotFoundError, error_body, install_error_handlers
 from app.logging_config import configure_logging
 
 
@@ -76,8 +77,9 @@ async def _send_json(send: Send, status: int, body: dict) -> None:
 
 
 class SecurityHeadersMiddleware:
-    def __init__(self, app: ASGIApp) -> None:
+    def __init__(self, app: ASGIApp, frame_ancestors: str | None = None) -> None:
         self.app = app
+        self.frame_ancestors = frame_ancestors
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         if scope["type"] != "http":
@@ -87,12 +89,15 @@ class SecurityHeadersMiddleware:
         async def send_with_headers(message: Message) -> None:
             if message["type"] == "http.response.start":
                 headers = list(message.get("headers", []))
-                headers += [
-                    (b"x-content-type-options", b"nosniff"),
-                    (b"x-frame-options", b"DENY"),
-                    (b"referrer-policy", b"no-referrer"),
-                    (b"cache-control", b"no-store"),
-                ]
+                headers += [(b"x-content-type-options", b"nosniff"), (b"referrer-policy", b"no-referrer")]
+                if self.frame_ancestors:
+                    csp = f"frame-ancestors 'self' {self.frame_ancestors}".encode()
+                    headers.append((b"content-security-policy", csp))
+                else:
+                    headers.append((b"x-frame-options", b"DENY"))
+                # API responses (conversations) are never cached; the website's static files may be.
+                if scope.get("path", "").startswith("/api"):
+                    headers.append((b"cache-control", b"no-store"))
                 message["headers"] = headers
             await send(message)
 
@@ -127,7 +132,7 @@ def create_app(settings: Settings | None = None, container: Container | None = N
         allow_headers=["Content-Type", "X-Client-Id"],
         max_age=600,
     )
-    app.add_middleware(SecurityHeadersMiddleware)
+    app.add_middleware(SecurityHeadersMiddleware, frame_ancestors=settings.frame_ancestors)
     app.add_middleware(
         BodySizeLimitMiddleware,
         max_bytes=settings.max_request_bytes,
@@ -136,7 +141,28 @@ def create_app(settings: Settings | None = None, container: Container | None = N
 
     for module in (health, chat, conversations, settings_api, knowledge, voice):
         app.include_router(module.router)
+    if settings.frontend_dist and (settings.frontend_dist / "index.html").is_file():
+        _serve_frontend(app, settings.frontend_dist)
     return app
+
+
+def _serve_frontend(app: FastAPI, dist: Path) -> None:
+    """Serve the built single-page app: real files when they exist, otherwise index.html (client-side routes)."""
+    from fastapi.responses import FileResponse
+    from fastapi.staticfiles import StaticFiles
+
+    root = dist.resolve()
+    if (root / "assets").is_dir():
+        app.mount("/assets", StaticFiles(directory=root / "assets"), name="assets")
+
+    @app.api_route("/{path:path}", methods=["GET", "HEAD"], include_in_schema=False)
+    async def spa(path: str) -> FileResponse:
+        if path.startswith("api/") or path == "api":
+            raise NotFoundError("Not found.")
+        candidate = (root / path).resolve()
+        if path and candidate.is_file() and root in candidate.parents:
+            return FileResponse(candidate)
+        return FileResponse(root / "index.html")
 
 
 app = create_app()

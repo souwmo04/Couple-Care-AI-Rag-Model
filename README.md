@@ -127,6 +127,12 @@ helps single people start a conversation or ask someone out — respectfully: no
 pressure, and a "no" or no reply is respected. Safety checks apply exactly as in normal mode. Relationship stages
 include Single, One-sided love, Situationship and Long-distance as well as Dating, Engaged and Married.
 
+## Share it online (Hugging Face Spaces)
+
+To let a few friends use it from their browser, deploy it as a free Hugging Face Space (Docker; cloud mode with
+your Groq key as a Space secret): see **[docs/deploy-huggingface.md](docs/deploy-huggingface.md)**. Upload with
+`scripts\deploy-huggingface.ps1 -Space yourname/couplecare-ai`.
+
 ## Voice (optional)
 
 The message box always has a **microphone** button, and every reply has a **read-aloud** button.
