@@ -392,7 +392,7 @@ export const en = {
     voice: 'Voice',
     voiceFeatures: 'Voice input and read-aloud',
     voiceFeaturesHint:
-      'Adds a microphone to the message box and a read-aloud button to replies. Replies read aloud can be overheard, so this is off by default.',
+      'The microphone in the message box turns your speech into text; the speaker button on each reply reads it aloud.',
     voiceInputCloud: 'Voice input is available: recordings are sent to Groq to be turned into text, then discarded. They are never saved here.',
     voiceInputLocal: 'Voice input needs cloud mode (Groq). Read-aloud works in any mode.',
     voiceReadAloudNote:

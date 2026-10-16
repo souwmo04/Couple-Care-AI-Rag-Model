@@ -129,8 +129,7 @@ include Single, One-sided love, Situationship and Long-distance as well as Datin
 
 ## Voice (optional)
 
-Turn on **Settings → Voice** to get a microphone in the message box and a read-aloud button on replies (off by
-default, because replies read aloud can be overheard).
+The message box always has a **microphone** button, and every reply has a **read-aloud** button.
 
 - **Voice input** needs cloud mode: the recording (max 60 s) is sent to Groq Whisper (`whisper-large-v3`), turned
   into text in the message box for you to check, and discarded — it is never saved by the app. Bangla works well;

@@ -231,7 +231,7 @@ export default function ChatPage() {
                         onRetry={() => chat.retry(opts)}
                         speaking={speech.speakingId === m.key}
                         onSpeak={
-                          prefs.voice && speechSupported() && m.content
+                          speechSupported() && m.content
                             ? () => {
                                 if (speech.speakingId === m.key) return speech.stop()
                                 const lang = m.responseLanguage === 'bn' ? 'bn' : 'en'

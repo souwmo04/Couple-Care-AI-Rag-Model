@@ -9,7 +9,16 @@ import { cn } from '@/lib/utils'
 import { ApiError, api } from '@/services/api'
 
 /** Record a voice message and put the transcription into the composer (the user reviews it before sending). */
-export function MicButton({ language, onText }: { language: 'auto' | 'en' | 'bn'; onText: (text: string) => void }) {
+export function MicButton({
+  language,
+  onText,
+  available,
+}: {
+  language: 'auto' | 'en' | 'bn'
+  onText: (text: string) => void
+  /** Voice input needs cloud mode; when false a click explains that instead of recording. */
+  available: boolean
+}) {
   const t = useCopy()
   const handleAudio = useCallback(
     async (audio: Blob) => {
@@ -48,7 +57,7 @@ export function MicButton({ language, onText }: { language: 'auto' | 'en' | 'bn'
           aria-label={label}
           aria-pressed={recording}
           disabled={busy}
-          onClick={() => (recording ? stop() : void start())}
+          onClick={() => (recording ? stop() : available ? void start() : toast.info(t.chat.voiceNeedsCloud))}
           className={cn(recording && 'animate-pulse')}
         >
           {busy ? <Loader2 className="animate-spin" /> : recording ? <Square className="fill-current" /> : <Mic />}

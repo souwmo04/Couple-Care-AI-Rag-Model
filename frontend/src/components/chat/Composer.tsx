@@ -35,7 +35,7 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
   const [error, setError] = useState<string | null>(null)
   const areaRef = useRef<HTMLTextAreaElement>(null)
   const voiceAvailable = useHealth().data?.voice_input === true
-  const showMic = prefs.voice && voiceAvailable && voiceRecordingSupported()
+  const showMic = voiceRecordingSupported()
   const voiceLanguage = prefs.responseLanguage === 'bn' ? 'bn' : prefs.responseLanguage === 'en' ? 'en' : 'auto'
   const appendTranscript = useCallback((spoken: string) => {
     setText((current) => (current.trim() ? `${current.trimEnd()} ${spoken}` : spoken))
@@ -154,7 +154,7 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
                 <X />
               </Button>
             )}
-            {showMic && !generating && <MicButton language={voiceLanguage} onText={appendTranscript} />}
+            {showMic && !generating && <MicButton language={voiceLanguage} onText={appendTranscript} available={voiceAvailable} />}
             {generating ? (
               <Button type="button" size="icon" variant="secondary" aria-label={t.chat.stop} onClick={onStop}>
                 <Square className="fill-current" />

@@ -196,15 +196,11 @@ export default function SettingsPage() {
 
           {/* ------------------------------------------------ Voice */}
           <Section id="voice" title={t.settings.voice}>
-            <Field label={t.settings.voiceFeatures} hint={t.settings.voiceFeaturesHint}>
-              <Switch label={t.settings.voiceFeatures} checked={prefs.voice} onCheckedChange={(v) => update({ voice: v })} />
-            </Field>
-            {prefs.voice && (
-              <p className="py-4 text-sm leading-relaxed text-foreground/80">
-                {health.data?.voice_input ? t.settings.voiceInputCloud : t.settings.voiceInputLocal}{' '}
-                {t.settings.voiceReadAloudNote}
-              </p>
-            )}
+            <p className="py-4 text-sm leading-relaxed text-foreground/80">
+              {t.settings.voiceFeaturesHint}{' '}
+              {health.data?.voice_input ? t.settings.voiceInputCloud : t.settings.voiceInputLocal}{' '}
+              {t.settings.voiceReadAloudNote}
+            </p>
           </Section>
 
           {/* ------------------------------------------------ Privacy */}

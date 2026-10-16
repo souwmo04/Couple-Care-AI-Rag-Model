@@ -22,7 +22,8 @@ page, the privacy page and the model status badge whenever cloud mode is on.
 
 ## Voice
 
-Off by default (Settings → Voice). Voice input exists only in cloud mode: the recording is sent to Groq's
+The microphone and read-aloud buttons are always shown, and nothing is recorded or spoken until you click them.
+Voice input works only in cloud mode (in local mode a click explains this instead of recording): the recording is sent to Groq's
 transcription endpoint (`/openai/v1/audio/transcriptions`, fixed in code) and the returned text is placed in the
 message box; the audio is neither stored nor logged by CoupleCare. Read-aloud uses the browser's speech synthesis;
 device voices are preferred, but where only an online voice exists (often for Bangla) the browser sends the reply
