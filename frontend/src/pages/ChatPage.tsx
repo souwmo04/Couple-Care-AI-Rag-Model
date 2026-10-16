@@ -16,6 +16,8 @@ import { Sheet } from '@/components/ui/overlay'
 import { Badge, Skeleton, Switch, Tooltip } from '@/components/ui/primitives'
 import { useChat, type SendOptions } from '@/hooks/useChat'
 import { usePreferences } from '@/hooks/usePreferences'
+import { speechSupported, useSpeech } from '@/hooks/useSpeech'
+import { toast } from 'sonner'
 import { useCopy } from '@/i18n'
 import { cn } from '@/lib/utils'
 import { TOPIC_IDS, TOPIC_STARTERS, type TopicId } from '@/lib/topics'
@@ -23,6 +25,7 @@ import { TOPIC_IDS, TOPIC_STARTERS, type TopicId } from '@/lib/topics'
 export default function ChatPage() {
   const t = useCopy()
   const { prefs, update } = usePreferences()
+  const speech = useSpeech()
   const navigate = useNavigate()
   const { conversationId: routeId } = useParams()
   const [searchParams, setSearchParams] = useSearchParams()
@@ -226,6 +229,17 @@ export default function ChatPage() {
                         onSelect={() => setSelectedKey(m.key)}
                         onRegenerate={() => chat.regenerate(opts)}
                         onRetry={() => chat.retry(opts)}
+                        speaking={speech.speakingId === m.key}
+                        onSpeak={
+                          prefs.voice && speechSupported() && m.content
+                            ? () => {
+                                if (speech.speakingId === m.key) return speech.stop()
+                                const lang = m.responseLanguage === 'bn' ? 'bn' : 'en'
+                                if (!speech.speak(m.key, m.content, lang))
+                                  toast.error(lang === 'bn' ? t.chat.noVoiceBn : t.chat.noVoice)
+                              }
+                            : undefined
+                        }
                       />
                     ),
                   )}

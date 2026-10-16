@@ -20,6 +20,14 @@ Everything else is unchanged: safety classification, pre-written safety template
 retrieval, embeddings and conversation storage stay local. The UI shows a cloud notice on the landing
 page, the privacy page and the model status badge whenever cloud mode is on.
 
+## Voice
+
+Off by default (Settings → Voice). Voice input exists only in cloud mode: the recording is sent to Groq's
+transcription endpoint (`/openai/v1/audio/transcriptions`, fixed in code) and the returned text is placed in the
+message box; the audio is neither stored nor logged by CoupleCare. Read-aloud uses the browser's speech synthesis;
+device voices are preferred, but where only an online voice exists (often for Bangla) the browser sends the reply
+text to its vendor's speech service.
+
 ## What is stored where
 
 | Data | Location | When |

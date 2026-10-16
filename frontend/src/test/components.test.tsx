@@ -147,3 +147,28 @@ describe('ModelStatusPill', () => {
     await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('Backend not running'))
   })
 })
+
+describe('Voice features', () => {
+  beforeEach(() => {
+    vi.stubGlobal('MediaRecorder', Object.assign(function MediaRecorder() {}, { isTypeSupported: () => true }))
+    Object.defineProperty(navigator, 'mediaDevices', { value: { getUserMedia: vi.fn() }, configurable: true })
+  })
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  it('hides the microphone unless voice is on and the backend supports it', async () => {
+    mockFetch({ '/api/health': () => json({ ...HEALTH_ONLINE, voice_input: true }) })
+    const { unmount } = renderWithProviders(<Composer onSend={() => {}} onStop={() => {}} generating={false} />)
+    await waitFor(() => expect(screen.queryByRole('button', { name: 'Speak your message' })).toBeNull())
+    unmount()
+    renderWithProviders(<Composer onSend={() => {}} onStop={() => {}} generating={false} />, { prefs: { voice: true } })
+    expect(await screen.findByRole('button', { name: 'Speak your message' })).toBeInTheDocument()
+  })
+
+  it('keeps the microphone hidden in local mode even with voice on', async () => {
+    mockFetch({ '/api/health': () => json({ ...HEALTH_ONLINE, voice_input: false }) })
+    renderWithProviders(<Composer onSend={() => {}} onStop={() => {}} generating={false} />, { prefs: { voice: true } })
+    await waitFor(() => expect(screen.queryByRole('button', { name: 'Speak your message' })).toBeNull())
+  })
+})

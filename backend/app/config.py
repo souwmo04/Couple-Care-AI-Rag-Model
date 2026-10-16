@@ -104,6 +104,9 @@ class Settings(BaseSettings):
     groq_model: str = Field(default="openai/gpt-oss-120b", pattern=r"^[A-Za-z0-9._/:-]{1,100}$")
     # When Groq is rate-limited or unreachable, answer with the local model server (if it is running).
     groq_fallback_local: bool = True
+    # Voice input (cloud mode only): Groq Whisper model and the largest accepted recording.
+    groq_transcribe_model: str = Field(default="whisper-large-v3", pattern=r"^[A-Za-z0-9._/:-]{1,100}$")
+    max_audio_bytes: int = 6 * 1024 * 1024
 
     # Retrieval
     embedding_model: str = "intfloat/multilingual-e5-small"

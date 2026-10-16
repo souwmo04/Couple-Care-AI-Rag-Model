@@ -188,11 +188,17 @@ class ModelStatus(BaseModel):
     provider: Literal["local", "groq"] = "local"
 
 
+class TranscriptionResponse(BaseModel):
+    text: str
+
+
 class HealthResponse(BaseModel):
     status: Literal["ok", "degraded"]
     version: str
     model_server: Literal["online", "offline"]
     provider: Literal["local", "groq"] = "local"
+    # Speech-to-text is available (cloud mode with a key configured).
+    voice_input: bool = False
     index: Literal["ready", "missing", "building", "error"]
     embeddings: Literal["ready", "loading", "unavailable", "fallback"]
 

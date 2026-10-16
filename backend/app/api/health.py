@@ -25,6 +25,7 @@ async def health(c: Container = Depends(get_container)) -> HealthResponse:
         version=__version__,
         model_server="online" if info.reachable else "offline",
         provider=c.settings.llm_provider,
+        voice_input=c.settings.llm_provider == "groq" and c.settings.groq_api_key is not None,
         index=index,  # type: ignore[arg-type]
         embeddings=embeddings,  # type: ignore[arg-type]
     )

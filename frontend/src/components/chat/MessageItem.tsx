@@ -1,6 +1,6 @@
 import { useCloudMode } from '@/hooks/useProvider'
 import { KineticLoader } from '@/components/kinetic/KineticLoader'
-import { BookOpenText, Check, ChevronDown, Copy, PlugZap, RefreshCw, ThumbsDown, ThumbsUp, TriangleAlert } from 'lucide-react'
+import { BookOpenText, Check, ChevronDown, Copy, PlugZap, RefreshCw, ThumbsDown, ThumbsUp, TriangleAlert, Volume2, VolumeX } from 'lucide-react'
 import { useEntrance } from '@/hooks/useEntrance'
 import { AnimatePresence, motion } from 'motion/react'
 import { memo, useMemo, useState, type ReactNode } from 'react'
@@ -35,6 +35,9 @@ interface AssistantProps {
   selected: boolean
   onSelect: () => void
   onRegenerate: () => void
+  /** Read-aloud: shown only when voice features are on and the browser can speak. */
+  speaking?: boolean
+  onSpeak?: () => void
   onRetry: () => void
 }
 
@@ -47,6 +50,8 @@ export const AssistantMessage = memo(function AssistantMessage({
   onSelect,
   onRegenerate,
   onRetry,
+  speaking = false,
+  onSpeak,
 }: AssistantProps) {
   const t = useCopy()
   const enter = useEntrance()
@@ -197,6 +202,11 @@ export const AssistantMessage = memo(function AssistantMessage({
 
         {(message.status === 'done' || message.status === 'stopped') && message.content && (
           <div className="mt-3 flex items-center gap-0.5 opacity-100 transition-opacity sm:opacity-0 sm:group-focus-within:opacity-100 sm:group-hover:opacity-100">
+            {onSpeak && (
+              <ActionButton label={speaking ? t.chat.stopReading : t.chat.readAloud} onClick={onSpeak} pressed={speaking}>
+                {speaking ? <VolumeX /> : <Volume2 />}
+              </ActionButton>
+            )}
             <ActionButton label={copied ? t.common.copied : t.chat.copyResponse} onClick={copy}>
               {copied ? <Check /> : <Copy />}
             </ActionButton>

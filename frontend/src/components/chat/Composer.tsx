@@ -1,8 +1,11 @@
 import { ArrowUp, Square, X } from 'lucide-react'
-import { forwardRef, useEffect, useImperativeHandle, useRef, useState, type KeyboardEvent } from 'react'
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState, type KeyboardEvent } from 'react'
+import { MicButton } from '@/components/chat/MicButton'
 import { Button } from '@/components/ui/button'
 import { Select } from '@/components/ui/overlay'
+import { useHealth } from '@/hooks/useBackend'
 import { usePreferences } from '@/hooks/usePreferences'
+import { voiceRecordingSupported } from '@/hooks/useVoiceRecorder'
 import { useCopy } from '@/i18n'
 import { cn } from '@/lib/utils'
 import type { LanguageCode } from '@/types/api'
@@ -31,6 +34,14 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
   const [text, setText] = useState('')
   const [error, setError] = useState<string | null>(null)
   const areaRef = useRef<HTMLTextAreaElement>(null)
+  const voiceAvailable = useHealth().data?.voice_input === true
+  const showMic = prefs.voice && voiceAvailable && voiceRecordingSupported()
+  const voiceLanguage = prefs.responseLanguage === 'bn' ? 'bn' : prefs.responseLanguage === 'en' ? 'en' : 'auto'
+  const appendTranscript = useCallback((spoken: string) => {
+    setText((current) => (current.trim() ? `${current.trimEnd()} ${spoken}` : spoken))
+    setError(null)
+    requestAnimationFrame(() => areaRef.current?.focus())
+  }, [])
 
   useImperativeHandle(ref, () => ({
     setText: (value: string) => {
@@ -143,6 +154,7 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
                 <X />
               </Button>
             )}
+            {showMic && !generating && <MicButton language={voiceLanguage} onText={appendTranscript} />}
             {generating ? (
               <Button type="button" size="icon" variant="secondary" aria-label={t.chat.stop} onClick={onStop}>
                 <Square className="fill-current" />

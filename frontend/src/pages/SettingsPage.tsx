@@ -6,7 +6,7 @@ import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { ConfirmDialog, Select } from '@/components/ui/overlay'
 import { Badge, Card, Field, SectionEyebrow, Segmented, Skeleton, Slider, Switch } from '@/components/ui/primitives'
-import { keys, useModelStatus, useSettings, useUpdateSettings } from '@/hooks/useBackend'
+import { keys, useHealth, useModelStatus, useSettings, useUpdateSettings } from '@/hooks/useBackend'
 import { FONT_SCALES, usePreferences, type MotionPreference, type ThemePreference } from '@/hooks/usePreferences'
 import { useCopy } from '@/i18n'
 import { RELATIONSHIP_STAGES } from '@/lib/stages'
@@ -70,6 +70,7 @@ export default function SettingsPage() {
   const qc = useQueryClient()
   const navigate = useNavigate()
   const { prefs, update, reset } = usePreferences()
+  const health = useHealth()
   const settings = useSettings()
   const mutation = useUpdateSettings()
   const model = useModelStatus()
@@ -191,6 +192,19 @@ export default function SettingsPage() {
                 options={RELATIONSHIP_STAGES.map((v) => ({ value: v, label: t.stages[v] }))}
               />
             </Field>
+          </Section>
+
+          {/* ------------------------------------------------ Voice */}
+          <Section id="voice" title={t.settings.voice}>
+            <Field label={t.settings.voiceFeatures} hint={t.settings.voiceFeaturesHint}>
+              <Switch label={t.settings.voiceFeatures} checked={prefs.voice} onCheckedChange={(v) => update({ voice: v })} />
+            </Field>
+            {prefs.voice && (
+              <p className="py-4 text-sm leading-relaxed text-foreground/80">
+                {health.data?.voice_input ? t.settings.voiceInputCloud : t.settings.voiceInputLocal}{' '}
+                {t.settings.voiceReadAloudNote}
+              </p>
+            )}
           </Section>
 
           {/* ------------------------------------------------ Privacy */}

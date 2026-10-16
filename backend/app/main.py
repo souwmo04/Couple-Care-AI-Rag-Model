@@ -14,7 +14,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 from app import __version__
-from app.api import chat, conversations, health, knowledge
+from app.api import chat, conversations, health, knowledge, voice
 from app.api import settings as settings_api
 from app.config import Settings, get_settings
 from app.core.container import Container
@@ -25,17 +25,19 @@ from app.logging_config import configure_logging
 class BodySizeLimitMiddleware:
     """Reject request bodies above ``max_bytes`` (checks Content-Length and the actual stream)."""
 
-    def __init__(self, app: ASGIApp, max_bytes: int) -> None:
+    def __init__(self, app: ASGIApp, max_bytes: int, overrides: dict[str, int] | None = None) -> None:
         self.app = app
         self.max_bytes = max_bytes
+        self.overrides = overrides or {}
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         if scope["type"] != "http":
             await self.app(scope, receive, send)
             return
+        max_bytes = self.overrides.get(scope.get("path", ""), self.max_bytes)
         headers = dict(scope.get("headers") or [])
         length = headers.get(b"content-length")
-        if length is not None and length.isdigit() and int(length) > self.max_bytes:
+        if length is not None and length.isdigit() and int(length) > max_bytes:
             await _send_json(send, 413, error_body("payload_too_large", "The request is too large."))
             return
         received = 0
@@ -45,7 +47,7 @@ class BodySizeLimitMiddleware:
             message = await receive()
             if message["type"] == "http.request":
                 received += len(message.get("body", b""))
-                if received > self.max_bytes:
+                if received > max_bytes:
                     raise _TooLarge()
             return message
 
@@ -126,9 +128,13 @@ def create_app(settings: Settings | None = None, container: Container | None = N
         max_age=600,
     )
     app.add_middleware(SecurityHeadersMiddleware)
-    app.add_middleware(BodySizeLimitMiddleware, max_bytes=settings.max_request_bytes)
+    app.add_middleware(
+        BodySizeLimitMiddleware,
+        max_bytes=settings.max_request_bytes,
+        overrides={"/api/transcribe": settings.max_audio_bytes + 64 * 1024},  # audio + multipart overhead
+    )
 
-    for module in (health, chat, conversations, settings_api, knowledge):
+    for module in (health, chat, conversations, settings_api, knowledge, voice):
         app.include_router(module.router)
     return app
 

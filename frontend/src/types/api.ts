@@ -112,6 +112,8 @@ export interface HealthResponse {
   model_server: 'online' | 'offline'
   /** 'groq' = cloud mode: messages are sent to Groq. */
   provider?: 'local' | 'groq'
+  /** Speech-to-text is available (cloud mode with a key configured). */
+  voice_input?: boolean
   index: 'ready' | 'missing' | 'building' | 'error'
   embeddings: 'ready' | 'loading' | 'unavailable' | 'fallback'
 }

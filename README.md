@@ -127,6 +127,18 @@ helps single people start a conversation or ask someone out — respectfully: no
 pressure, and a "no" or no reply is respected. Safety checks apply exactly as in normal mode. Relationship stages
 include Single, One-sided love, Situationship and Long-distance as well as Dating, Engaged and Married.
 
+## Voice (optional)
+
+Turn on **Settings → Voice** to get a microphone in the message box and a read-aloud button on replies (off by
+default, because replies read aloud can be overheard).
+
+- **Voice input** needs cloud mode: the recording (max 60 s) is sent to Groq Whisper (`whisper-large-v3`), turned
+  into text in the message box for you to check, and discarded — it is never saved by the app. Bangla works well;
+  Banglish speech comes back in Bangla script.
+- **Read-aloud** uses the browser's voices, preferring voices on this device. Windows usually has only English
+  voices; for Bangla the browser may use an online voice (e.g. Microsoft Edge's), which sends the reply text to that
+  browser's speech service. If no voice exists for the language, the app says so.
+
 ## Optional: better replies with Groq (cloud mode)
 
 The local 4B model is weak in Banglish. You can opt in to a larger model on Groq's free tier

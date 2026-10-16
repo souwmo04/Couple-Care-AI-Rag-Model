@@ -90,3 +90,10 @@ describe('stripCitations', () => {
     expect(stripCitations('দোষারোপ নেই [S1]।')).toBe('দোষারোপ নেই।')
   })
 })
+
+describe('speakableText', () => {
+  it('strips markdown and citation markers before reading aloud', async () => {
+    const { speakableText } = await import('@/hooks/useSpeech')
+    expect(speakableText('**What you could say**\n- "Hi there" [S1]\n# Next')).toBe('What you could say "Hi there" Next')
+  })
+})

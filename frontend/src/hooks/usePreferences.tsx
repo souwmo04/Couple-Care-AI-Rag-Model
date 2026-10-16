@@ -15,6 +15,8 @@ export interface Preferences {
   responseLanguage: LanguageCode
   relationshipStage: RelationshipStage
   chatMode: ChatMode
+  /** Voice features (microphone and read-aloud). Off by default: replies read aloud can be overheard. */
+  voice: boolean
   guestMode: boolean
 }
 
@@ -27,6 +29,7 @@ export const DEFAULT_PREFERENCES: Preferences = {
   responseLanguage: 'auto',
   relationshipStage: 'unspecified',
   chatMode: 'support',
+  voice: false,
   guestMode: false,
 }
 
@@ -63,6 +66,7 @@ function sanitize(raw: unknown): Preferences {
   if ((RELATIONSHIP_STAGES as readonly string[]).includes(r.relationshipStage as string))
     p.relationshipStage = r.relationshipStage as RelationshipStage
   if (r.chatMode === 'support' || r.chatMode === 'coach') p.chatMode = r.chatMode
+  if (typeof r.voice === 'boolean') p.voice = r.voice
   return p
 }
 

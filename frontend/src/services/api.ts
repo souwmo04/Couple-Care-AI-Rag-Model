@@ -65,8 +65,25 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
 
 const json = (body: unknown) => JSON.stringify(body)
 
+/** Upload a recording for speech-to-text (cloud mode only). The browser sets the multipart boundary. */
+async function transcribe(audio: Blob, language: 'auto' | 'en' | 'bn'): Promise<string> {
+  const form = new FormData()
+  const type = audio.type.split(';')[0] || 'audio/webm'
+  form.append('file', audio, `recording.${type.includes('ogg') ? 'ogg' : type.includes('mp4') ? 'm4a' : 'webm'}`)
+  form.append('language', language)
+  let res: Response
+  try {
+    res = await fetch(`${BASE}/transcribe`, { method: 'POST', body: form, headers: { 'X-Client-Id': getClientId() } })
+  } catch {
+    throw new ApiError(0, 'backend_unreachable', 'The CoupleCare backend is not running on this computer.', true)
+  }
+  if (!res.ok) throw await parseError(res)
+  return ((await res.json()) as { text: string }).text
+}
+
 export const api = {
   health: () => request<HealthResponse>('/health'),
+  transcribe,
   modelStatus: () => request<ModelStatus>('/model/status'),
 
   chat: (body: ChatRequest, signal?: AbortSignal) =>
